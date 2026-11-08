@@ -330,14 +330,14 @@ export class Sim {
         title: this.aebEvents
           ? `Aman — kecepatan turun, sisa gap ${this.gap().toFixed(1)} m`
           : `Jalan aman — tidak ada penutupan jarak`,
-        sub: `Kecepatan akhir ${(this.vEgo * 3.6).toFixed(1)} km/h · objek ${(this.vLead * 3.6).toFixed(1)} km/h · AEB intervensi ${this.aebEvents}×.`
+        sub: `Kecepatan akhir ${(this.vEgo * 3.6).toFixed(1)} km/h · objek ${(this.vLead * 3.6).toFixed(1)} km/h · deselerasi puncak ${this.peakDecel.toFixed(1)} m/s² · energi rem ${(this.brakeEnergy / 1e6).toFixed(2)} MJ.`
       };
     }
     if (this.outcome === 'collision') {
       return {
         ok: false,
         title: `TABRAKAN — impact ${(this.impactV * 3.6).toFixed(1)} km/h`,
-        sub: `Kendaraan ${p.massT.toFixed(1)} t, kecepatan awal ${this.cfg.v0} km/h, gap awal ${this.cfg.gap0} m.`
+        sub: `Kendaraan ${p.massT.toFixed(1)} t, kecepatan awal ${this.cfg.v0} km/h, gap awal ${this.cfg.gap0} m · energi terserap rem ${(this.brakeEnergy / 1e6).toFixed(2)} MJ.`
       };
     }
     return {
