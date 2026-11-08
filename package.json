@@ -1,0 +1,9 @@
+{
+  "name": "aebs-simulator",
+  "private": true,
+  "type": "module",
+  "description": "Simulasi Advanced Emergency Braking System untuk dump truck tambang (2D top-down, tanpa build step)",
+  "scripts": {
+    "start": "python3 -m http.server 4317"
+  }
+}
