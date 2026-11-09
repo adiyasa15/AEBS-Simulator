@@ -265,16 +265,16 @@
         <tr><td>a_tersedia</td><td>perlambatan maksimum yang <i>mungkin</i> dihasilkan saat itu</td></tr>
       </table>
 
-      <h4>Perhitungannya bersiklus, bukan berantai sekali jalan</h4>
+      <h4>Perhitungan berulang dalam siklus, bukan satu kali jalan</h4>
       <p class="warn"><b>Catatan istilah:</b> "bersiklus" di sini berarti <i>perhitungannya
         diulang</i>, bukan berarti roda berputar. Model ini menghitung <b>perpindahan lurus</b>
         (displacement) truk sepanjang jalan — putaran roda, slip, dan inersia rotasi
         <b>tidak</b> dimodelkan.</p>
-      <p>Ini yang sering membingungkan: percepatan bukan hasil akhir. Percepatan adalah
-        <b>titik tengah</b> dari sebuah siklus yang berjalan 200 kali per detik.</p>
-      <p>Percepatan dihitung dari gaya → mengubah kecepatan → mengubah posisi → mengubah jarak ke
-        objek → mengubah keputusan rem → dan keputusan itu mengubah gaya. Putaran berikutnya
-        dimulai lagi.</p>
+      <p>Nilai percepatan (<code>a_net</code>) bukanlah hasil akhir perhitungan. Nilai tersebut
+        merupakan salah satu langkah di dalam siklus yang berulang 200 kali per detik.</p>
+      <p>Urutan dalam satu siklus: gaya menghasilkan percepatan, percepatan mengubah kecepatan,
+        kecepatan mengubah posisi, posisi mengubah jarak terhadap objek, jarak mengubah
+        keputusan pengereman, dan keputusan tersebut mengubah gaya pada siklus berikutnya.</p>
       <svg viewBox="0 0 720 210" class="diagram" role="img" aria-label="Lingkaran perhitungan tiap 5 milidetik">
         <defs>
           <marker id="la" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -386,7 +386,7 @@ a_net = a_fric + a_regen + a_resist + a_retard − a_grade − a_throttle
 v′    = max(0, v − a_net · dt)
 s′    = s + ½ (v + v′) · dt                         # integrasi trapesium</pre>
 
-      <p><b>Diagram gaya</b> — semua suku di atas adalah gaya per satuan massa yang bekerja
+      <p><b>Diagram gaya</b> — setiap suku pada persamaan di atas merupakan gaya per satuan massa yang bekerja
         sepanjang sumbu jalan:</p>
       <svg viewBox="0 0 720 320" class="diagram" role="img" aria-label="Diagram gaya pada truk di tanjakan">
         <defs>
@@ -512,7 +512,7 @@ level = 1,00  → REM PENUH      (100 % kapasitas)</pre>
       </table>
 
       <p class="warn">Catatan teknis: perintah hanya dikirim ke aktuator jika perubahannya
-        lebih dari <code>0,08</code> level. Tanpa ambang ini, kontrol kontinu akan membanjiri
+        lebih dari <code>0,08</code> level. Tanpa ambang ini, kontrol kontinu akan membebani
         antrean perintah aktuator setiap 5 ms.</p>
 
       <h3>6. Logic 1 — TTC relatif <span class="tag">terpasang saat ini</span></h3>
@@ -545,7 +545,7 @@ if v &gt; v_safe + 0,15:
       <table class="eq wide">
         <tr><th>Parameter</th><th>Nilai</th><th>Dari mana</th><th>Sifat</th></tr>
         <tr><td>Rentang nyaman pengereman truk berat</td><td>0,10–0,15 g</td><td>praktik umum pengereman servis kendaraan berat</td><td>rujukan umum</td></tr>
-        <tr><td><b>Batas yang ditetapkan</b></td><td><b>1,2 m/s² = 0,12 g</b></td><td>titik tengah rentang di atas</td><td><b>asumsi desain</b></td></tr>
+        <tr><td><b>Batas yang ditetapkan</b></td><td><b>1,2 m/s² = 0,12 g</b></td><td>nilai tengah rentang di atas</td><td><b>asumsi desain</b></td></tr>
         <tr><td>Waktu konvergensi</td><td>2 detik</td><td>ditetapkan agar pelambatan berlangsung bertahap</td><td><b>asumsi desain</b></td></tr>
         <tr><td>Rumus yang digunakan</td><td>a = (v − v_safe) / 2</td><td>kemudian dibatasi pada 1,2 m/s²</td><td>kode, baris &nbsp;<code>need / 2</code></td></tr>
         <tr><td>Pembanding: rem darurat</td><td>3,0 m/s² = 0,31 g</td><td><code>a_cap</code> 66,5 t (masih asumsi brake test)</td><td>perlu diverifikasi</td></tr>
@@ -639,7 +639,7 @@ if v &gt; v_safe + 0,15:
 5  if a_ff ≥ 0,55·a_tersedia → REM PENUH
    elif a_ff ≥ 0,25·a_tersedia → REM SEBAGIAN</pre>
 
-      <p class="ok"><b>Pemicu menghitung rantai waktu secara utuh.</b> Latency total
+      <p class="ok"><b>Pemicu memperhitungkan seluruh rangkaian waktu.</b> <i>Latency</i> total
         (radar + mikroprosesor + relay/solenoid) dipotong sebagai <code>v·latency</code> di
         dalam <code>d_henti</code>, dan kenaikan tekanan rem ikut lewat suku
         <code>v·T − a·T²/6 + (v − a·T/2)²/(2a)</code>. Rumus sederhana <code>v²/(2a)</code>
@@ -784,7 +784,7 @@ budget    = gap − margin
 
       <h3>9. Alur keputusan — dari radar ke perlambatan</h3>
       <p>Diagram ini merangkum ketiga logic yang sudah dijelaskan di bagian 6–8, dan
-        menunjukkan posisi masing-masing dalam rantai keseluruhan dari radar sampai
+        menunjukkan posisi masing-masing dalam rangkaian lengkap dari radar sampai
         truk benar-benar melambat. Kotak abu-abu adalah perhitungan; kotak berwarna adalah
         titik keputusan yang menentukan rem.</p>
       <svg viewBox="0 0 720 470" class="diagram" role="img" aria-label="Alur logic AEB dari radar ke perlambatan">
@@ -876,7 +876,7 @@ budget    = gap − margin
 
       <h3>10. Jarak henti dan TTC minimum</h3>
       <pre class="formula">d_henti = v·T − a·T²/6 + (v − a·T/2)² / (2a) + v·latency
-          # T = brakeBuild; bentuk tertutup: latency → ramp linear → penuh
+          # T = brakeBuild; penyelesaian bentuk tertutup: latency → ramp linear → penuh
 
 TTC_min = t_latency + v / (2a)</pre>
       <p><code>TTC_min</code> adalah TTC terkecil yang masih bisa digunakan untuk berhenti.
@@ -887,7 +887,7 @@ TTC_min = t_latency + v / (2a)</pre>
       <pre class="formula">avail(v) = clamp( (v_kmh − retardOn) / retardFade , 0 , 1 )
 a_retard = a_retardMax × avail(v)</pre>
       <p>Retarder hidrolik/elektrik butuh putaran minimum, jadi kontribusinya nol di bawah
-        ambang dan bertambah sampai pita fade habis. Karena itu retarder tidak pernah masuk ke
+        ambang dan bertambah hingga batas <i>fade</i> tercapai. Karena itu retarder tidak pernah masuk ke
         <code>a_tersedia</code> — hanya membantu menahan laju, bukan berhenti.</p>
 
       <h3>12. Rantai aktuator retrofit (mikroprosesor terpisah)</h3>
@@ -901,7 +901,7 @@ mikroprosesor terpisah
   |                                   `-- sensor pneumatik (feedback tekanan)
   `-- driver motor DC --> kawat --> pedal kopling</pre>
 
-      <p><b>Anggaran waktu</b> sepanjang rantai itu — inilah yang harus diukur, bukan diasumsikan:</p>
+      <p><b>Anggaran waktu</b> sepanjang rangkaian tersebut; nilainya harus diukur, bukan diasumsikan:</p>
       <table class="eq wide">
         <tr><th>Tahap</th><th>Perkiraan</th><th>Catatan</th></tr>
         <tr><td>Radar menghasilkan track</td><td>50–100 ms</td><td>cycle time object list</td></tr>
@@ -1000,7 +1000,7 @@ mikroprosesor terpisah
       <ul>
         <li>Katup <b>normally closed</b> — kehilangan daya berarti rem lepas, bukan rem mengunci.</li>
         <li>Rem pengemudi selalu menang; AEB wajib melepas saat pedal diinjak.</li>
-        <li>Kebocoran pada titik tapping tidak boleh mengurangi kemampuan rem servis.</li>
+        <li>Kebocoran pada titik penyadapan tidak boleh mengurangi kemampuan rem servis.</li>
         <li>Radar hilang → sistem mati dengan peringatan, bukan rem palsu.</li>
         <li>Motor kopling macet → tidak boleh menahan kopling terlepas permanen.</li>
         <li>Watchdog + log 10 detik pra-pemicu.</li>
