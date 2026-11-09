@@ -79,6 +79,9 @@
 
         <div class="row"><label class="lbl" for="fullTTC">Rem penuh</label><output id="fullTTCo">0.9 s</output></div>
         <input type="range" id="fullTTC" min="0.2" max="3" step="0.1" value="0.9" />
+
+        <div class="row"><label class="lbl" for="filterTau">Filter a_lead</label><output id="filterTauo">0.15 s</output></div>
+        <input type="range" id="filterTau" min="0.05" max="0.6" step="0.01" value="0.15" />
       </details>
     </section>
 
@@ -650,6 +653,27 @@ if v &gt; v_safe + 0,15:
       <p class="ok">Bereaksi sekitar 0,34 s setelah truk depan mengerem — pada t = 1,34 s.
         Bandingkan dengan TTC relatif yang baru bereaksi t = 4,2 s pada skenario yang sama.</p>
 
+      <h4>Jendela pengukuran perlambatan truk depan</h4>
+      <p>Perlambatan truk depan tidak diukur dari satu bacaan, tetapi dari perubahan range-rate
+        yang dihaluskan dengan filter orde satu berkonstanta waktu <code>filterTau</code>.
+        Nilai bawaan di simulator: <b>0,15 detik</b>.</p>
+      <pre class="formula">a_lead(n) = a_lead(n-1) + [ a_mentah − a_lead(n-1) ] × (dt / filterTau)
+
+a_mentah = −Δ(range_rate) / Δt</pre>
+      <p>Konstanta waktu 0,15 detik berarti filter mencapai sekitar 63 % nilai sebenarnya dalam
+        0,15 detik, dan 95 % dalam sekitar 0,45 detik. Nilai ini menentukan dua hal sekaligus:</p>
+      <table class="eq wide">
+        <tr><th>filterTau</th><th>Efek</th></tr>
+        <tr><td>Kecil (0,05–0,10 s)</td><td>bereaksi cepat, tetapi noise range-rate lebih mudah memicu rem palsu</td></tr>
+        <tr><td><b>0,15 s (bawaan)</b></td><td>seimbang: mulai mengerem ±0,30 detik setelah truk depan mengerem</td></tr>
+        <tr><td>Besar (0,30–0,60 s)</td><td>lebih halus dan tahan noise, tetapi reaksi tertunda sehingga sisa jarak mengecil</td></tr>
+      </table>
+      <p>Sebagai gambaran dampaknya: pada skenario konvoi 40 km/h dengan jarak 15 m, filter
+        0,15 detik menyisakan 1,3 m, sedangkan filter 0,50 detik hanya menyisakan 0,6 m.</p>
+      <p>Filter ini bukan bagian dari loop period. Loop period adalah seberapa sering program
+        dijalankan; <code>filterTau</code> adalah seberapa panjang data masa lalu yang
+        dirata-ratakan.</p>
+
       <p><b>Tidak perlu sensor tambahan.</b> Radar 77 GHz sudah mengukur range-rate secara
         langsung lewat Doppler; yang belum dimanfaatkan adalah <i>turunannya</i>. Syaratnya
         satu: radar harus mengirim <b>object/track list</b> (jarak, sudut, kecepatan relatif
@@ -900,6 +924,30 @@ mikroprosesor terpisah
       <p>Di simulator, angka itu diisi sebagai <code>sensorDelay + processDelay</code>.
         Idealnya <code>sensorDelay</code> = umur data radar, dan <code>processDelay</code> =
         periode siklus + waktu hitung + waktu tulis keluaran.</p>
+
+      <h4>Beban komputasi per kelas mikroprosesor</h4>
+      <p>Beban logic prediktif per satu siklus kontrol relatif kecil. Perkiraan orde besarnya
+        (bukan hasil ukur):</p>
+      <table class="eq wide">
+        <tr><th>Kelas mikroprosesor</th><th>Waktu satu siklus</th><th>Beban pada loop 10 ms</th></tr>
+        <tr><td>Cortex-M3 72 MHz, tanpa FPU (mis. STM32F103)</td><td>±0,2–0,4 ms</td><td>±2–4 %</td></tr>
+        <tr><td>Cortex-M4F 84 MHz (mis. STM32F401)</td><td>±0,05 ms</td><td>&lt;1 %</td></tr>
+        <tr><td>Cortex-M4F 168 MHz (mis. STM32F407)</td><td>±0,02 ms</td><td>&lt;1 %</td></tr>
+      </table>
+      <p>Artinya seluruh keluarga STM32 — termasuk yang paling kecil tanpa FPU — cukup untuk
+        menjalankan ketiga logic. Yang biasanya menjadi batas bukan kecepatan hitung, melainkan
+        hal-hal berikut:</p>
+      <ul>
+        <li>Penanganan data radar (CAN/UART) harus memakai interrupt atau DMA, bukan menunggu di
+          dalam loop.</li>
+        <li>Loop harus berjalan dengan periode tetap; jangan ada operasi yang memblokir.</li>
+        <li>Watchdog, brown-out detection, dan relai <i>normally closed</i> wajib ada.</li>
+        <li>Lingkungan kelistrikan truk (12/24 V, load dump, getaran, suhu) lebih menantang
+          daripada beban CPU-nya.</li>
+      </ul>
+      <p>Satu penghematan mudah: penyelesaian <code>requiredDecel</code> secara iteratif tidak
+        perlu 34 langkah. Dengan 12 langkah, ketelitiannya sudah sekitar 0,01 m — jauh di bawah
+        ketidakpastian pengukuran — dan biaya hitungnya turun sekitar tiga kali.</p>
 
       <p class="warn"><b>Tekanan ≠ perlambatan.</b> Sensor pneumatik memberi umpan balik
         tekanan, bukan hasil. Perlambatan yang benar-benar terjadi bergantung pada kondisi

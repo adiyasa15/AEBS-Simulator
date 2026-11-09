@@ -144,7 +144,7 @@ export class Sim {
     if (this.vLead > 1.0) this.leadMovingSeen = true;
     // filter orde-1 ~0.15 s, meniru derivatif range-rate radar
     const aLeadRaw = dt > 0 ? (vLeadPrev - this.vLead) / dt : 0;
-    this.aLeadEst += (aLeadRaw - this.aLeadEst) * Math.min(1, dt / 0.15);
+    this.aLeadEst += (aLeadRaw - this.aLeadEst) * Math.min(1, dt / (c.filterTau ?? 0.15));
 
     const gap = this.gap();
     const cl = this.closing();

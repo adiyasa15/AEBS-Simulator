@@ -20,6 +20,7 @@ const el = {
   warnTTC: $('#warnTTC'), warnTTCo: $('#warnTTCo'),
   partialTTC: $('#partialTTC'), partialTTCo: $('#partialTTCo'),
   fullTTC: $('#fullTTC'), fullTTCo: $('#fullTTCo'),
+  filterTau: $('#filterTau'), filterTauo: $('#filterTauo'),
   logic: $('#logic'),
   headway: $('#headway'), headwayo: $('#headwayo'),
   govDecel: $('#govDecel'), govDecelo: $('#govDecelo'),
@@ -146,7 +147,8 @@ function readCfg() {
     aebEnabled: el.aeb.checked,
     warnTTC: +el.warnTTC.value,
     partialTTC: +el.partialTTC.value,
-    fullTTC: +el.fullTTC.value
+    fullTTC: +el.fullTTC.value,
+    filterTau: +el.filterTau.value
     ,
     logic: el.logic.value,
     headway: +el.headway.value,
@@ -169,6 +171,7 @@ function syncLabels() {
   el.headwayo.textContent = `${(+el.headway.value).toFixed(1)} s`;
   el.govDecelo.textContent = `${(+el.govDecel.value).toFixed(1)} m/s²`;
   el.leadDecelo.textContent = `${(+el.leadDecel.value).toFixed(1)} m/s²`;
+  el.filterTauo.textContent = `${(+el.filterTau.value).toFixed(2)} s`;
 
   const v = currentVehicle();
   const m = v.massEmptyT + (v.massLoadedT - v.massEmptyT) * loadState;
@@ -225,7 +228,7 @@ el.playBtn.addEventListener('click', () => {
 el.resetBtn.addEventListener('click', () => hardReset(false));
 
 // slider & select
-['v0', 'gap0', 'vLead', 'grade', 'warnTTC', 'partialTTC', 'fullTTC', 'surface', 'headway', 'govDecel', 'logic'].forEach((k) => {
+['v0', 'gap0', 'vLead', 'grade', 'warnTTC', 'partialTTC', 'fullTTC', 'surface', 'headway', 'govDecel', 'filterTau', 'logic'].forEach((k) => {
   el[k].addEventListener('input', () => { syncLabels(); hardReset(false); });
 });
 el.aeb.addEventListener('change', () => hardReset(false));
