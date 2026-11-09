@@ -222,7 +222,7 @@
         belum banyak berubah. Kalau satu langkah 250 ms, di dalamnya tekanan rem sudah naik jauh,
         jadi hasilnya meleset.</p>
       <p class="tl2note">Fakta menarik: kalau gaya benar-benar konstan, semua frekuensi memberi hasil
-        yang sama persis (20,576 m). Kesalahan baru muncul saat gaya <i>berubah cepat</i> — dan di
+        yang sama persis (20,576 m). Selisih baru muncul saat gaya <i>berubah cepat</i> — dan di
         sistem rem, itulah yang justru selalu terjadi.</p>
 
       <h4>Kenapa simulator 200 Hz, padahal ECU truk lebih lambat</h4>
@@ -622,13 +622,13 @@ if v &gt; v_safe + 0,15:
 5  if a_ff ≥ 0,55·a_tersedia → REM PENUH
    elif a_ff ≥ 0,25·a_tersedia → REM SEBAGIAN</pre>
 
-      <p class="ok"><b>Kedua delay sudah masuk ke rumus pemicu</b> — bukan hanya ke model
-        aktuator. Latency total (radar + mikroprosesor + relay/solenoid) dipotong sebagai
-        <code>v·latency</code> di dalam <code>d_henti</code>, dan build-up pneumatik masuk
-        lewat suku <code>v·T − a·T²/6 + (v − a·T/2)²/(2a)</code>. Karena itu rumus
-        sederhana <code>v²/(2a)</code> tidak dipakai lagi: pada 40 km/h dengan a = 3 m/s²
-        rumus sederhana memberi 23,1 m sedangkan rantai nyata 27,8 m — selisih 4,6 m
-        yang sebelumnya tertutupi secara kebetulan oleh margin.</p>
+      <p class="ok"><b>Pemicu menghitung rantai waktu secara utuh.</b> Latency total
+        (radar + mikroprosesor + relay/solenoid) dipotong sebagai <code>v·latency</code> di
+        dalam <code>d_henti</code>, dan kenaikan tekanan rem ikut lewat suku
+        <code>v·T − a·T²/6 + (v − a·T/2)²/(2a)</code>. Rumus sederhana <code>v²/(2a)</code>
+        memberi angka terlalu kecil: pada 40 km/h dengan a = 3 m/s² hasilnya 23,1 m, sedangkan
+        jarak sesungguhnya 27,8 m — selisih 4,6 m. Karena itu <code>a_ff</code> dihitung dengan
+        menyelesaikan <code>d_henti(a) = budget</code> secara iteratif.</p>
 
       <p><b>Contoh nyata</b> — 66,5 t, 40 km/h, truk depan 38 km/h, gap 44 m (4 detik),
         truk depan mengerem 3 m/s² pada t = 1 s:</p>
@@ -654,19 +654,19 @@ if v &gt; v_safe + 0,15:
         feed-forward tidak bisa dihitung dan perlu akses data track (konfigurasi/firmware,
         bukan sensor baru).</p>
 
-      <p><b>Jebakan implementasi:</b></p>
+      <p><b>Ketentuan teknis yang harus dipenuhi:</b></p>
       <ul>
-        <li><code>leadDist</code> harus <b>0</b> ketika truk depan sudah berhenti. Kalau dibuat
-          ∞, rem justru dilepas tepat di depan objek diam.</li>
-        <li><code>margin</code> jangan dihilangkan — tanpa itu sistem hanya berhenti tepat di
-          buritan, tanpa ruang untuk ketidakpastian sensor dan fade.</li>
-        <li>Turunan range-rate memperkuat noise. Filter 0,1–0,2 s wajib; itu menambah lag
-          kecil, tapi jauh lebih kecil dari lag TTC relatif.</li>
-        <li>Kalau truk depan <b>berakselerasi</b>, <code>a_lead</code> dijepit di 0 dan
-          keputusan dikembalikan ke TTC.</li>
-        <li>Kalau track hilang (tikungan, saat menyalip), sistem harus fallback ke TTC —
-          bukan menganggap jalan kosong.</li>
-        <li>Banyak target: hanya target <b>di dalam koridor lajur</b> yang dipakai.</li>
+        <li><code>leadDist</code> bernilai <b>0</b> ketika truk depan sudah berhenti (bukan tak
+          terhingga), supaya rem tidak dilepas tepat di depan objek diam.</li>
+        <li><code>margin</code> tetap disediakan ±3 m, sebagai ruang untuk ketidakpastian sensor
+          dan penurunan performa rem.</li>
+        <li>Turunan range-rate memperkuat noise, jadi perlu filter 0,1–0,2 detik. Tambahan lag
+          ini jauh lebih kecil daripada lag TTC relatif.</li>
+        <li>Bila truk depan <b>berakselerasi</b>, <code>a_lead</code> dijepit di 0 dan keputusan
+          dikembalikan ke TTC.</li>
+        <li>Bila track hilang (tikungan atau saat menyalip), sistem kembali ke TTC — bukan
+          menganggap jalan kosong.</li>
+        <li>Dari banyak target, hanya yang berada <b>di dalam koridor lajur</b> yang dipakai.</li>
       </ul>
 
       <h4>Objek statis — rambu, tanggul pembatas, tiang</h4>
@@ -674,21 +674,22 @@ if v &gt; v_safe + 0,15:
         melihat satu titik dengan jarak, range-rate, dan RCS. Rambu batas kecepatan, tiang,
         tanggul pemisah jalur — semuanya tampak sama: <b>objek statis</b>.</p>
 
-      <p>Untuk objek statis, seluruh masukan prediktif menjadi nol:</p>
+      <p>Untuk objek statis, seluruh masukan prediktif bernilai nol:</p>
       <pre class="formula">v_lead    = v_ego + range_rate = 0       (benda diam)
 a_lead    = 0                            (tidak sedang mengerem)
 leadDist  = 0                            (v_lead &lt; 0,3)
 budget    = gap − margin
 
-→ rumusnya merosot menjadi "jarak henti", bukan prediksi</pre>
+→ rumus berubah fungsi menjadi kriteria jarak henti</pre>
 
-      <p class="warn">Ini kelemahan desain yang ditemukan saat pengujian: karena rumusnya berubah
-        menjadi kriteria jarak henti, pemicunya terjadi dari jarak yang sangat jauh. Pada
-        70 km/h, rem sebagian akan aktif bila ada objek statis dalam <b>268 meter</b> — di jalan
-        tambang yang penuh tanggul, itu berarti truk mengerem hampir terus-menerus.</p>
+      <p class="warn">Akibat perubahan fungsi itu, jangkauan pemicunya menjadi sangat jauh.
+        Pada 70 km/h, rem sebagian akan aktif bila ada objek statis dalam <b>268 meter</b>.
+        Pada haul road yang dibatasi tanggul hampir sepanjang jalur, jangkauan sejauh itu
+        berpotensi memicu pengereman berulang. Karena itu sistem menetapkan feed-forward
+        <b>hanya untuk target bergerak</b>.</p>
 
       <table class="eq wide">
-        <tr><th>Kecepatan</th><th>Prediktif murni: sebagian / penuh</th><th>Sekarang (TTC + a_req): sebagian / penuh</th></tr>
+        <tr><th>Kecepatan</th><th>Jika feed-forward diterapkan<br>pada objek statis</th><th>Metode TTC + a_req<br>yang dipakai sistem</th></tr>
         <tr><td>20 km/h</td><td>27 m / 16 m</td><td>10 m / 6 m</td></tr>
         <tr><td>30 km/h</td><td>55 m / 29 m</td><td>23 m / 13 m</td></tr>
         <tr><td>40 km/h</td><td>93 m / 48 m</td><td>41 m / 23 m</td></tr>
@@ -697,15 +698,16 @@ budget    = gap − margin
         <tr><td>70 km/h</td><td><b>268 m / 130 m</b></td><td><b>126 m / 70 m</b></td></tr>
       </table>
 
-      <p><b>Perbaikannya:</b> feed-forward hanya dipakai untuk target yang <b>pernah bergerak</b>
-        (kendaraan). Objek yang sejak awal diam dipercayakan ke TTC dan <code>a_req</code>, yang
-        ambangnya berbasis waktu, bukan jarak henti. Hasilnya: perbaikan jarak pemicu 2–3 kali
-        lipat, dan logic 3 pada objek statis identik dengan logic 1.</p>
+      <p><b>Aturan sistem:</b> feed-forward hanya diterapkan pada target yang <b>pernah
+        bergerak</b>, yaitu kendaraan. Objek yang sejak awal diam ditangani oleh TTC dan
+        <code>a_req</code>, yang ambangnya ditentukan berdasarkan waktu, bukan jarak henti.
+        Dengan aturan ini, jangkauan pemicu untuk objek statis menjadi 2–3 kali lebih pendek,
+        dan perilakunya sama dengan logic TTC murni.</p>
 
-      <p>Sebagai patokan, pada kecepatan yang sama atau di atas 43 km/h, pemicu <code>a_req</code>
-        justru terjadi lebih awal daripada aturan 4 detik — karena a_req adalah kriteria jarak
-        henti, sementara 4 detik adalah kriteria waktu. Di bawah 43 km/h, aturan 4 detik yang
-        lebih ketat.</p>
+      <p>Sebagai pedoman: pada kecepatan 43 km/h ke atas, pemicu <code>a_req</code> terjadi
+        lebih awal daripada aturan 4 detik, karena <code>a_req</code> adalah kriteria jarak
+        henti sedangkan 4 detik adalah kriteria waktu. Di bawah 43 km/h, aturan 4 detik menjadi
+        kriteria yang lebih ketat.</p>
 
       <h4>Tanggul pemisah jalur kosongan dan muatan</h4>
       <p>Tanggul pemisah adalah <b>objek statis memanjang</b> — perilakunya sama seperti rambu di
@@ -945,7 +947,7 @@ m = massa (kg) · a = perlambatan (m/s²) · h = tinggi titik berat · L = wheel
 
       <p><b>Yang paling menentukan keausan bukan pengereman darurat yang sah</b> (jarang),
         tapi <b>pemicu palsu</b>. Sepuluh rem palsu berturut-turut di tikungan menaikkan suhu
-        drum ±130 °C tanpa sempat mendingin — dan itu jauh lebih merusak daripada satu
+        drum ±130 °C tanpa waktu mendingin — dan itu jauh lebih merusak daripada satu
         pengereman darurat yang benar-benar menyelamatkan truk.</p>
 
       <h3>14. Contoh perhitungan: 40 km/h mengejar truk 15 km/h</h3>
@@ -988,11 +990,11 @@ m = massa (kg) · a = perlambatan (m/s²) · h = tinggi titik berat · L = wheel
         <tr><td>Rem sebagian</td><td>4,20 s</td><td>15,6 m</td><td>2,28 s</td><td>1,50</td><td><b>a_req ≥ 0,5 · 3,00</b></td></tr>
         <tr><td>Rem penuh</td><td>6,32 s</td><td>4,0 m</td><td>1,07 s</td><td>1,75</td><td><b>jaring gap &lt; 4 m</b></td></tr>
       </table>
-      <p class="warn">Catatan penting: rem penuh <b>tidak</b> terpicu oleh ambang TTC 0,9 s.
-        Karena sudah rem sebagian, ego melambat, closing mengecil, dan TTC justru tidak pernah
-        turun sampai 0,9. Yang akhirnya memicu rem penuh adalah jaring pengaman
-        <code>gap &lt; 4 m</code>. Artinya pada skenario ini, ambang TTC desain tidak terpakai —
-        yang bekerja adalah nilai cadangan.</p>
+      <p class="warn">Pada skenario ini, rem penuh tercapai lewat jaring pengaman
+        <code>gap &lt; 4 m</code>, bukan lewat ambang TTC 0,9 s. Sebabnya, pengereman sebagian
+        sudah lebih dulu memperlambat ego sehingga closing speed mengecil dan TTC tidak pernah
+        turun sampai 0,9 s. Ambang TTC tetap berfungsi sebagai lapisan pertama; jaring
+        <code>gap &lt; 4 m</code> menjadi lapisan terakhir.</p>
 
       <h4>Logic 2 — TTC + governor headway</h4>
       <table class="eq wide">
@@ -1008,7 +1010,7 @@ m = massa (kg) · a = perlambatan (m/s²) · h = tinggi titik berat · L = wheel
         paling halus dari ketiga logic — dan jarak akhirnya paling besar.</p>
 
       <h4>Logic 3 — TTC + prediktif</h4>
-      <p><b>Hasilnya identik dengan Logic 1, baik kosong maupun muat.</b> Alasannya bukan bug:</p>
+      <p><b>Hasilnya identik dengan Logic 1, baik kosong maupun muat.</b> Sebabnya dapat dijelaskan dari rumusnya:</p>
       <pre class="formula">truk depan konstan 15 km/h → a_lead = 0
 leadDist = a_lead &gt; 0,1 ? ... : (v_lead &lt; 0,3 ? 0 : ∞)  →  ∞
 budget   = gap + ∞ → tak terhingga
@@ -1145,7 +1147,7 @@ energi rem total  = 3,47 MJ</pre>
       <p class="warn">Dua hal yang terlihat dari tabel ini: (1) keputusan rem sebagian dipicu
         <b>a_req</b>, bukan TTC; (2) rem penuh tercapai lewat jaring <code>gap &lt; 4 m</code>,
         bukan ambang TTC 0,9 s — karena TTC berhenti menurun begitu truk mulai melambat.
-        Di t = 7,72 TTC sempat terbaca 69 s, tanda bahwa TTC sangat sensitif saat closing
+        Di t = 7,72 TTC tercatat 69 s, tanda bahwa TTC sangat sensitif saat closing
         mendekati nol.</p>
 
       <h3>16. Kasus khusus: truk depan berhenti mendadak</h3>
@@ -1164,8 +1166,8 @@ energi rem total  = 3,47 MJ</pre>
         mendadak — karena truk 40 ton memang tidak bisa berhenti seketika.</p>
 
       <h4>Mogok dan ban pecah — bukan "mengerem"</h4>
-      <p>Ini yang mudah tertukar. <b>Kecepatan</b> truk depan dan <b>perlambatan</b>-nya adalah
-        dua parameter berbeda:</p>
+      <p><b>Kecepatan</b> truk depan dan <b>perlambatan</b>-nya adalah dua parameter berbeda, dan
+        keduanya perlu diisi terpisah:</p>
       <table class="eq wide">
         <tr><th>Parameter</th><th>Artinya</th></tr>
         <tr><td>Kecepatan truk depan</td><td>laju sebelum kejadian terjadi (mis. 40 km/h)</td></tr>
@@ -1192,14 +1194,14 @@ energi rem total  = 3,47 MJ</pre>
         <tr><td>Mengerem normal (2,0)</td><td><b>TABRAKAN 12,0 km/h</b></td><td>berhenti, sisa 3,4 m</td></tr>
         <tr><td>Mengerem darurat (5,0)</td><td><b>TABRAKAN 3,2 km/h</b></td><td>berhenti, sisa 3,7 m</td></tr>
       </table>
-      <p>Perhatikan keanehan pada kolom TTC relatif: mengerem <b>normal</b> (2,0) menghasilkan
-        tabrakan 12 km/h, sedangkan mengerem <b>darurat</b> (5,0) hanya 3,2 km/h, dan ban pecah
-        (3,0) justru selamat. Hasilnya tidak naik-turun mengikuti kerasnya pengereman.</p>
-      <p>Penyebabnya: TTC relatif bereaksi pada <i>closing speed</i>. Kalau truk depan mengerem
-        pelan, closing speed terbentuk perlahan dan TTC tetap terlihat besar — jadi rem ego
-        terlambat. Kalau mengerem sangat keras, closing terbentuk cepat dan TTC langsung jatuh
-        ke ambang. Yang menentukan justru <b>seberapa cepat bahaya terlihat</b>, bukan seberapa
-        besar bahayanya.</p>
+      <p>Kolom TTC relatif memperlihatkan pola yang tidak mengikuti kerasnya pengereman:
+        mengerem <b>normal</b> (2,0) menghasilkan tabrakan 12 km/h, mengerem <b>darurat</b> (5,0)
+        menghasilkan 3,2 km/h, sedangkan ban pecah (3,0) berhenti selamat.</p>
+      <p>Sebabnya, TTC relatif bereaksi pada <i>closing speed</i>. Bila truk depan mengerem
+        pelan, closing speed terbentuk perlahan dan TTC tetap terlihat besar sehingga rem ego
+        terlambat. Bila truk depan mengerem sangat keras, closing speed terbentuk cepat dan TTC
+        langsung turun ke ambang. Yang menentukan adalah <b>seberapa cepat jarak menutup</b>,
+        bukan seberapa keras truk depan mengerem.</p>
       <p>Logic prediktif tidak terpengaruh pola itu: pada keempat jenis kegagalan ia berhenti
         dengan sisa 3,4–3,7 m, karena yang diukur adalah <b>perlambatan truk depan</b>, bukan
         selisih kecepatan.</p>
