@@ -525,22 +525,22 @@ if   gap &lt; 4 m dan closing &gt; 0                    → REM PENUH (jaring pe
 if v &gt; v_safe + 0,15:
     a_butuh = (v − v_safe) / 2         # konvergen ~2 detik
     level   = min(1, a_butuh / a_tersedia, 1,2 / a_tersedia)   # maks 1,2 m/s²</pre>
-      <p><b>Penetapan batas 1,2 m/s².</b> Nilai ini merupakan batas kenyamanan pengereman dan
+      <p><b>Penetapan batas 1,2 m/s².</b> Nilai tersebut merupakan batas kenyamanan pengereman dan
         bukan turunan langsung dari aturan 4 detik. Aturan 4 detik menetapkan <i>target
         jarak</i>, sedangkan batas ini menetapkan <i>laju pengembalian</i> jarak tersebut.
         Nilai 1,2 m/s² setara dengan <b>0,12 g</b>, termasuk dalam rentang pengereman servis
         kendaraan berat (0,10–0,15 g). Pengereman darurat berkisar 0,30 g.
         Penetapan pada batas bawah rentang tersebut bertujuan agar pelambatan yang dipicu
-        semata-mata oleh penyimpangan jarak tetap berada jauh di bawah kapasitas pengereman
+        semata-mata oleh selisih jarak tetap berada jauh di bawah kapasitas pengereman
         maksimum, sehingga tersedia cadangan untuk kasus yang menuntut perlambatan lebih besar,
-        sekaligus menekan risiko tabrakan dari belakang akibat pengereman tak terduga.</p>
+        sekaligus menekan risiko tabrakan dari belakang akibat pengereman yang tidak terduga.</p>
       <p><b>Rincian asumsi penetapan nilai:</b></p>
       <table class="eq wide">
         <tr><th>Parameter</th><th>Nilai</th><th>Dari mana</th><th>Sifat</th></tr>
         <tr><td>Rentang nyaman pengereman truk berat</td><td>0,10–0,15 g</td><td>praktik umum pengereman servis kendaraan berat</td><td>rujukan umum</td></tr>
         <tr><td><b>Batas yang ditetapkan</b></td><td><b>1,2 m/s² = 0,12 g</b></td><td>titik tengah rentang di atas</td><td><b>asumsi desain</b></td></tr>
         <tr><td>Waktu konvergensi</td><td>2 detik</td><td>ditetapkan agar pelambatan berlangsung bertahap</td><td><b>asumsi desain</b></td></tr>
-        <tr><td>Rumus yang digunakan</td><td>a = (v − v_safe) / 2</td><td>lalu dibatasi 1,2 m/s²</td><td>kode, baris &nbsp;<code>need / 2</code></td></tr>
+        <tr><td>Rumus yang digunakan</td><td>a = (v − v_safe) / 2</td><td>kemudian dibatasi pada 1,2 m/s²</td><td>kode, baris &nbsp;<code>need / 2</code></td></tr>
         <tr><td>Pembanding: rem darurat</td><td>3,0 m/s² = 0,31 g</td><td><code>a_cap</code> 66,5 t (masih asumsi brake test)</td><td>perlu diverifikasi</td></tr>
         <tr><td>Pembanding: retarder + engine brake</td><td>0,43–0,56 m/s²</td><td>4.000 Nm × final drive ÷ jari-jari roda</td><td>turunan</td></tr>
       </table>
