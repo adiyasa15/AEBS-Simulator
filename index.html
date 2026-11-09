@@ -877,6 +877,30 @@ mikroprosesor terpisah
         <tr><td>Motor DC + kawat kopling</td><td>300–800 ms</td><td><b>harus paralel, jangan serial</b></td></tr>
       </table>
 
+      <h4>Menyusun anggaran delay proses</h4>
+      <p>Delay pada mikroprosesor bukan satu angka. Ia terdiri dari beberapa bagian yang
+        harus diukur terpisah, karena yang terbesar biasanya bukan kemampuan hitungnya:</p>
+      <table class="eq wide">
+        <tr><th>Bagian</th><th>Rentang tipikal</th><th>Cara mengukur</th></tr>
+        <tr><td>Umur data radar (data age)</td><td>10–50 ms</td><td>selisih timestamp frame radar dengan waktu pakai; atau setengah cycle time object list</td></tr>
+        <tr><td>Menunggu siklus program (loop period)</td><td>5–20 ms</td><td>periode task kontrol; paling buruk satu periode penuh</td></tr>
+        <tr><td>Waktu hitung algoritme</td><td>&lt;1 ms</td><td>baca timer di awal dan akhir fungsi; hitungan iteratif <code>requiredDecel</code> hanya puluhan iterasi</td></tr>
+        <tr><td>Waktu tulis keluaran</td><td>1–10 ms</td><td>dari akhir hitungan sampai pin relai / perintah CAN terkirim</td></tr>
+      </table>
+
+      <p>Pada mikroprosesor modern (kelas Cortex-M4/M7, 100–200 MHz), waktu hitung biasanya
+        <b>di bawah 1 milidetik</b> — praktis dapat diabaikan dibanding bagian lain. Yang
+        mendominasi justru <b>umur data radar</b> dan <b>periode siklus program</b>.</p>
+
+      <p><b>Cara mengukur tanpa alat mahal:</b> nyalakan satu pin GPIO tepat sebelum membaca
+        radar, dan matikan tepat setelah perintah relai dikirim. Selisih lebar pulsa itu adalah
+        total delay proses — bisa dibaca dengan osiloskop, atau direkam ke log dengan timestamp.
+        Itu satu angka yang lebih berguna daripada spesifikasi prosesor.</p>
+
+      <p>Di simulator, angka itu diisi sebagai <code>sensorDelay + processDelay</code>.
+        Idealnya <code>sensorDelay</code> = umur data radar, dan <code>processDelay</code> =
+        periode siklus + waktu hitung + waktu tulis keluaran.</p>
+
       <p class="warn"><b>Tekanan ≠ perlambatan.</b> Sensor pneumatik memberi umpan balik
         tekanan, bukan hasil. Perlambatan yang benar-benar terjadi bergantung pada kondisi
         kampas, suhu drum (fade), penyetelan slack adjuster, massa muatan, dan μ permukaan.
