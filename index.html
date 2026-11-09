@@ -92,6 +92,9 @@
       <div class="row"><label class="lbl" for="headway">Jarak aman (headway)</label><output id="headwayo">4.0 s</output></div>
       <input type="range" id="headway" min="1" max="8" step="0.5" value="4" />
 
+      <div class="row"><label class="lbl" for="govDecel">Governor headway — maks</label><output id="govDecelo">1.2 m/s²</output></div>
+      <input type="range" id="govDecel" min="0.3" max="5" step="0.1" value="1.2" />
+
       <label class="switch">
         <input type="checkbox" id="leadBrake" />
         <span class="slider"></span>
@@ -233,9 +236,13 @@
         <tr><td>a_tersedia</td><td>perlambatan maksimum yang <i>mungkin</i> dihasilkan saat itu</td></tr>
       </table>
 
-      <h4>Perhitungan berputar, bukan berjalan lurus</h4>
+      <h4>Perhitungannya bersiklus, bukan berantai sekali jalan</h4>
+      <p class="warn"><b>Catatan istilah:</b> "bersiklus" di sini berarti <i>perhitungannya
+        diulang</i>, bukan berarti roda berputar. Model ini menghitung <b>perpindahan lurus</b>
+        (displacement) truk sepanjang jalan — putaran roda, slip, dan inersia rotasi
+        <b>tidak</b> dimodelkan.</p>
       <p>Ini yang sering membingungkan: percepatan bukan hasil akhir. Percepatan adalah
-        <b>titik tengah</b> dari sebuah lingkaran yang berputar 200 kali per detik.</p>
+        <b>titik tengah</b> dari sebuah siklus yang berjalan 200 kali per detik.</p>
       <p>Percepatan dihitung dari gaya → mengubah kecepatan → mengubah posisi → mengubah jarak ke
         objek → mengubah keputusan rem → dan keputusan itu mengubah gaya. Putaran berikutnya
         dimulai lagi.</p>
@@ -586,8 +593,22 @@ if   gap &lt; 4 m dan closing &gt; 0                    → REM PENUH (jaring pe
 if v &gt; v_safe + 0,15:
     a_butuh = (v − v_safe) / 2         # konvergen ~2 detik
     level   = min(1, a_butuh / a_tersedia, 1,2 / a_tersedia)   # maks 1,2 m/s²</pre>
-      <p>Dibatasi 1,2 m/s² supaya menjadi pelambatan halus, bukan pengereman mendadak.
-        Pengereman keras karena alasan jarak justru berisiko ditabrak dari belakang.</p>
+      <p><b>Dari mana angka 1,2 m/s²?</b> Jujur: itu <b>batas kenyamanan yang kami pilih</b>,
+        bukan angka yang diturunkan dari aturan 4 detik. Aturan 4 detik menentukan
+        <i>target jarak</i>; angka ini hanya menentukan <i>seberapa cepat</i> jarak itu
+        dikembalikan. 1,2 m/s² = <b>0,12 g</b>, di dalam rentang pengereman normal truk berat
+        (0,1–0,15 g). Rem darurat ada di 0,3 g, jadi angka ini sengaja jauh di bawahnya.</p>
+      <p>Konsekuensinya terlihat begini (pelambatan halus, tidak menghentak):</p>
+      <table class="eq wide">
+        <tr><th>Kondisi</th><th>THW sekarang</th><th>Kecepatan aman</th><th>Waktu kembali ke 4 s</th></tr>
+        <tr><td>40 km/h, gap 30 m</td><td>2,7 s</td><td>27 km/h</td><td>±3,0 s</td></tr>
+        <tr><td>40 km/h, gap 20 m</td><td>1,8 s</td><td>18 km/h</td><td>±5,1 s</td></tr>
+        <tr><td>55 km/h, gap 34 m</td><td>2,2 s</td><td>31 km/h</td><td>±5,6 s</td></tr>
+      </table>
+      <p>Perhatikan: pada gap 1,8 detik, governor butuh 5 detik untuk kembali ke 4 detik —
+        sementara tabrakan bisa terjadi dalam 2–3 detik. Inilah alasan governor
+        <b>bukan</b> pengganti AEB: ia memperbaiki kebiasaan, bukan mencegah tabrakan.
+        Nilainya bisa diubah di panel kiri (slider <b>Governor headway</b>).</p>
 
       <h3>9. Logic 3 — prediktif (feed-forward truk depan)</h3>
 
@@ -791,6 +812,11 @@ m = massa (kg) · a = perlambatan (m/s²) · h = tinggi titik berat · L = wheel
         <li>Brake fade tidak dimodelkan; <code>a_cap</code> dianggap konstan.</li>
         <li>μ dianggap seragam sepanjang lintasan.</li>
         <li>Latensi dan build-up masih asumsi sampai ada hasil ukur unit.</li>
+        <li>Kecepatan dihitung dari perpindahan lurus, <b>bukan</b> dari putaran roda. Kalau di
+          unit nanti kecepatan diturunkan dari sensor putaran roda, perlu diingat: saat roda
+          terkunci (rem blong / permukaan licin), roda berhenti berputar sementara truk masih
+          meluncur — sensor roda akan melaporkan kecepatan nol padahal truk masih bergerak.
+          Deteksi slip (pembanding ground-speed radar atau IMU) diperlukan.</li>
       </ul>
 
     </div>
