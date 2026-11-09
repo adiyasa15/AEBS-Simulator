@@ -35,7 +35,7 @@ const el = {
   hSpeed: $('#hSpeed'), hTtc: $('#hTtc'), hGap: $('#hGap'),
   hDecel: $('#hDecel'), hBrake: $('#hBrake'), hStop: $('#hStop'),
   hEnergy: $('#hEnergy'), hLoad: $('#hLoad'),
-  hState: $('#hState'), hStateCard: $('#hStateCard'),
+  hState: $('#hState'), hStateCard: $('#hStateCard'), logMeta: $('#logMeta'),
   methodBtn: $('#methodBtn'), methodModal: $('#methodModal'), methodClose: $('#methodClose'),
   dragBar: $('#dragBar')
 };
@@ -314,6 +314,9 @@ function updateHUD(force = false) {
   el.hBrake.textContent = `${Math.round(sim.applied * 100)} %`;
   el.hStop.textContent = `${sim.stopDist().toFixed(0)} m`;
   el.hEnergy.textContent = `${(sim.brakeEnergy / 1e6).toFixed(2)} MJ`;
+  if (el.logMeta) {
+    el.logMeta.textContent = `${sim.steps.toLocaleString('id-ID')} siklus · ${logCount} perubahan`;
+  }
   el.hLoad.textContent = `+${sim.loadTransferT().toFixed(1)} t`;
 
   let stage = sim.stage;

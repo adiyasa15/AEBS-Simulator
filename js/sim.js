@@ -67,6 +67,7 @@ export class Sim {
     this.aLeadEst = 0;        // estimasi perlambatan truk depan (di radar: turunan range-rate)
     this.leadMovingSeen = false;  // target pernah bergerak? (= kendaraan, bukan rambu/tanggul)
     this.govActive = false;       // status penjaga jarak (histeresis lepas)
+    this.steps = 0;               // jumlah siklus perhitungan yang sudah dijalankan
     this.brakeEnergy = 0;     // Joule — energi yang dibuang lewat rem servis
     this.peakDecel = 0;       // m/s²
     this.stage = c.aebEnabled ? 'cruise' : 'off';
@@ -131,6 +132,7 @@ export class Sim {
 
   step(dt) {
     if (this.done || dt <= 0) return;
+    this.steps++;
     const c = this.cfg;
     const p = this.params;
 
