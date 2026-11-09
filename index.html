@@ -194,13 +194,7 @@
         yang ditampilkan — kecepatan, jarak ke truk depan, status rem — dihitung ulang dengan
         rumus fisika setiap <b>5 milidetik</b>, atau 200 kali per detik.</p>
       <p class="lead">Bagian ini menjelaskan metode perhitungan tersebut. Penjelasan tanpa rumus
-        tersedia pada <b>bagian 1</b>; rumus dan asumsinya dibahas pada bagian berikutnya.</p>      <p class="hint"><b>Konvensi istilah:</b> istilah teknis yang belum memiliki padanan baku
-        dalam bahasa Indonesia dipertahankan dalam bentuk aslinya agar tidak ambigu, yaitu
-        <i>ego vehicle</i>, <i>brake build-up</i>, <i>loop period</i>, <i>data age</i>,
-        <i>compute time</i>, <i>output write</i>, dan <i>lane corridor</i>. Istilah lain
-        diterjemahkan dan, bila perlu, disertai bentuk aslinya dalam tanda kurung.</p>
-
-
+        tersedia pada <b>bagian 1</b>; rumus dan asumsinya dibahas pada bagian berikutnya.</p>
 
       <h3>1. Penjelasan sederhana — cara kerja simulasi ini</h3>
       <p class="lead">Bagian ini tidak memuat rumus. Tujuannya agar pembaca non-teknis dapat
@@ -266,10 +260,6 @@
       </table>
 
       <h4>Perhitungan berulang dalam siklus, bukan satu kali jalan</h4>
-      <p class="warn"><b>Catatan istilah:</b> "bersiklus" di sini berarti <i>perhitungannya
-        diulang</i>, bukan berarti roda berputar. Model ini menghitung <b>perpindahan lurus</b>
-        (displacement) truk sepanjang jalan — putaran roda, slip, dan inersia rotasi
-        <b>tidak</b> dimodelkan.</p>
       <p>Nilai percepatan (<code>a_net</code>) bukanlah hasil akhir perhitungan. Nilai tersebut
         merupakan salah satu langkah di dalam siklus yang berulang 200 kali per detik.</p>
       <p>Urutan dalam satu siklus: gaya menghasilkan percepatan, percepatan mengubah kecepatan,
