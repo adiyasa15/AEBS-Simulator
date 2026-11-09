@@ -190,16 +190,15 @@
     </header>
     <div class="modal-content">
 
-      <p class="lead">Aplikasi ini tidak memutar animasi yang sudah disiapkan. Setiap angka
-        yang Anda lihat — kecepatan, jarak ke truk depan, status rem — dihitung ulang dengan
+      <p class="lead">Aplikasi ini tidak memutar animasi yang telah disiapkan. Setiap angka
+        yang ditampilkan — kecepatan, jarak ke truk depan, status rem — dihitung ulang dengan
         rumus fisika setiap <b>5 milidetik</b>, atau 200 kali per detik.</p>
-      <p class="lead">Bagian ini menjelaskan cara perhitungannya. Kalau ingin penjelasan tanpa
-        rumus, mulai dari <b>bagian 1 — Penjelasan sederhana</b>. Kalau ingin melihat rumus dan
-        asumsinya, lanjutkan ke bagian berikutnya.</p>
+      <p class="lead">Bagian ini menjelaskan metode perhitungan tersebut. Penjelasan tanpa rumus
+        tersedia pada <b>bagian 1</b>; rumus dan asumsinya dibahas pada bagian berikutnya.</p>
 
       <h3>1. Penjelasan sederhana — cara kerja simulasi ini</h3>
-      <p class="lead">Bagian ini tanpa rumus. Tujuannya supaya siapa pun bisa membaca apa yang
-        sebenarnya dihitung aplikasi ini, sebelum masuk ke bagian teknis di bawahnya.</p>
+      <p class="lead">Bagian ini tidak memuat rumus. Tujuannya agar pembaca non-teknis dapat
+        memahami dasar perhitungan aplikasi sebelum masuk ke bagian teknis.</p>
 
       <h4>Gerak dipotong menjadi potongan 5 milidetik</h4>
       <p>Cara kerja simulasi ini mirip film. Gerak yang mengalir dipotong menjadi bingkai-bingkai
@@ -223,7 +222,7 @@
         <tr><td>10 Hz</td><td>100 ms</td><td>25,29 m</td><td>+2,1 %</td></tr>
         <tr><td>4 Hz</td><td>250 ms</td><td>26,19 m</td><td>+5,8 %</td></tr>
       </table>
-      <p>Perhatikan: selisihnya kecil sampai 20 Hz, lalu membesar. <b>Kenapa?</b> Karena dalam satu
+      <p>Selisih tersebut kecil hingga 20 Hz, kemudian meningkat. Penyebabnya, dalam satu
         langkah, gaya dianggap <i>tetap</i>. Selama 5 ms anggapan itu masih wajar — tekanan rem
         belum banyak berubah. Kalau satu langkah 250 ms, di dalamnya tekanan rem sudah naik jauh,
         jadi hasilnya meleset.</p>
@@ -231,7 +230,7 @@
         yang sama persis (20,576 m). Selisih baru muncul saat gaya <i>berubah cepat</i> — dan di
         sistem rem, itulah yang justru selalu terjadi.</p>
 
-      <h4>Kenapa simulator 200 Hz, padahal ECU truk lebih lambat</h4>
+      <h4>Pemilihan 200 Hz pada simulator</h4>
       <p>200 Hz adalah pilihan untuk <b>ketepatan hitungan</b>, bukan gambaran hardware. Radar
         mengirim data tiap 20–50 ms, dan sistem AEB di truk cukup berjalan 20–50 Hz. Semua
         keterlambatan nyata sudah dimasukkan sebagai parameter tersendiri
@@ -240,17 +239,17 @@
 
       <h4>Istilah "ego" — apa artinya</h4>
       <p><b>Ego</b> di sini bukan sifat manusia. Ini istilah baku di dunia kendaraan otonom:
-        <i>ego vehicle</i> = <b>kendaraan yang sedang kita amati atau kendalikan sendiri</b>.
+        <i>ego vehicle</i> = <b>kendaraan yang diamati atau dikendalikan</b>.
         Istilah terkait <i>ego-motion</i> berarti "gerak diri sendiri", dipakai untuk membedakan
         dari gerak objek lain.</p>
       <p>Padanan yang sering dipakai: <i>host vehicle</i>, <i>own vehicle</i>, atau sederhananya
-        "truk kita".</p>
+        "kendaraan acuan".</p>
       <table class="eq wide">
         <tr><th>Istilah</th><th>Arti sehari-hari</th></tr>
-        <tr><td>s_ego</td><td>posisi bemper depan <b>truk kita</b> di jalan (meter)</td></tr>
-        <tr><td>v_ego</td><td>kecepatan <b>truk kita</b> (m/s; km/h dibagi 3,6)</td></tr>
+        <tr><td>s_ego</td><td>posisi bemper depan <b>kendaraan acuan</b> di jalan (meter)</td></tr>
+        <tr><td>v_ego</td><td>kecepatan <b>kendaraan acuan</b> (m/s; km/h dibagi 3,6)</td></tr>
         <tr><td>lead / target</td><td>objek di depan: truk lain, LV, atau tanggul yang salah terdeteksi</td></tr>
-        <tr><td>gap</td><td>jarak dari bemper depan kita ke buritan objek</td></tr>
+        <tr><td>gap</td><td>jarak dari bemper depan kendaraan acuan ke buritan objek</td></tr>
         <tr><td>closing</td><td>kecepatan mendekat = v_ego − v_lead</td></tr>
         <tr><td>a_net</td><td>percepatan total (m/s²); negatif = melambat</td></tr>
         <tr><td>TTC</td><td>sisa waktu sebelum menabrak kalau kondisi tidak berubah</td></tr>
@@ -335,8 +334,8 @@
       </table>
 
       <h4>Contoh lima langkah pertama</h4>
-      <p>Truk 40 km/h, rem penuh 3,0 m/s², satu langkah 5 ms. Perhatikan kecepatan turun sedikit
-        dan posisi bertambah sedikit di setiap langkah:</p>
+      <p>Truk 40 km/h dengan rem penuh 3,0 m/s², satu langkah waktu 5 ms. Kecepatan berkurang
+        sedikit dan posisi bertambah sedikit pada setiap langkah:</p>
       <table class="eq wide">
         <tr><th>Langkah</th><th>Waktu (s)</th><th>Kecepatan (m/s)</th><th>Kecepatan (km/h)</th><th>Posisi (m)</th></tr>
         <tr><td>0</td><td>0,000</td><td>11,111</td><td>40,00</td><td>0,0000</td></tr>
@@ -526,34 +525,39 @@ if   gap &lt; 4 m dan closing &gt; 0                    → REM PENUH (jaring pe
 if v &gt; v_safe + 0,15:
     a_butuh = (v − v_safe) / 2         # konvergen ~2 detik
     level   = min(1, a_butuh / a_tersedia, 1,2 / a_tersedia)   # maks 1,2 m/s²</pre>
-      <p><b>Dari mana angka 1,2 m/s²?</b> Jujur: itu <b>batas kenyamanan yang kami pilih</b>,
-        bukan angka yang diturunkan dari aturan 4 detik. Aturan 4 detik menentukan
-        <i>target jarak</i>; angka ini hanya menentukan <i>seberapa cepat</i> jarak itu
-        dikembalikan. 1,2 m/s² = <b>0,12 g</b>, di dalam rentang pengereman normal truk berat
-        (0,1–0,15 g). Rem darurat ada di 0,3 g, jadi angka ini sengaja jauh di bawahnya.</p>
-      <p><b>Asal angka 1,2 m/s² — rincian asumsinya:</b></p>
+      <p><b>Penetapan batas 1,2 m/s².</b> Nilai ini merupakan batas kenyamanan pengereman dan
+        bukan turunan langsung dari aturan 4 detik. Aturan 4 detik menetapkan <i>target
+        jarak</i>, sedangkan batas ini menetapkan <i>laju pengembalian</i> jarak tersebut.
+        Nilai 1,2 m/s² setara dengan <b>0,12 g</b>, berada di dalam rentang pengereman servis
+        kendaraan berat (0,10–0,15 g). Pengereman darurat berada pada kisaran 0,30 g.
+        Penetapan pada batas bawah rentang tersebut bertujuan agar pelambatan yang dipicu
+        semata-mata oleh penyimpangan jarak tetap berada jauh di bawah kapasitas pengereman
+        maksimum, sehingga tersedia cadangan untuk kasus yang menuntut perlambatan lebih besar,
+        sekaligus menekan risiko tabrakan dari belakang akibat pengereman tak terduga.</p>
+      <p><b>Rincian asumsi penetapan nilai:</b></p>
       <table class="eq wide">
         <tr><th>Parameter</th><th>Nilai</th><th>Dari mana</th><th>Sifat</th></tr>
         <tr><td>Rentang nyaman pengereman truk berat</td><td>0,10–0,15 g</td><td>praktik umum pengereman servis kendaraan berat</td><td>rujukan umum</td></tr>
-        <tr><td><b>Batas yang dipakai</b></td><td><b>1,2 m/s² = 0,12 g</b></td><td>titik tengah rentang di atas</td><td><b>asumsi kami</b></td></tr>
-        <tr><td>Waktu konvergensi yang diinginkan</td><td>2 detik</td><td>dipilih agar pelambatan tidak menghentak</td><td><b>asumsi kami</b></td></tr>
+        <tr><td><b>Batas yang ditetapkan</b></td><td><b>1,2 m/s² = 0,12 g</b></td><td>titik tengah rentang di atas</td><td><b>asumsi desain</b></td></tr>
+        <tr><td>Waktu konvergensi</td><td>2 detik</td><td>ditetapkan agar pelambatan berlangsung bertahap</td><td><b>asumsi desain</b></td></tr>
         <tr><td>Rumus yang dipakai</td><td>a = (v − v_safe) / 2</td><td>lalu dibatasi 1,2 m/s²</td><td>kode, baris &nbsp;<code>need / 2</code></td></tr>
         <tr><td>Pembanding: rem darurat</td><td>3,0 m/s² = 0,31 g</td><td><code>a_cap</code> 66,5 t (masih asumsi brake test)</td><td>perlu diverifikasi</td></tr>
         <tr><td>Pembanding: retarder + engine brake</td><td>0,43–0,56 m/s²</td><td>4.000 Nm × final drive ÷ jari-jari roda</td><td>turunan</td></tr>
       </table>
-      <p class="warn">Tidak ada standar yang menetapkan angka ini. UN R13/R131 mengatur respons rem dan
-        kinerja AEB, tapi tidak mengatur "governor jarak" — karena itu bukan fungsi AEB.
-        Jadi 1,2 m/s² murni <b>pilihan desain</b>, dan sebaiknya disepakati bersama tim operasi
-        sebelum dipakai sebagai aturan.</p>
+      <p class="warn">Hingga saat ini belum terdapat standar yang menetapkan nilai tersebut.
+        UN R13 dan R131 mengatur respons rem serta kinerja AEB, tetapi tidak mengatur pembatasan
+        jarak berbasis <i>headway</i>, karena fungsi tersebut berada di luar lingkup AEB.
+        Dengan demikian, 1,2 m/s² diklasifikasikan sebagai <b>parameter desain</b> yang masih
+        memerlukan validasi lintas fungsi operasional sebelum diadopsi sebagai aturan baku.</p>
 
-      <p>Konsekuensinya terlihat begini (pelambatan halus, tidak menghentak):</p>
+      <p>Dampak dari nilai tersebut terhadap waktu pengembalian jarak:</p>
       <table class="eq wide">
         <tr><th>Kondisi</th><th>THW sekarang</th><th>Kecepatan aman</th><th>Waktu kembali ke 4 s</th></tr>
         <tr><td>40 km/h, gap 30 m</td><td>2,7 s</td><td>27 km/h</td><td>±3,0 s</td></tr>
         <tr><td>40 km/h, gap 20 m</td><td>1,8 s</td><td>18 km/h</td><td>±5,1 s</td></tr>
         <tr><td>55 km/h, gap 34 m</td><td>2,2 s</td><td>31 km/h</td><td>±5,6 s</td></tr>
       </table>
-      <p>Perhatikan: pada gap 1,8 detik, governor butuh 5 detik untuk kembali ke 4 detik —
+      <p>Sebagai catatan, pada gap 1,8 detik governor membutuhkan 5 detik untuk kembali ke 4 detik —
         sementara tabrakan bisa terjadi dalam 2–3 detik. Inilah alasan governor
         <b>bukan</b> pengganti AEB: ia memperbaiki kebiasaan, bukan mencegah tabrakan.
         Nilainya bisa diubah di panel kiri (slider <b>Governor headway</b>).</p>
@@ -651,7 +655,7 @@ if v &gt; v_safe + 0,15:
         <tr><td>jarak henti pada a = 3,0</td><td>27,1 m (dari 39,5 km/h)</td></tr>
       </table>
       <p class="ok">Bereaksi sekitar 0,34 s setelah truk depan mengerem — pada t = 1,34 s.
-        Bandingkan dengan TTC relatif yang baru bereaksi t = 4,2 s pada skenario yang sama.</p>
+        Sebagai perbandingan, TTC relatif baru bereaksi pada t = 4,2 s untuk skenario yang sama.</p>
 
       <h4>Jendela pengukuran perlambatan truk depan</h4>
       <p>Perlambatan truk depan tidak diukur dari satu bacaan, tetapi dari perubahan range-rate
@@ -1050,12 +1054,12 @@ m = massa (kg) · a = perlambatan (m/s²) · h = tinggi titik berat · L = wheel
         <tr><td>Gap saat TTC 1,8 s</td><td>12,5 m</td><td>12,5 m</td></tr>
         <tr><td>Gap saat TTC 0,9 s</td><td>6,3 m</td><td>6,3 m</td></tr>
       </table>
-      <p class="tl2note">Perhatikan: gap pemicu TTC sama untuk kedua massa, tapi ambang a_req
+      <p class="tl2note">Gap pemicu TTC sama untuk kedua massa, tetapi ambang a_req
         berbeda — truk bermuatan harus bereaksi lebih awal karena remnya lebih terbatas.</p>
 
       <h4>Logic 1 — TTC relatif</h4>
       <table class="eq wide">
-        <tr><th>Tahap</th><th>t</th><th>gap</th><th>TTC</th><th>a_req</th><th>Kenapa terpicu</th></tr>
+        <tr><th>Tahap</th><th>t</th><th>gap</th><th>TTC</th><th>a_req</th><th>Dasar pemicu</th></tr>
         <tr><td colspan="6" style="color:#86efac"><b>KOSONG 26 t</b> — a_tersedia 4,60</td></tr>
         <tr><td>Peringatan</td><td>3,88 s</td><td>17,8 m</td><td>2,59 s</td><td>1,32</td><td>TTC ≤ 2,6</td></tr>
         <tr><td>Rem sebagian</td><td>4,68 s</td><td>12,3 m</td><td>1,79 s</td><td>1,91</td><td>TTC ≤ 1,8</td></tr>
@@ -1148,7 +1152,7 @@ ambang sebagian = 0,5 × 3,00   = 1,50 m/s²
 1,503 ≥ 1,50                   → keputusan: REM SEBAGIAN
 level = 0,55
 a_diminta = 0,55 × 3,00        = 1,65 m/s²</pre>
-      <p>Perhatikan: yang memicu di sini <b>a_req</b>, bukan TTC. TTC 2,27 s masih di atas
+      <p>Pada tahap ini pemicu berasal dari <b>a_req</b>, bukan dari TTC. Nilai TTC 2,27 s masih di atas
         ambang 1,8 s — tapi a_req sudah menyentuh ambangnya.</p>
 
       <h4>Langkah 2 — perintah berjalan ke aktuator (t = 4,20 → 4,43 s)</h4>
@@ -1232,7 +1236,7 @@ energi rem total  = 3,47 MJ</pre>
       <h4>Cara model merepresentasikannya</h4>
       <table class="eq wide">
         <tr><th>Situasi</th><th>Cara mengaturnya di aplikasi</th></tr>
-        <tr><td>Truk depan mengerem habis lalu berhenti</td><td>pilih <b>Mengerem keras / darurat</b> pada <b>Kejadian pada truk depan</b>, dan samakan kecepatan truk depan dengan kita</td></tr>
+        <tr><td>Truk depan mengerem habis lalu berhenti</td><td>pilih <b>Mengerem keras / darurat</b> pada <b>Kejadian pada truk depan</b>, lalu samakan kecepatan kedua kendaraan</td></tr>
         <tr><td>Truk sudah berhenti / mogok di lajur</td><td>kecepatan truk depan = 0; pilihan kejadian tidak perlu diubah</td></tr>
         <tr><td>Truk baru terlihat setelah tikungan</td><td>sama seperti di atas — objek statis yang muncul tiba-tiba</td></tr>
       </table>
@@ -1305,7 +1309,7 @@ energi rem total  = 3,47 MJ</pre>
         <tr><td>Headway</td><td>t = 0,28 s (gap 72 m)</td><td><b>TABRAKAN 4,3 km/h</b></td></tr>
         <tr><td>Prediktif</td><td>t = 0,28 s (gap 72 m)</td><td><b>TABRAKAN 4,3 km/h</b></td></tr>
       </table>
-      <p class="warn">Perhatikan situasi 2 pada 70 km/h: <b>ketiga logic hasilnya sama dan sama-sama
+      <p class="warn">Pada situasi 2 dengan kecepatan 70 km/h, <b>ketiga logic memberikan hasil yang sama dan
         gagal</b>. Ini bukan kelemahan logic, tapi kelemahan aturan 4 detik pada kecepatan itu
         (lihat bagian 7). Ketiganya sudah mengerem sejak 0,28 s — sedini mungkin — tapi 77,8 m
         memang tidak cukup untuk berhenti dari 70 km/h dengan truk 66,5 t.</p>
