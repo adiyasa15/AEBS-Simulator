@@ -32,7 +32,7 @@
       <details id="specBox">
         <summary>Spek teknis (bisa diubah)</summary>
         <div class="spec-grid" id="specGrid"></div>
-        <p class="hint">Nilai inilah yang dipakai simulasi. Ganti kendaraan = spek preset dimuat ulang.</p>
+        <p class="hint">Nilai inilah yang digunakan simulasi. Mengganti kendaraan akan memuat ulang spesifikasi preset.</p>
       </details>
     </section>
 
@@ -210,13 +210,13 @@
 
       <h4>Apa hubungan frekuensi dengan "integrasi"</h4>
       <p><b>Integrasi</b> berarti menjumlahkan potongan-potongan kecil untuk mendapat hasil besar.
-        Contoh sehari-hari: kalau kamu tahu jarak yang ditempuh tiap detik, jarak total adalah
+        Contoh sehari-hari: jika kamu tahu jarak yang ditempuh tiap detik, jarak total adalah
         jumlahnya. Integrasi di sini sama: jarak total = jumlah dari semua potongan 5 milidetik.</p>
       <p>Semakin kecil potongannya, semakin halus penjumlahannya. Ini efeknya pada satu kasus nyata
         (truk 66,5 t, rem penuh dari 40 km/h):</p>
       <table class="eq wide">
         <tr><th>Frekuensi</th><th>Panjang satu langkah</th><th>Jarak henti terhitung</th><th>Selisih</th></tr>
-        <tr><td>200 Hz (dipakai)</td><td>5 ms</td><td>24,76 m</td><td>acuan</td></tr>
+        <tr><td>200 Hz (digunakan)</td><td>5 ms</td><td>24,76 m</td><td>acuan</td></tr>
         <tr><td>50 Hz</td><td>20 ms</td><td>24,84 m</td><td>+0,3 %</td></tr>
         <tr><td>20 Hz</td><td>50 ms</td><td>25,01 m</td><td>+1,0 %</td></tr>
         <tr><td>10 Hz</td><td>100 ms</td><td>25,29 m</td><td>+2,1 %</td></tr>
@@ -224,9 +224,9 @@
       </table>
       <p>Selisih tersebut kecil hingga 20 Hz, kemudian meningkat. Penyebabnya, dalam satu
         langkah, gaya dianggap <i>tetap</i>. Selama 5 ms anggapan itu masih wajar — tekanan rem
-        belum banyak berubah. Kalau satu langkah 250 ms, di dalamnya tekanan rem sudah naik jauh,
+        belum banyak berubah. jika satu langkah 250 ms, di dalamnya tekanan rem sudah naik jauh,
         jadi hasilnya meleset.</p>
-      <p class="tl2note">Fakta menarik: kalau gaya benar-benar konstan, semua frekuensi memberi hasil
+      <p class="tl2note">Fakta menarik: jika gaya benar-benar konstan, semua frekuensi memberi hasil
         yang sama persis (20,576 m). Selisih baru muncul saat gaya <i>berubah cepat</i> — dan di
         sistem rem, itulah yang justru selalu terjadi.</p>
 
@@ -240,9 +240,9 @@
       <h4>Istilah "ego" — apa artinya</h4>
       <p><b>Ego</b> di sini bukan sifat manusia. Ini istilah baku di dunia kendaraan otonom:
         <i>ego vehicle</i> = <b>kendaraan yang diamati atau dikendalikan</b>.
-        Istilah terkait <i>ego-motion</i> berarti "gerak diri sendiri", dipakai untuk membedakan
+        Istilah terkait <i>ego-motion</i> berarti "gerak diri sendiri", digunakan untuk membedakan
         dari gerak objek lain.</p>
-      <p>Padanan yang sering dipakai: <i>host vehicle</i>, <i>own vehicle</i>, atau sederhananya
+      <p>Padanan yang sering digunakan: <i>host vehicle</i>, <i>own vehicle</i>, atau sederhananya
         "kendaraan acuan".</p>
       <table class="eq wide">
         <tr><th>Istilah</th><th>Arti sehari-hari</th></tr>
@@ -252,7 +252,7 @@
         <tr><td>gap</td><td>jarak dari bemper depan kendaraan acuan ke buritan objek</td></tr>
         <tr><td>closing</td><td>kecepatan mendekat = v_ego − v_lead</td></tr>
         <tr><td>a_net</td><td>percepatan total (m/s²); negatif = melambat</td></tr>
-        <tr><td>TTC</td><td>sisa waktu sebelum menabrak kalau kondisi tidak berubah</td></tr>
+        <tr><td>TTC</td><td>sisa waktu sebelum menabrak jika kondisi tidak berubah</td></tr>
         <tr><td>THW</td><td>jarak dalam satuan waktu (gap ÷ kecepatan) — dasar aturan 4 detik</td></tr>
         <tr><td>level</td><td>seberapa keras rem diminta: 0 = lepas, 0,55 = sebagian, 1 = penuh</td></tr>
         <tr><td>a_tersedia</td><td>perlambatan maksimum yang <i>mungkin</i> dihasilkan saat itu</td></tr>
@@ -319,11 +319,11 @@
         <text x="19" y="196" class="ds">Kotak kuning = titik keputusan. Kotak merah = penundaan nyata yang tidak bisa dilewati.</text>
       </svg>
 
-      <h4>Di mana percepatan dipakai</h4>
-      <p>Satu nilai <code>a_net</code> itu dipakai di tujuh tempat — ini yang membuatnya terasa
+      <h4>Di mana percepatan digunakan</h4>
+      <p>Satu nilai <code>a_net</code> itu digunakan di tujuh tempat — ini yang membuatnya terasa
         "hilang" dari persamaan, padahal justru dia yang menggerakkan semuanya:</p>
       <table class="eq wide">
-        <tr><th>Dipakai untuk</th><th>Caranya</th><th>Yang terlihat di aplikasi</th></tr>
+        <tr><th>digunakan untuk</th><th>Caranya</th><th>Yang terlihat di aplikasi</th></tr>
         <tr><td>memperbarui kecepatan</td><td>v′ = v − a·dt</td><td>angka kecepatan &amp; grafik biru</td></tr>
         <tr><td>memperbarui posisi</td><td>s′ = s + ½(v+v′)·dt</td><td>truk bergerak di layar</td></tr>
         <tr><td>menghitung jarak henti</td><td>d_henti(a)</td><td>garis merah "titik henti"</td></tr>
@@ -347,7 +347,7 @@
       </table>
 
       <p class="tl2note">Dalam 5 langkah (25 ms) truk baru bergerak 28 cm dan kecepatannya turun
-        0,27 km/h. Kelihatan kecil — tapi 200 langkah seperti ini per detik, dan itulah yang
+        0,27 km/h. Kelihatan kecil — tetapi 200 langkah seperti ini per detik, dan itulah yang
         menghasilkan truk benar-benar berhenti dalam 27 meter tanpa pernah "melompat".</p>
 
       <h3>2. Variabel keadaan</h3>
@@ -359,7 +359,7 @@
         <tr><td>closing</td><td>v<sub>ego</sub> − v<sub>lead</sub> (positif = mendekat)</td></tr>
       </table>
 
-      <h3>3. Persamaan gerak — di sinilah momentum dipakai</h3>
+      <h3>3. Persamaan gerak — di sinilah momentum digunakan</h3>
       <p>Model ini tidak menghitung "momentum setelah pengereman" sebagai langkah terpisah,
         karena <b>momentum adalah variabel keadaan itu sendiri</b>:</p>
       <pre class="formula">p = m · v          dp/dt = ΣF          →        a = ΣF / m</pre>
@@ -437,9 +437,9 @@ s′    = s + ½ (v + v′) · dt                         # integrasi trapesium<
       </svg>
       <p class="tl2note">Digambar pada kemiringan yang dilebihkan agar terlihat; 6 % sebenarnya = 3,4°.</p>
 
-      <p><b>Penting:</b> massa tidak muncul di <code>a = μ·g</code>, tapi muncul di
+      <p><b>Penting:</b> massa tidak muncul di <code>a = μ·g</code>, tetapi muncul di
         <code>a_cap = F_rem / m</code>. Karena itu truk 66,5 t bisa punya perlambatan sama
-        dengan truk 26 t <i>kalau</i> gaya remnya memang cukup — dan itu yang perlu dibuktikan
+        dengan truk 26 t <i>jika</i> gaya remnya memang cukup — dan itu yang perlu dibuktikan
         lewat brake test.</p>
 
       <h3>4. Rantai aktuator: latensi lalu build-up</h3>
@@ -481,12 +481,12 @@ level = 1,00  → REM PENUH      (100 % kapasitas)</pre>
         <tr><td>Chipseal kering μ 0,60</td><td>3,00</td><td>1,65 m/s²</td><td>3,00 m/s²</td><td>44,1 m / 27,2 m</td></tr>
         <tr><td>Chipseal berdebu μ 0,32</td><td>3,00</td><td>1,65 m/s²</td><td>3,00 m/s²</td><td>44,1 m / 27,2 m</td></tr>
         <tr><td>Berlumpur μ 0,25</td><td>2,45</td><td>1,35 m/s²</td><td>2,45 m/s²</td><td>52,4 m / 31,8 m</td></tr>
-        <tr><td>Kalau a_cap hanya 1,80</td><td>1,80</td><td>0,99 m/s²</td><td>1,80 m/s²</td><td>69,0 m / 41,0 m</td></tr>
+        <tr><td>jika a_cap hanya 1,80</td><td>1,80</td><td>0,99 m/s²</td><td>1,80 m/s²</td><td>69,0 m / 41,0 m</td></tr>
       </table>
 
       <p><b>Makna fisiknya:</b></p>
       <ul>
-        <li><b>Rem sebagian (55 %)</b> — bukan untuk berhenti, tapi untuk <i>membuang energi
+        <li><b>Rem sebagian (55 %)</b> — bukan untuk berhenti, tetapi untuk <i>membuang energi
           kinetik</i> dan memberi waktu. Buktinya dari 40 km/h: sebagian butuh 44,1 m,
           penuh 27,2 m. Pada jarak 4 detik (44 m), rem sebagian saja akan menghabiskan
           seluruh jarak yang ada — tanpa sisa.</li>
@@ -504,11 +504,11 @@ level = 1,00  → REM PENUH      (100 % kapasitas)</pre>
         <tr><td>Prediktif</td><td>a_ff ≥ 0,25·a_tersedia</td><td>a_ff ≥ 0,55·a_tersedia</td></tr>
       </table>
 
-      <p class="warn">Catatan teknis: perintah hanya dikirim ke aktuator kalau perubahannya
+      <p class="warn">Catatan teknis: perintah hanya dikirim ke aktuator jika perubahannya
         lebih dari <code>0,08</code> level. Tanpa ambang ini, kontrol kontinu akan membanjiri
         antrean perintah aktuator setiap 5 ms.</p>
 
-      <h3>6. Logic 1 — TTC relatif <span class="tag">terpasang sekarang</span></h3>
+      <h3>6. Logic 1 — TTC relatif <span class="tag">terpasang saat ini</span></h3>
       <pre class="formula">TTC    = gap / closing                 (∞ jika closing ≤ 0,05)
 a_req  = closing² / (2 · gap)
 
@@ -516,7 +516,7 @@ if   TTC ≤ 0,9 s  atau  a_req ≥ 0,9 · a_tersedia   → REM PENUH
 elif TTC ≤ 1,8 s  atau  a_req ≥ 0,5 · a_tersedia   → rem sebagian 55 %
 elif TTC ≤ 2,6 s                                   → peringatan
 if   gap &lt; 4 m dan closing &gt; 0                    → REM PENUH (jaring pengaman)</pre>
-      <p class="warn">Kelemahan: TTC memakai closing speed <i>saat itu</i>. Kalau dua truk
+      <p class="warn">Kelemahan: TTC menggunakan closing speed <i>saat itu</i>. jika dua truk
         kecepatannya hampir sama, closing ≈ 0 sehingga TTC sangat besar — padahal jaraknya
         bisa tinggal 1,3 detik. Sistem baru bereaksi setelah truk depan mengerem.</p>
 
@@ -528,8 +528,8 @@ if v &gt; v_safe + 0,15:
       <p><b>Penetapan batas 1,2 m/s².</b> Nilai ini merupakan batas kenyamanan pengereman dan
         bukan turunan langsung dari aturan 4 detik. Aturan 4 detik menetapkan <i>target
         jarak</i>, sedangkan batas ini menetapkan <i>laju pengembalian</i> jarak tersebut.
-        Nilai 1,2 m/s² setara dengan <b>0,12 g</b>, berada di dalam rentang pengereman servis
-        kendaraan berat (0,10–0,15 g). Pengereman darurat berada pada kisaran 0,30 g.
+        Nilai 1,2 m/s² setara dengan <b>0,12 g</b>, termasuk dalam rentang pengereman servis
+        kendaraan berat (0,10–0,15 g). Pengereman darurat berkisar 0,30 g.
         Penetapan pada batas bawah rentang tersebut bertujuan agar pelambatan yang dipicu
         semata-mata oleh penyimpangan jarak tetap berada jauh di bawah kapasitas pengereman
         maksimum, sehingga tersedia cadangan untuk kasus yang menuntut perlambatan lebih besar,
@@ -540,7 +540,7 @@ if v &gt; v_safe + 0,15:
         <tr><td>Rentang nyaman pengereman truk berat</td><td>0,10–0,15 g</td><td>praktik umum pengereman servis kendaraan berat</td><td>rujukan umum</td></tr>
         <tr><td><b>Batas yang ditetapkan</b></td><td><b>1,2 m/s² = 0,12 g</b></td><td>titik tengah rentang di atas</td><td><b>asumsi desain</b></td></tr>
         <tr><td>Waktu konvergensi</td><td>2 detik</td><td>ditetapkan agar pelambatan berlangsung bertahap</td><td><b>asumsi desain</b></td></tr>
-        <tr><td>Rumus yang dipakai</td><td>a = (v − v_safe) / 2</td><td>lalu dibatasi 1,2 m/s²</td><td>kode, baris &nbsp;<code>need / 2</code></td></tr>
+        <tr><td>Rumus yang digunakan</td><td>a = (v − v_safe) / 2</td><td>lalu dibatasi 1,2 m/s²</td><td>kode, baris &nbsp;<code>need / 2</code></td></tr>
         <tr><td>Pembanding: rem darurat</td><td>3,0 m/s² = 0,31 g</td><td><code>a_cap</code> 66,5 t (masih asumsi brake test)</td><td>perlu diverifikasi</td></tr>
         <tr><td>Pembanding: retarder + engine brake</td><td>0,43–0,56 m/s²</td><td>4.000 Nm × final drive ÷ jari-jari roda</td><td>turunan</td></tr>
       </table>
@@ -552,7 +552,7 @@ if v &gt; v_safe + 0,15:
 
       <p>Dampak dari nilai tersebut terhadap waktu pengembalian jarak:</p>
       <table class="eq wide">
-        <tr><th>Kondisi</th><th>THW sekarang</th><th>Kecepatan aman</th><th>Waktu kembali ke 4 s</th></tr>
+        <tr><th>Kondisi</th><th>THW saat ini</th><th>Kecepatan aman</th><th>Waktu kembali ke 4 s</th></tr>
         <tr><td>40 km/h, gap 30 m</td><td>2,7 s</td><td>27 km/h</td><td>±3,0 s</td></tr>
         <tr><td>40 km/h, gap 20 m</td><td>1,8 s</td><td>18 km/h</td><td>±5,1 s</td></tr>
         <tr><td>55 km/h, gap 34 m</td><td>2,2 s</td><td>31 km/h</td><td>±5,6 s</td></tr>
@@ -568,10 +568,10 @@ if v &gt; v_safe + 0,15:
         <tr><th>Kecepatan</th><th>20</th><th>30</th><th>40</th><th>50</th><th>60</th><th>70 km/h</th></tr>
         <tr><td>Jarak 4 detik</td><td>22,2 m</td><td>33,3 m</td><td>44,4 m</td><td>55,6 m</td><td>66,7 m</td><td><b>77,8 m</b></td></tr>
       </table>
-      <p>Governor memakai rumus itu apa adanya: <code>v_safe = gap ÷ 4</code>. Pada 70 km/h ia baru
-        merasa aman kalau jarak ≥ 77,8 m, dan akan memperlambat truk kalau jaraknya kurang.</p>
+      <p>Governor menggunakan rumus itu apa adanya: <code>v_safe = gap ÷ 4</code>. Pada 70 km/h ia baru
+        merasa aman jika jarak ≥ 77,8 m, dan akan memperlambat truk jika jaraknya kurang.</p>
 
-      <p><b>Tapi 4 detik di 70 km/h hampir tidak menyisakan margin.</b> Jarak henti truk 66,5 t
+      <p><b>Pada kecepatan 70 km/h, jarak 4 detik hampir tidak menyisakan margin.</b> Jarak henti truk 66,5 t
         pada 70 km/h (latency 0,23 s + build 0,85 s) adalah:</p>
       <table class="eq wide">
         <tr><th>a_cap</th><th>Jarak henti</th><th>Setara headway</th><th>Margin vs 4 detik (77,8 m)</th></tr>
@@ -603,7 +603,7 @@ if v &gt; v_safe + 0,15:
       <h3>8. Logic 3 — prediktif (feed-forward truk depan)</h3>
 
       <p><b>Definisi.</b> Logic ini tidak menilai bahaya dari <i>closing speed saat ini</i>,
-        tapi dari <b>apa yang akan terjadi</b> kalau truk depan terus mengerem. Inputnya adalah
+        tetapi dari <b>apa yang akan terjadi</b> jika truk depan terus mengerem. Inputnya adalah
         <b>perlambatan truk depan</b> (<code>a_lead</code>), yang diperoleh dari turunan
         range-rate radar — data yang sudah tersedia tanpa sensor tambahan.</p>
 
@@ -681,7 +681,7 @@ a_mentah = −Δ(range_rate) / Δt</pre>
       <p><b>Tidak perlu sensor tambahan.</b> Radar 77 GHz sudah mengukur range-rate secara
         langsung lewat Doppler; yang belum dimanfaatkan adalah <i>turunannya</i>. Syaratnya
         satu: radar harus mengirim <b>object/track list</b> (jarak, sudut, kecepatan relatif
-        per target) ke ECU — bukan hanya flag "ada bahaya". Kalau radar hanya mengirim flag,
+        per target) ke ECU — bukan hanya flag "ada bahaya". jika radar hanya mengirim flag,
         feed-forward tidak bisa dihitung dan perlu akses data track (konfigurasi/firmware,
         bukan sensor baru).</p>
 
@@ -697,7 +697,7 @@ a_mentah = −Δ(range_rate) / Δt</pre>
           dikembalikan ke TTC.</li>
         <li>Bila track hilang (tikungan atau saat menyalip), sistem kembali ke TTC — bukan
           menganggap jalan kosong.</li>
-        <li>Dari banyak target, hanya yang berada <b>di dalam koridor lajur</b> yang dipakai.</li>
+        <li>Apabila terdapat banyak target, hanya target di dalam <b>koridor lajur</b> yang digunakan.</li>
       </ul>
 
       <h4>Objek statis — rambu, tanggul pembatas, tiang</h4>
@@ -720,7 +720,7 @@ budget    = gap − margin
         <b>hanya untuk target bergerak</b>.</p>
 
       <table class="eq wide">
-        <tr><th>Kecepatan</th><th>Jika feed-forward diterapkan<br>pada objek statis</th><th>Metode TTC + a_req<br>yang dipakai sistem</th></tr>
+        <tr><th>Kecepatan</th><th>Jika feed-forward diterapkan<br>pada objek statis</th><th>Metode TTC + a_req<br>yang digunakan sistem</th></tr>
         <tr><td>20 km/h</td><td>27 m / 16 m</td><td>10 m / 6 m</td></tr>
         <tr><td>30 km/h</td><td>55 m / 29 m</td><td>23 m / 13 m</td></tr>
         <tr><td>40 km/h</td><td>93 m / 48 m</td><td>41 m / 23 m</td></tr>
@@ -742,7 +742,7 @@ budget    = gap − margin
 
       <h4>Tanggul pemisah jalur kosongan dan muatan</h4>
       <p>Tanggul pemisah adalah <b>objek statis memanjang</b> — perilakunya sama seperti rambu di
-        atas, tapi ada dua faktor tambahan:</p>
+        atas, tetapi ada dua faktor tambahan:</p>
       <ul>
         <li><b>Jalan lurus:</b> dengan FoV selebar badan truk, tanggul berada di luar berkas —
           tidak terdeteksi, tidak ada masalah.</li>
@@ -755,14 +755,14 @@ budget    = gap − margin
       </table>
       <p>Jadi pada tikungan R = 150 m, mulai 39 m berkas menunjuk tanggul — dan pada 70 km/h
         pemicu <code>a_req</code> sudah aktif di 126 m, jauh sebelum itu. Artinya <b>di tikungan,
-        pemicu rem karena tanggul bukan soal logic, tapi soal geometri</b>.</p>
+        pemicu rem karena tanggul bukan soal logic, tetapi soal geometri</b>.</p>
 
       <p class="warn">Konsekuensinya: memperbaiki logic tidak akan menghilangkan rem palsu di
         tikungan. Yang diperlukan adalah penyaringan persepsi — RCS minimum, konfirmasi
         multi-frame, dan koreksi sudut dari yaw-rate — plus batas kecepatan per radius tikungan.
         Lihat tabel radius pada dokumen <code>ANALISIS-RISIKO.md</code>.</p>
 
-      <h4>Kalau ingin truk mematuhi rambu batas kecepatan</h4>
+      <h4>jika ingin truk mematuhi rambu batas kecepatan</h4>
       <p>Itu bukan pekerjaan radar, dan bukan pekerjaan logic AEB. Radar tidak bisa membaca angka
         pada rambu. Yang diperlukan adalah sumber lain:</p>
       <table class="eq wide">
@@ -777,7 +777,7 @@ budget    = gap − margin
 
       <h3>9. Alur keputusan — dari radar ke perlambatan</h3>
       <p>Diagram ini merangkum ketiga logic yang sudah dijelaskan di bagian 6–8, dan
-        menunjukkan di mana masing-masing berada dalam rantai keseluruhan dari radar sampai
+        menunjukkan posisi masing-masing dalam rantai keseluruhan dari radar sampai
         truk benar-benar melambat. Kotak abu-abu adalah perhitungan; kotak berwarna adalah
         titik keputusan yang menentukan rem.</p>
       <svg viewBox="0 0 720 470" class="diagram" role="img" aria-label="Alur logic AEB dari radar ke perlambatan">
@@ -872,7 +872,7 @@ budget    = gap − margin
           # T = brakeBuild; bentuk tertutup: latency → ramp linear → penuh
 
 TTC_min = t_latency + v / (2a)</pre>
-      <p><code>TTC_min</code> adalah TTC terkecil yang masih bisa dipakai untuk berhenti.
+      <p><code>TTC_min</code> adalah TTC terkecil yang masih bisa digunakan untuk berhenti.
         Angka ini <b>naik dengan kecepatan</b> — karena itu ambang TTC berupa konstanta selalu
         salah di salah satu ujung rentang kecepatan.</p>
 
@@ -885,7 +885,7 @@ a_retard = a_retardMax × avail(v)</pre>
 
       <h3>12. Rantai aktuator retrofit (mikroprosesor terpisah)</h3>
 
-      <p>Arsitektur yang dipakai bukan lewat ECU/EBS bawaan, melainkan:</p>
+      <p>Arsitektur yang digunakan bukan lewat ECU/EBS bawaan, melainkan:</p>
       <pre class="formula">radar 77 GHz
   |  object list (range, sudut, range-rate)
   v
@@ -901,16 +901,16 @@ mikroprosesor terpisah
         <tr><td>Mikroprosesor + logika</td><td>10–30 ms</td><td>termasuk filter a_lead 150 ms bila prediktif</td></tr>
         <tr><td>Relay + solenoid valve</td><td>20–50 ms</td><td>waktu buka + respons mekanik</td></tr>
         <tr><td>Pengisian pneumatik ke 75 %</td><td>200–600 ms</td><td>batas UN R13: 0,6 s</td></tr>
-        <tr><td><b>Total ke deselerasi berarti</b></td><td><b>0,3–0,8 s</b></td><td>di model: <code>latency</code> = sensorDelay + processDelay + valveDelay, lalu <code>brakeBuild</code>. Keduanya dipakai di <b>rumus pemicu</b>, bukan hanya di aktuator</td></tr>
+        <tr><td><b>Total ke deselerasi berarti</b></td><td><b>0,3–0,8 s</b></td><td>di model: <code>latency</code> = sensorDelay + processDelay + valveDelay, lalu <code>brakeBuild</code>. Keduanya digunakan di <b>rumus pemicu</b>, bukan hanya di aktuator</td></tr>
         <tr><td>Motor DC + kawat kopling</td><td>300–800 ms</td><td><b>harus paralel, jangan serial</b></td></tr>
       </table>
 
       <h4>Menyusun anggaran delay proses</h4>
-      <p>Delay pada mikroprosesor bukan satu angka. Ia terdiri dari beberapa bagian yang
+      <p>Delay pada mikroprosesor bukan satu angka. Ia terdiri atas beberapa bagian yang
         harus diukur terpisah, karena yang terbesar biasanya bukan kemampuan hitungnya:</p>
       <table class="eq wide">
         <tr><th>Bagian</th><th>Rentang tipikal</th><th>Cara mengukur</th></tr>
-        <tr><td>Umur data radar (data age)</td><td>10–50 ms</td><td>selisih timestamp frame radar dengan waktu pakai; atau setengah cycle time object list</td></tr>
+        <tr><td>Umur data radar (data age)</td><td>10–50 ms</td><td>selisih waktu antar-frame radar dengan waktu penggunaan; atau setengah siklus object list</td></tr>
         <tr><td>Menunggu siklus program (loop period)</td><td>5–20 ms</td><td>periode task kontrol; paling buruk satu periode penuh</td></tr>
         <tr><td>Waktu hitung algoritme</td><td>&lt;1 ms</td><td>baca timer di awal dan akhir fungsi; hitungan iteratif <code>requiredDecel</code> hanya puluhan iterasi</td></tr>
         <tr><td>Waktu tulis keluaran</td><td>1–10 ms</td><td>dari akhir hitungan sampai pin relai / perintah CAN terkirim</td></tr>
@@ -942,15 +942,15 @@ mikroprosesor terpisah
         menjalankan ketiga logic. Yang biasanya menjadi batas bukan kecepatan hitung, melainkan
         hal-hal berikut:</p>
       <ul>
-        <li>Penanganan data radar (CAN/UART) harus memakai interrupt atau DMA, bukan menunggu di
+        <li>Penanganan data radar (CAN/UART) harus menggunakan interrupt atau DMA, bukan menunggu di
           dalam loop.</li>
         <li>Loop harus berjalan dengan periode tetap; jangan ada operasi yang memblokir.</li>
         <li>Watchdog, brown-out detection, dan relai <i>normally closed</i> wajib ada.</li>
         <li>Lingkungan kelistrikan truk (12/24 V, load dump, getaran, suhu) lebih menantang
           daripada beban CPU-nya.</li>
       </ul>
-      <p>Satu penghematan mudah: penyelesaian <code>requiredDecel</code> secara iteratif tidak
-        perlu 34 langkah. Dengan 12 langkah, ketelitiannya sudah sekitar 0,01 m — jauh di bawah
+      <p>Salah satu penghematan yang dapat dilakukan adalah mengurangi jumlah iterasi
+        <code>requiredDecel</code>; 34 langkah tidak diperlukan. Dengan 12 langkah, ketelitiannya sudah sekitar 0,01 m — jauh di bawah
         ketidakpastian pengukuran — dan biaya hitungnya turun sekitar tiga kali.</p>
 
       <p class="warn"><b>Tekanan ≠ perlambatan.</b> Sensor pneumatik memberi umpan balik
@@ -959,7 +959,7 @@ mikroprosesor terpisah
         Dua truk dengan tekanan 6 bar bisa menghasilkan 3,0 dan 1,8 m/s². Tanpa umpan balik
         deselerasi, controller tidak pernah tahu apakah perintahnya tercapai.</p>
 
-      <p><b>Yang bisa dipakai sebagai umpan balik deselerasi</b> (pilih salah satu):</p>
+      <p><b>Yang bisa digunakan sebagai umpan balik deselerasi</b> (pilih salah satu):</p>
       <table class="eq wide">
         <tr><th>Pilihan</th><th>Kelebihan</th><th>Kekurangan</th></tr>
         <tr><td>IMU (akselerometer longitudinal)</td><td>murah, mandiri, tidak perlu CAN truk</td><td>perlu kalibrasi kemiringan (grade)</td></tr>
@@ -968,8 +968,8 @@ mikroprosesor terpisah
       </table>
 
       <p><b>Kopling: jangan ditarik lebih dulu.</b> Menarik kopling berarti melepas engine brake
-        (0,2–0,5 m/s² yang hilang) dan membuat truk meluncur bebas 66,5 t. Kalau urutannya
-        "kopling dulu, baru rem", 0,3–0,8 s itu terbuang percuma. Urutan yang benar:
+        (0,2–0,5 m/s² yang hilang) dan membuat truk meluncur bebas 66,5 t. jika urutannya
+        "kopling lebih dahulu, baru rem", selang 0,3–0,8 s tersebut hilang tanpa manfaat. Urutan yang tepat:
         <b>rem lebih dulu, kopling menyusul</b> — tarik saat kecepatan turun di bawah ±15 km/h
         atau saat putaran mesin mendekati idle, supaya mesin tidak mati (kompresor angin dan
         power steering tetap hidup).</p>
@@ -984,7 +984,7 @@ mikroprosesor terpisah
       <p>Logic prediktif hanya butuh tiga kuantitas, dan ketiganya berasal dari radar yang sama:
         <code>range</code>, <code>range-rate</code> (Doppler), dan <code>v_ego</code> (ground speed
         dari Doppler ke clutter diam). Tidak ada satu pun yang memerlukan IMU.</p>
-      <p>IMU dipakai untuk hal lain, dan semuanya berlaku untuk <i>ketiga</i> logic — bukan
+      <p>IMU digunakan untuk hal lain, dan semuanya berlaku untuk <i>ketiga</i> logic — bukan
         khusus logic 3: (a) verifikasi bahwa perlambatan yang diperintahkan benar-benar
         terjadi, (b) deteksi fade, (c) yaw rate untuk kompensasi tikungan dan perubahan heading.
         Tanpa IMU, ketiganya menjadi estimasi atau asumsi tetap.</p>
@@ -1020,13 +1020,13 @@ m = massa (kg) · a = perlambatan (m/s²) · h = tinggi titik berat · L = wheel
         diterima axle depan, kingpin, tie rod, dan drag link — di luar beban statis.</p>
 
       <p class="warn">Angka ΔW ini batas atas: model 1D menganggap seluruh perlambatan
-        dibagi rata ke semua roda. Truk nyata memakai load-sensing valve yang membatasi
+        dibagi rata ke semua roda. Truk nyata menggunakan load-sensing valve yang membatasi
         tekanan rem depan, jadi beban aktual bisa lebih kecil — berapa persisnya perlu
         data distribusi gaya rem unit.</p>
 
       <p><b>Yang paling menentukan keausan bukan pengereman darurat yang sah</b> (jarang),
-        tapi <b>pemicu palsu</b>. Sepuluh rem palsu berturut-turut di tikungan menaikkan suhu
-        drum ±130 °C tanpa waktu mendingin — dan itu jauh lebih merusak daripada satu
+        tetapi <b>pemicu palsu</b>. Sepuluh rem palsu berturut-turut di tikungan menaikkan suhu
+        drum ±130 °C tanpa kesempatan mendingin, dan hal itu jauh lebih merusak daripada satu
         pengereman darurat yang benar-benar menyelamatkan truk.</p>
 
       <h3>14. Contoh perhitungan: 40 km/h mengejar truk 15 km/h</h3>
@@ -1085,7 +1085,7 @@ m = massa (kg) · a = perlambatan (m/s²) · h = tinggi titik berat · L = wheel
         <tr><td>Rem sebagian</td><td>0,10 s</td><td>43,8 m</td><td>39,9 km/h</td><td>≈0,02</td><td>THW turun di bawah 4 s</td></tr>
         <tr><td>Stabil</td><td>11,91 s</td><td>16,2 m</td><td>14,2 km/h</td><td>0</td><td>mengikuti truk depan</td></tr>
       </table>
-      <p>Governor bereaksi hampir seketika (0,1 s), tapi dengan level sangat kecil. Hasilnya
+      <p>Governor bereaksi hampir seketika (0,1 s), tetapi dengan level sangat kecil. Hasilnya
         paling halus dari ketiga logic — dan jarak akhirnya paling besar.</p>
 
       <h4>Logic 3 — TTC + prediktif</h4>
@@ -1094,7 +1094,7 @@ m = massa (kg) · a = perlambatan (m/s²) · h = tinggi titik berat · L = wheel
 leadDist = a_lead &gt; 0,1 ? ... : (v_lead &lt; 0,3 ? 0 : ∞)  →  ∞
 budget   = gap + ∞ → tak terhingga
 a_ff     = v² / (2·∞) = 0        → tidak pernah memicu apa pun</pre>
-      <p>Logic prediktif hanya bekerja kalau <b>truk depan sedang mengerem</b>. Kalau truk depan
+      <p>Logic prediktif hanya bekerja jika <b>truk depan sedang mengerem</b>. jika truk depan
         jalan konstan, prediksinya berbunyi "tidak akan tabrakan", jadi ia diam dan menyerahkan
         keputusan ke TTC. Nilainya baru muncul di skenario konvoi (truk depan mengerem mendadak),
         bukan di skenario mengejar truk lambat.</p>
@@ -1113,15 +1113,15 @@ a_ff     = v² / (2·∞) = 0        → tidak pernah memicu apa pun</pre>
       <p><b>Tiga hal yang perlu dicatat:</b></p>
       <ul>
         <li><b>Logic 2 paling halus</b> (0,9 m/s² vs 4,6 m/s²) dan menyisakan jarak paling besar
-          (16 m vs 3–5 m). Tapi ia mulai bekerja 0,1 detik setelah simulasi mulai — di jalan
+          (16 m vs 3–5 m). tetapi ia mulai bekerja 0,1 detik setelah simulasi mulai — di jalan
           nyata artinya sistem akan terus-menerus memperlambat truk setiap kali jarak menyentuh
           4 detik. Bisa terasa mengganggu bagi pengemudi.</li>
         <li><b>Truk bermuatan bereaksi lebih awal</b> (rem sebagian di 15,6 m vs 12,3 m) karena
           ambang a_req-nya lebih rendah. Ini perilaku yang benar: truk berat harus mulai lebih
-          dulu. Tapi jarak akhirnya justru lebih kecil (3,4 m vs 5,4 m) dan energinya 2,5 kali
+          dulu. tetapi jarak akhirnya justru lebih kecil (3,4 m vs 5,4 m) dan energinya 2,5 kali
           lipat (3,47 vs 1,41 MJ).</li>
         <li><b>Logic 1 &amp; 3 bergantung pada jaring <code>gap &lt; 4 m</code></b> untuk mencapai
-          rem penuh. Kalau nilai cadangan itu dihapus, kedua logic tidak akan pernah mencapai
+          rem penuh. jika nilai cadangan itu dihapus, kedua logic tidak akan pernah mencapai
           rem penuh di skenario ini — ambang TTC 0,9 s tidak akan tercapai karena pengereman
           sebagian sudah lebih dulu menstabilkan TTC.</li>
       </ul>
@@ -1153,7 +1153,7 @@ ambang sebagian = 0,5 × 3,00   = 1,50 m/s²
 level = 0,55
 a_diminta = 0,55 × 3,00        = 1,65 m/s²</pre>
       <p>Pada tahap ini pemicu berasal dari <b>a_req</b>, bukan dari TTC. Nilai TTC 2,27 s masih di atas
-        ambang 1,8 s — tapi a_req sudah menyentuh ambangnya.</p>
+        ambang 1,8 s — tetapi a_req sudah menyentuh ambangnya.</p>
 
       <h4>Langkah 2 — perintah berjalan ke aktuator (t = 4,20 → 4,43 s)</h4>
       <pre class="formula">tunda = sensorDelay + processDelay + valveDelay
@@ -1171,7 +1171,7 @@ applied = 1,176 × 0,17 = 0,206</pre>
 a_fric   = applied × a_tersedia = 0,206 × 3,00        = 0,618 m/s²
 a_resist = 0,045 + (0,00016 × 114,06) = 0,045 + 0,018 = 0,063 m/s²
 a_grade  = 9,81 × 0 ÷ 100                             = 0
-a_retard = 0            (AEB aktif → throttle mati, retarder tidak dipakai)
+a_retard = 0            (AEB aktif → throttle mati, retarder tidak digunakan)
 a_throttle = 0
 
 a_net = 0,618 + 0,063           = 0,681 m/s²
@@ -1231,7 +1231,7 @@ energi rem total  = 3,47 MJ</pre>
 
       <h3>16. Kasus khusus: truk depan berhenti mendadak</h3>
       <p class="lead">Di simulator ini ada tiga situasi berbeda yang semuanya terlihat seperti
-        "truk berhenti", tapi aturannya tidak sama.</p>
+        "truk berhenti", tetapi aturannya tidak sama.</p>
 
       <h4>Cara model merepresentasikannya</h4>
       <table class="eq wide">
@@ -1240,7 +1240,7 @@ energi rem total  = 3,47 MJ</pre>
         <tr><td>Truk sudah berhenti / mogok di lajur</td><td>kecepatan truk depan = 0; pilihan kejadian tidak perlu diubah</td></tr>
         <tr><td>Truk baru terlihat setelah tikungan</td><td>sama seperti di atas — objek statis yang muncul tiba-tiba</td></tr>
       </table>
-      <p>Model memakai perlambatan tetap: truk depan melambat dengan laju yang dipilih mulai
+      <p>Model menggunakan perlambatan tetap: truk depan melambat dengan laju yang dipilih mulai
         t = 1 s, sampai kecepatannya nol, lalu tetap berhenti. Bukan lompatan kecepatan
         mendadak — karena truk 40 ton memang tidak bisa berhenti seketika.</p>
 
@@ -1262,7 +1262,7 @@ energi rem total  = 3,47 MJ</pre>
       </table>
       <p class="warn"><b>Mogok bukan pengereman.</b> Truk yang kehilangan tenaga tidak berhenti —
         ia <i>meluncur</i>, dan baru berhenti setelah ±410 meter. Selama itu ia menjadi penghalang
-        bergerak yang lambat. Bahayanya berbeda: bukan tabrakan mendadak, tapi penyusulan ke
+        bergerak yang lambat. Bahayanya berbeda: bukan tabrakan mendadak, tetapi penyusulan ke
         kendaraan yang tiba-tiba kehilangan laju di lajur.</p>
 
       <h4>Hasil simulasi per jenis kegagalan (40 km/h, gap 44,4 m)</h4>
@@ -1310,19 +1310,19 @@ energi rem total  = 3,47 MJ</pre>
         <tr><td>Prediktif</td><td>t = 0,28 s (gap 72 m)</td><td><b>TABRAKAN 4,3 km/h</b></td></tr>
       </table>
       <p class="warn">Pada situasi 2 dengan kecepatan 70 km/h, <b>ketiga logic memberikan hasil yang sama dan
-        gagal</b>. Ini bukan kelemahan logic, tapi kelemahan aturan 4 detik pada kecepatan itu
-        (lihat bagian 7). Ketiganya sudah mengerem sejak 0,28 s — sedini mungkin — tapi 77,8 m
+        gagal</b>. Ini bukan kelemahan logic, tetapi kelemahan aturan 4 detik pada kecepatan itu
+        (lihat bagian 7). Ketiganya sudah mengerem sejak 0,28 s — sedini mungkin — tetapi 77,8 m
         memang tidak cukup untuk berhenti dari 70 km/h dengan truk 66,5 t.</p>
 
-      <h4>Aturannya secara ringkas</h4>
+      <h4>Ringkasan aturan</h4>
       <ol>
         <li><b>Selama truk depan masih bergerak</b>, logic prediktif mengukur perlambatannya
           lewat turunan range-rate dan mulai mengerem ±0,24 detik setelah lampu rem menyala.</li>
         <li><b>Setelah truk depan berhenti</b>, ia menjadi objek statis. Feed-forward tetap
           aktif (karena target pernah bergerak) dan rumusnya berubah menjadi kriteria jarak
           henti: <code>a_ff = requiredDecel(v, gap − 3 m)</code>.</li>
-        <li><b>Kalau truk itu sejak awal diam</b> (mogok, atau baru terlihat setelah tikungan),
-          feed-forward tidak dipakai — target statis diserahkan ke TTC dan <code>a_req</code>.</li>
+        <li><b>jika truk itu sejak awal diam</b> (mogok, atau baru terlihat setelah tikungan),
+          feed-forward tidak digunakan — target statis diserahkan ke TTC dan <code>a_req</code>.</li>
         <li><b>Jaring pengaman <code>gap &lt; 4 m</code> selalu aktif</b> untuk semua logic, apa
           pun status targetnya.</li>
       </ol>
@@ -1340,7 +1340,7 @@ energi rem total  = 3,47 MJ</pre>
         <li>Brake fade tidak dimodelkan; <code>a_cap</code> dianggap konstan.</li>
         <li>μ dianggap seragam sepanjang lintasan.</li>
         <li>Latensi dan build-up masih asumsi sampai ada hasil ukur unit.</li>
-        <li>Kecepatan dihitung dari perpindahan lurus, <b>bukan</b> dari putaran roda. Kalau di
+        <li>Kecepatan dihitung dari perpindahan lurus, <b>bukan</b> dari putaran roda. jika di
           unit nanti kecepatan diturunkan dari sensor putaran roda, perlu diingat: saat roda
           terkunci (rem blong / permukaan licin), roda berhenti berputar sementara truk masih
           meluncur — sensor roda akan melaporkan kecepatan nol padahal truk masih bergerak.
