@@ -14,6 +14,27 @@ tetap, angkanya bergeser.
 Permukaan: **chipseal**. μ yang dipakai di analisis ini 0,60 (kering bersih) — lihat bagian 2.4
 untuk rentang lengkap dan kapan μ benar-benar membatasi.
 
+
+> ## ⚠️ PERINGATAN METODOLOGIS
+>
+> Seluruh angka pada dokumen ini dihitung dengan **parameter asumsi**, terutama kemampuan
+> pengereman `a_cap` = 3,0 m/s² untuk unit bermuatan 66,5 t. Nilai tersebut **belum berasal
+> dari brake test**.
+>
+> Apabila gaya rem dianggap konstan, `a_cap` unit bermuatan turun menjadi
+> **1,80 m/s²** (F = 4,6 × 26 = 119,6 kN). Akibatnya jarak henti dari 40 km/h berubah dari
+> **27,8 m menjadi 39,7 m** — selisih 12 m, atau 43 %.
+>
+> **Kesimpulan yang tetap berlaku** (bersifat perbandingan antar logic, dihitung dengan
+> asumsi yang sama untuk keduanya): kebutaan TTC relatif pada perlambatan lembut, keunggulan
+> logic prediktif, dan perambatan pengereman antar truk.
+>
+> **Kesimpulan yang TIDAK boleh dipakai sebelum ada brake test**: batas kecepatan aman,
+> kecukupan aturan 4 detik pada kecepatan tertentu, dan batas kecepatan per radius tikungan.
+> Angka-angka itu berbanding terbalik dengan `a_cap` dan akan berubah.
+>
+> Dokumen ini adalah alat bantu analisis, bukan safety case yang tervalidasi.
+
 ---
 
 ## 1. Ringkasan
