@@ -11,8 +11,19 @@ python3 -m http.server 4317
 Cara deploy (Docker, nginx, LAN site, hosting statis, offline tablet): lihat
 [DEPLOY.md](DEPLOY.md).
 
-Di dalam aplikasi, tombol **📐 Metode perhitungan** membuka 13 bagian dokumentasi
-perhitungan — termasuk diagram gaya (free-body) dan diagram alur keputusan dalam SVG.
+Di dalam aplikasi, tombol **📐 Metode perhitungan** membuka 8 bagian dokumentasi:
+
+1. Dasar perhitungan (variabel, persamaan gerak, diagram gaya)
+2. Siklus perhitungan 200 Hz
+3. Penundaan aktuator
+4. Tiga logic pemicu
+5. Jarak henti dan TTC minimum
+6. Alur keputusan (diagram)
+7. Contoh perhitungan
+8. Batasan model
+
+Materi pendukung di luar metode — beban mekanis, perangkat aktuator, dan jenis kejadian pada
+kendaraan depan — ada di lampiran `ANALISIS-RISIKO.md`.
 
 ## Cara kerja model
 
