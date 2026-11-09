@@ -451,6 +451,21 @@ jika v &gt; v_safe + 0,15 :
         jarak, bukan mencegah tabrakan; pada jarak yang sudah terlalu dekat, waktu yang
         dibutuhkan untuk memulihkan jarak melebihi waktu yang tersedia.</p>
 
+      <h4>Frekuensi pemeriksaan</h4>
+      <p>Ketiga logic diperiksa pada siklus yang sama, yaitu setiap 5 milidetik di dalam
+        simulator, atau setiap <i>loop period</i> pengendali pada sistem nyata. Data radar juga
+        sama, berasal dari satu sumber dengan laju pembaruan yang sama. Perbedaan antar logic
+        bukan pada seberapa sering memeriksa, melainkan pada besaran yang dinilai.</p>
+      <table class="eq wide">
+        <tr><th>Logic</th><th>Besaran yang dinilai</th><th>Kapan mulai bekerja</th></tr>
+        <tr><td>TTC relatif</td><td>jarak dan kecepatan menutup jarak</td><td>ketika TTC atau a_req melewati ambang</td></tr>
+        <tr><td>Jarak aman 4 detik</td><td>jarak dibandingkan dengan 4 kali kecepatan</td><td>ketika kecepatan melebihi <code>gap / 4</code> lebih dari 0,15 m/s</td></tr>
+        <tr><td>Prediktif</td><td>perlambatan kendaraan depan</td><td>ketika kebutuhan perlambatan melewati 25 % kapasitas</td></tr>
+      </table>
+      <p>Logic jarak aman memeriksa setiap siklus, tetapi tidak melakukan apa pun selama
+        kecepatan masih di bawah <code>gap / 4</code>. Selisih ambang 0,15 m/s (0,54 km/h)
+        berfungsi mencegah pengereman berkedip ketika nilai berada tepat di batas.</p>
+
       <h4>4.3 Logic 3 — prediktif</h4>
       <p>Logic ini tidak menilai bahaya dari jarak, melainkan dari <b>perlambatan kendaraan
         depan</b>. Nilainya diperoleh dari turunan <i>range-rate</i> yang dihaluskan dengan filter
