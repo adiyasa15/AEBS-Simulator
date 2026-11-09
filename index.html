@@ -818,7 +818,104 @@ m = massa (kg) · a = perlambatan (m/s²) · h = tinggi titik berat · L = wheel
         drum ±130 °C tanpa sempat mendingin — dan itu jauh lebih merusak daripada satu
         pengereman darurat yang benar-benar menyelamatkan truk.</p>
 
-      <h3>14. Batasan model</h3>
+      <h3>14. Contoh perhitungan: 40 km/h mengejar truk 15 km/h</h3>
+      <p class="lead">Semua angka di bawah diambil langsung dari simulator, bukan dihitung
+        manual. Skenario: jalan datar (turunan 0 %), chipseal kering (μ 0,60), truk depan
+        konstan 15 km/h dan <b>tidak mengerem</b>.</p>
+
+      <h4>Asumsi awal</h4>
+      <table class="eq wide">
+        <tr><th>Besaran</th><th>Nilai</th></tr>
+        <tr><td>Kecepatan ego</td><td>40 km/h = 11,11 m/s</td></tr>
+        <tr><td>Kecepatan truk depan</td><td>15 km/h = 4,17 m/s</td></tr>
+        <tr><td>Closing speed</td><td>40 − 15 = 25 km/h = <b>6,94 m/s</b></td></tr>
+        <tr><td>Gap awal (aturan 4 detik)</td><td>4 × 11,11 = <b>44,4 m</b></td></tr>
+        <tr><td>TTC awal</td><td>44,4 ÷ 6,94 = 6,4 s</td></tr>
+      </table>
+
+      <h4>Kemampuan rem yang tersedia</h4>
+      <table class="eq wide">
+        <tr><th>Besaran</th><th>Kosong 26 t</th><th>Muat 66,5 t</th></tr>
+        <tr><td>a_tersedia = min(μ·g, a_cap)</td><td>min(5,89 ; 4,60) = <b>4,60</b></td><td>min(5,89 ; 3,00) = <b>3,00</b></td></tr>
+        <tr><td>Ambang rem sebagian (0,5 ×)</td><td>2,30 m/s²</td><td>1,50 m/s²</td></tr>
+        <tr><td>Ambang rem penuh (0,9 ×)</td><td>4,14 m/s²</td><td>2,70 m/s²</td></tr>
+        <tr><td>Gap saat TTC 2,6 s (peringatan)</td><td>18,0 m</td><td>18,0 m</td></tr>
+        <tr><td>Gap saat TTC 1,8 s</td><td>12,5 m</td><td>12,5 m</td></tr>
+        <tr><td>Gap saat TTC 0,9 s</td><td>6,3 m</td><td>6,3 m</td></tr>
+      </table>
+      <p class="tl2note">Perhatikan: gap pemicu TTC sama untuk kedua massa, tapi ambang a_req
+        berbeda — truk bermuatan harus bereaksi lebih awal karena remnya lebih terbatas.</p>
+
+      <h4>Logic 1 — TTC relatif</h4>
+      <table class="eq wide">
+        <tr><th>Tahap</th><th>t</th><th>gap</th><th>TTC</th><th>a_req</th><th>Kenapa terpicu</th></tr>
+        <tr><td colspan="6" style="color:#86efac"><b>KOSONG 26 t</b> — a_tersedia 4,60</td></tr>
+        <tr><td>Peringatan</td><td>3,88 s</td><td>17,8 m</td><td>2,59 s</td><td>1,32</td><td>TTC ≤ 2,6</td></tr>
+        <tr><td>Rem sebagian</td><td>4,68 s</td><td>12,3 m</td><td>1,79 s</td><td>1,91</td><td>TTC ≤ 1,8</td></tr>
+        <tr><td>Rem penuh</td><td>6,14 s</td><td>4,0 m</td><td>0,99 s</td><td>2,01</td><td><b>jaring gap &lt; 4 m</b></td></tr>
+        <tr><td colspan="6" style="color:#fca5a5"><b>MUAT 66,5 t</b> — a_tersedia 3,00</td></tr>
+        <tr><td>Peringatan</td><td>3,88 s</td><td>17,8 m</td><td>2,59 s</td><td>1,32</td><td>TTC ≤ 2,6</td></tr>
+        <tr><td>Rem sebagian</td><td>4,20 s</td><td>15,6 m</td><td>2,28 s</td><td>1,50</td><td><b>a_req ≥ 0,5 · 3,00</b></td></tr>
+        <tr><td>Rem penuh</td><td>6,32 s</td><td>4,0 m</td><td>1,07 s</td><td>1,75</td><td><b>jaring gap &lt; 4 m</b></td></tr>
+      </table>
+      <p class="warn">Catatan penting: rem penuh <b>tidak</b> terpicu oleh ambang TTC 0,9 s.
+        Karena sudah rem sebagian, ego melambat, closing mengecil, dan TTC justru tidak pernah
+        turun sampai 0,9. Yang akhirnya memicu rem penuh adalah jaring pengaman
+        <code>gap &lt; 4 m</code>. Artinya pada skenario ini, ambang TTC desain tidak terpakai —
+        yang bekerja adalah nilai cadangan.</p>
+
+      <h4>Logic 2 — TTC + governor headway</h4>
+      <table class="eq wide">
+        <tr><th>Tahap</th><th>t</th><th>gap</th><th>v</th><th>level</th><th>Catatan</th></tr>
+        <tr><td colspan="6" style="color:#86efac"><b>KOSONG 26 t</b></td></tr>
+        <tr><td>Rem sebagian</td><td>0,10 s</td><td>43,8 m</td><td>39,9 km/h</td><td>≈0,02</td><td>THW turun di bawah 4 s</td></tr>
+        <tr><td>Stabil</td><td>11,38 s</td><td>16,4 m</td><td>14,3 km/h</td><td>0</td><td>mengikuti truk depan</td></tr>
+        <tr><td colspan="6" style="color:#fca5a5"><b>MUAT 66,5 t</b></td></tr>
+        <tr><td>Rem sebagian</td><td>0,10 s</td><td>43,8 m</td><td>39,9 km/h</td><td>≈0,02</td><td>THW turun di bawah 4 s</td></tr>
+        <tr><td>Stabil</td><td>11,75 s</td><td>16,2 m</td><td>14,2 km/h</td><td>0</td><td>mengikuti truk depan</td></tr>
+      </table>
+      <p>Governor bereaksi hampir seketika (0,1 s), tapi dengan level sangat kecil. Hasilnya
+        paling halus dari ketiga logic — dan jarak akhirnya paling besar.</p>
+
+      <h4>Logic 3 — TTC + prediktif</h4>
+      <p><b>Hasilnya identik dengan Logic 1, baik kosong maupun muat.</b> Alasannya bukan bug:</p>
+      <pre class="formula">truk depan konstan 15 km/h → a_lead = 0
+leadDist = a_lead &gt; 0,1 ? ... : (v_lead &lt; 0,3 ? 0 : ∞)  →  ∞
+budget   = gap + ∞ → tak terhingga
+a_ff     = v² / (2·∞) = 0        → tidak pernah memicu apa pun</pre>
+      <p>Logic prediktif hanya bekerja kalau <b>truk depan sedang mengerem</b>. Kalau truk depan
+        jalan konstan, prediksinya berbunyi "tidak akan tabrakan", jadi ia diam dan menyerahkan
+        keputusan ke TTC. Nilainya baru muncul di skenario konvoi (truk depan mengerem mendadak),
+        bukan di skenario mengejar truk lambat.</p>
+
+      <h4>Ringkasan hasil</h4>
+      <table class="eq wide">
+        <tr><th>Logic</th><th>Massa</th><th>Deselerasi puncak</th><th>Gap akhir</th><th>Energi rem</th></tr>
+        <tr><td>Logic 1 TTC</td><td>26 t</td><td>4,60 m/s²</td><td>5,4 m</td><td>1,41 MJ</td></tr>
+        <tr><td>Logic 1 TTC</td><td>66,5 t</td><td>3,00 m/s²</td><td>3,4 m</td><td>3,47 MJ</td></tr>
+        <tr><td>Logic 2 headway</td><td>26 t</td><td><b>1,11 m/s²</b></td><td><b>16,4 m</b></td><td><b>0,93 MJ</b></td></tr>
+        <tr><td>Logic 2 headway</td><td>66,5 t</td><td><b>0,96 m/s²</b></td><td><b>16,2 m</b></td><td>2,77 MJ</td></tr>
+        <tr><td>Logic 3 prediktif</td><td>26 t</td><td>4,60 m/s²</td><td>5,4 m</td><td>1,41 MJ</td></tr>
+        <tr><td>Logic 3 prediktif</td><td>66,5 t</td><td>3,00 m/s²</td><td>3,4 m</td><td>3,47 MJ</td></tr>
+      </table>
+
+      <p><b>Tiga hal yang perlu dicatat:</b></p>
+      <ul>
+        <li><b>Logic 2 paling halus</b> (1,1 m/s² vs 4,6 m/s²) dan menyisakan jarak paling besar
+          (16 m vs 3–5 m). Tapi ia mulai bekerja 0,1 detik setelah simulasi mulai — di jalan
+          nyata artinya sistem akan terus-menerus memperlambat truk setiap kali jarak menyentuh
+          4 detik. Bisa terasa mengganggu bagi pengemudi.</li>
+        <li><b>Truk bermuatan bereaksi lebih awal</b> (rem sebagian di 15,6 m vs 12,3 m) karena
+          ambang a_req-nya lebih rendah. Ini perilaku yang benar: truk berat harus mulai lebih
+          dulu. Tapi jarak akhirnya justru lebih kecil (3,4 m vs 5,4 m) dan energinya 2,5 kali
+          lipat (3,47 vs 1,41 MJ).</li>
+        <li><b>Logic 1 &amp; 3 bergantung pada jaring <code>gap &lt; 4 m</code></b> untuk mencapai
+          rem penuh. Kalau nilai cadangan itu dihapus, kedua logic tidak akan pernah mencapai
+          rem penuh di skenario ini — ambang TTC 0,9 s tidak akan tercapai karena pengereman
+          sebagian sudah lebih dulu menstabilkan TTC.</li>
+      </ul>
+
+      <h3>15. Batasan model</h3>
       <ul>
         <li>1 dimensi — tanpa rotasi, tanpa manuver mengelak.</li>
         <li>Tanpa load transfer dan tanpa inersia rotasi. Faktor massa ekuivalen 1,04–1,06 belum
