@@ -24,6 +24,7 @@ const el = {
   headway: $('#headway'), headwayo: $('#headwayo'),
   govDecel: $('#govDecel'), govDecelo: $('#govDecelo'),
   leadBrake: $('#leadBrake'), leadDecel: $('#leadDecel'), leadDecelo: $('#leadDecelo'),
+  leadMode: $('#leadMode'), leadModeNote: $('#leadModeNote'),
   playBtn: $('#playBtn'),
   resetBtn: $('#resetBtn'),
   view: $('#view'),
@@ -230,6 +231,26 @@ el.resetBtn.addEventListener('click', () => hardReset(false));
 el.aeb.addEventListener('change', () => hardReset(false));
 el.leadBrake.addEventListener('change', () => hardReset(false));
 el.leadDecel.addEventListener('input', () => { syncLabels(); hardReset(false); });
+
+const LEAD_MODES = {
+  none:    { decel: null, note: 'Truk depan melanjutkan perjalanan seperti biasa.' },
+  brake2:  { decel: 2.0,  note: 'Mengerem wajar. Dari 40 km/h berhenti dalam ±5,5 detik / 86 m.' },
+  brake5:  { decel: 5.0,  note: 'Mengerem darurat. Berhenti dalam ±2,2 detik / 68 m.' },
+  coast:   { decel: 0.3,  note: 'Tenaga hilang, truk meluncur lambat. Berhenti butuh ±37 detik / 410 m.' },
+  blowout: { decel: 3.0,  note: 'Ban pecah: seretan naik, truk melambat keras dan arahnya tidak stabil.' }
+};
+el.leadMode.addEventListener('change', () => {
+  const m = LEAD_MODES[el.leadMode.value];
+  el.leadModeNote.textContent = m.note;
+  if (m.decel === null) {
+    el.leadBrake.checked = false;
+  } else {
+    el.leadBrake.checked = true;
+    el.leadDecel.value = m.decel;
+  }
+  syncLabels();
+  hardReset(false);
+});
 el.logic.addEventListener('change', () => { syncLabels(); hardReset(false); });
 
 el.loadSeg.addEventListener('click', (e) => {

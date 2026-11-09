@@ -95,14 +95,24 @@
       <div class="row"><label class="lbl" for="govDecel">Governor headway — maks</label><output id="govDecelo">1.2 m/s²</output></div>
       <input type="range" id="govDecel" min="0.3" max="5" step="0.1" value="1.2" />
 
-      <label class="switch">
-        <input type="checkbox" id="leadBrake" />
-        <span class="slider"></span>
-        <span class="switch-label">Truk depan mengerem mendadak</span>
-      </label>
+      <label class="lbl" for="leadMode">Kejadian pada truk depan</label>
+      <select id="leadMode">
+        <option value="none">Normal — tidak ada kejadian</option>
+        <option value="brake2">Mengerem normal (2,0 m/s²)</option>
+        <option value="brake5">Mengerem darurat (5,0 m/s²)</option>
+        <option value="coast">Mogok / lepas tenaga (0,3 m/s²)</option>
+        <option value="blowout" selected>Ban pecah (±3,0 m/s²)</option>
+      </select>
+      <p class="hint" id="leadModeNote">Truk melambat, tidak mengerem seketika.</p>
 
-      <div class="row"><label class="lbl" for="leadDecel">Laju rem truk depan</label><output id="leadDecelo">3.0 m/s²</output></div>
-      <input type="range" id="leadDecel" min="0.5" max="6" step="0.1" value="3" />
+      <div class="row"><label class="lbl" for="leadDecel">Perlambatan truk depan</label><output id="leadDecelo">3.0 m/s²</output></div>
+      <input type="range" id="leadDecel" min="0.2" max="6" step="0.1" value="3" />
+
+      <label class="switch">
+        <input type="checkbox" id="leadBrake" checked />
+        <span class="slider"></span>
+        <span class="switch-label">Aktifkan kejadian ini</span>
+      </label>
     </section>
 
     <section class="group actions">
@@ -1149,6 +1159,47 @@ energi rem total  = 3,47 MJ</pre>
       <p>Model memakai perlambatan tetap: truk depan melambat dengan laju yang dipilih mulai
         t = 1 s, sampai kecepatannya nol, lalu tetap berhenti. Bukan lompatan kecepatan
         mendadak — karena truk 40 ton memang tidak bisa berhenti seketika.</p>
+
+      <h4>Mogok dan ban pecah — bukan "mengerem"</h4>
+      <p>Ini yang mudah tertukar. <b>Kecepatan</b> truk depan dan <b>perlambatan</b>-nya adalah
+        dua parameter berbeda:</p>
+      <table class="eq wide">
+        <tr><th>Parameter</th><th>Artinya</th></tr>
+        <tr><td>Kecepatan truk depan</td><td>laju sebelum kejadian terjadi (mis. 40 km/h)</td></tr>
+        <tr><td>Perlambatan truk depan</td><td>seberapa cepat ia kehilangan laju setelah kejadian</td></tr>
+      </table>
+      <p>Dan perlambatan itu <b>tidak sama untuk semua jenis kegagalan</b>:</p>
+      <table class="eq wide">
+        <tr><th>Kejadian</th><th>Perlambatan</th><th>Waktu berhenti dari 40 km/h</th><th>Jarak</th></tr>
+        <tr><td>Mogok / lepas tenaga</td><td>0,3 m/s² (hanya gelinding)</td><td><b>±37 detik</b></td><td>±410 m</td></tr>
+        <tr><td>Mengerem normal</td><td>2,0 m/s²</td><td>5,5 detik</td><td>86 m</td></tr>
+        <tr><td>Ban pecah</td><td>±3,0 m/s² (seretan)</td><td>3,7 detik</td><td>76 m</td></tr>
+        <tr><td>Mengerem darurat</td><td>5,0 m/s²</td><td>2,2 detik</td><td>68 m</td></tr>
+      </table>
+      <p class="warn"><b>Mogok bukan pengereman.</b> Truk yang kehilangan tenaga tidak berhenti —
+        ia <i>meluncur</i>, dan baru berhenti setelah ±410 meter. Selama itu ia menjadi penghalang
+        bergerak yang lambat. Bahayanya berbeda: bukan tabrakan mendadak, tapi penyusulan ke
+        kendaraan yang tiba-tiba kehilangan laju di lajur.</p>
+
+      <h4>Hasil simulasi per jenis kegagalan (40 km/h, gap 44,4 m)</h4>
+      <table class="eq wide">
+        <tr><th>Kejadian</th><th>Logic TTC relatif</th><th>Logic prediktif</th></tr>
+        <tr><td>Mogok (0,3 m/s²)</td><td>berhenti, sisa 3,5 m</td><td>berhenti, sisa 3,5 m</td></tr>
+        <tr><td>Ban pecah (3,0)</td><td>berhenti, sisa <b>0,3 m</b></td><td>berhenti, sisa 3,5 m</td></tr>
+        <tr><td>Mengerem normal (2,0)</td><td><b>TABRAKAN 12,0 km/h</b></td><td>berhenti, sisa 3,4 m</td></tr>
+        <tr><td>Mengerem darurat (5,0)</td><td><b>TABRAKAN 3,2 km/h</b></td><td>berhenti, sisa 3,7 m</td></tr>
+      </table>
+      <p>Perhatikan keanehan pada kolom TTC relatif: mengerem <b>normal</b> (2,0) menghasilkan
+        tabrakan 12 km/h, sedangkan mengerem <b>darurat</b> (5,0) hanya 3,2 km/h, dan ban pecah
+        (3,0) justru selamat. Hasilnya tidak naik-turun mengikuti kerasnya pengereman.</p>
+      <p>Penyebabnya: TTC relatif bereaksi pada <i>closing speed</i>. Kalau truk depan mengerem
+        pelan, closing speed terbentuk perlahan dan TTC tetap terlihat besar — jadi rem ego
+        terlambat. Kalau mengerem sangat keras, closing terbentuk cepat dan TTC langsung jatuh
+        ke ambang. Yang menentukan justru <b>seberapa cepat bahaya terlihat</b>, bukan seberapa
+        besar bahayanya.</p>
+      <p>Logic prediktif tidak terpengaruh pola itu: pada keempat jenis kegagalan ia berhenti
+        dengan sisa 3,4–3,7 m, karena yang diukur adalah <b>perlambatan truk depan</b>, bukan
+        selisih kecepatan.</p>
 
       <h4>Situasi 1 — mengerem habis sampai berhenti (40 km/h, gap 44,4 m)</h4>
       <table class="eq wide">
