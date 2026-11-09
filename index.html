@@ -194,7 +194,13 @@
         yang ditampilkan — kecepatan, jarak ke truk depan, status rem — dihitung ulang dengan
         rumus fisika setiap <b>5 milidetik</b>, atau 200 kali per detik.</p>
       <p class="lead">Bagian ini menjelaskan metode perhitungan tersebut. Penjelasan tanpa rumus
-        tersedia pada <b>bagian 1</b>; rumus dan asumsinya dibahas pada bagian berikutnya.</p>
+        tersedia pada <b>bagian 1</b>; rumus dan asumsinya dibahas pada bagian berikutnya.</p>      <p class="hint"><b>Konvensi istilah:</b> istilah teknis yang belum memiliki padanan baku
+        dalam bahasa Indonesia dipertahankan dalam bentuk aslinya agar tidak ambigu, yaitu
+        <i>ego vehicle</i>, <i>brake build-up</i>, <i>loop period</i>, <i>data age</i>,
+        <i>compute time</i>, <i>output write</i>, dan <i>lane corridor</i>. Istilah lain
+        diterjemahkan dan, bila perlu, disertai bentuk aslinya dalam tanda kurung.</p>
+
+
 
       <h3>1. Penjelasan sederhana — cara kerja simulasi ini</h3>
       <p class="lead">Bagian ini tidak memuat rumus. Tujuannya agar pembaca non-teknis dapat
@@ -242,14 +248,15 @@
         <i>ego vehicle</i> = <b>kendaraan yang diamati atau dikendalikan</b>.
         Istilah terkait <i>ego-motion</i> berarti "gerak diri sendiri", digunakan untuk membedakan
         dari gerak objek lain.</p>
-      <p>Padanan yang sering digunakan: <i>host vehicle</i>, <i>own vehicle</i>, atau sederhananya
-        "kendaraan acuan".</p>
+      <p>Istilah ini dipertahankan dalam bahasa Inggris karena padanannya dalam bahasa Indonesia
+        ("kendaraan acuan") belum baku dan berpotensi ambigu. Padanan yang juga dipakai di
+        literatur: <i>host vehicle</i> dan <i>own vehicle</i>.</p>
       <table class="eq wide">
         <tr><th>Istilah</th><th>Arti sehari-hari</th></tr>
-        <tr><td>s_ego</td><td>posisi bemper depan <b>kendaraan acuan</b> di jalan (meter)</td></tr>
-        <tr><td>v_ego</td><td>kecepatan <b>kendaraan acuan</b> (m/s; km/h dibagi 3,6)</td></tr>
+        <tr><td>s_ego</td><td>posisi bemper depan <b>ego vehicle</b> di jalan (meter)</td></tr>
+        <tr><td>v_ego</td><td>kecepatan <b>ego vehicle</b> (m/s; km/h dibagi 3,6)</td></tr>
         <tr><td>lead / target</td><td>objek di depan: truk lain, LV, atau tanggul yang salah terdeteksi</td></tr>
-        <tr><td>gap</td><td>jarak dari bemper depan kendaraan acuan ke buritan objek</td></tr>
+        <tr><td>gap</td><td>jarak dari bemper depan ego vehicle ke buritan objek</td></tr>
         <tr><td>closing</td><td>kecepatan mendekat = v_ego − v_lead</td></tr>
         <tr><td>a_net</td><td>percepatan total (m/s²); negatif = melambat</td></tr>
         <tr><td>TTC</td><td>sisa waktu sebelum menabrak jika kondisi tidak berubah</td></tr>
@@ -697,7 +704,7 @@ a_mentah = −Δ(range_rate) / Δt</pre>
           dikembalikan ke TTC.</li>
         <li>Bila track hilang (tikungan atau saat menyalip), sistem kembali ke TTC — bukan
           menganggap jalan kosong.</li>
-        <li>Apabila terdapat banyak target, hanya target di dalam <b>koridor lajur</b> yang digunakan.</li>
+        <li>Apabila terdapat banyak target, hanya target di dalam <b>lane corridor</b> (koridor lajur) yang digunakan.</li>
       </ul>
 
       <h4>Objek statis — rambu, tanggul pembatas, tiang</h4>
@@ -910,15 +917,15 @@ mikroprosesor terpisah
         harus diukur terpisah, karena yang terbesar biasanya bukan kemampuan hitungnya:</p>
       <table class="eq wide">
         <tr><th>Bagian</th><th>Rentang tipikal</th><th>Cara mengukur</th></tr>
-        <tr><td>Umur data radar (data age)</td><td>10–50 ms</td><td>selisih waktu antar-frame radar dengan waktu penggunaan; atau setengah siklus object list</td></tr>
-        <tr><td>Menunggu siklus program (loop period)</td><td>5–20 ms</td><td>periode task kontrol; paling buruk satu periode penuh</td></tr>
-        <tr><td>Waktu hitung algoritme</td><td>&lt;1 ms</td><td>baca timer di awal dan akhir fungsi; hitungan iteratif <code>requiredDecel</code> hanya puluhan iterasi</td></tr>
-        <tr><td>Waktu tulis keluaran</td><td>1–10 ms</td><td>dari akhir hitungan sampai pin relai / perintah CAN terkirim</td></tr>
+        <tr><td><i>data age</i> radar (umur data)</td><td>10–50 ms</td><td>selisih waktu antar-frame radar dengan waktu penggunaan; atau setengah siklus object list</td></tr>
+        <tr><td><i>loop period</i> (periode siklus program)</td><td>5–20 ms</td><td>periode task kontrol; paling buruk satu periode penuh</td></tr>
+        <tr><td><i>compute time</i> (waktu hitung algoritme)</td><td>&lt;1 ms</td><td>baca timer di awal dan akhir fungsi; hitungan iteratif <code>requiredDecel</code> hanya puluhan iterasi</td></tr>
+        <tr><td><i>output write</i> (waktu tulis keluaran)</td><td>1–10 ms</td><td>dari akhir hitungan sampai pin relai / perintah CAN terkirim</td></tr>
       </table>
 
       <p>Pada mikroprosesor modern (kelas Cortex-M4/M7, 100–200 MHz), waktu hitung biasanya
         <b>di bawah 1 milidetik</b> — praktis dapat diabaikan dibanding bagian lain. Yang
-        mendominasi justru <b>umur data radar</b> dan <b>periode siklus program</b>.</p>
+        mendominasi justru <b><i>data age</i> radar</b> dan <b><i>loop period</i></b>.</p>
 
       <p><b>Cara mengukur tanpa alat mahal:</b> nyalakan satu pin GPIO tepat sebelum membaca
         radar, dan matikan tepat setelah perintah relai dikirim. Selisih lebar pulsa itu adalah
@@ -926,8 +933,8 @@ mikroprosesor terpisah
         Itu satu angka yang lebih berguna daripada spesifikasi prosesor.</p>
 
       <p>Di simulator, angka itu diisi sebagai <code>sensorDelay + processDelay</code>.
-        Idealnya <code>sensorDelay</code> = umur data radar, dan <code>processDelay</code> =
-        periode siklus + waktu hitung + waktu tulis keluaran.</p>
+        Idealnya <code>sensorDelay</code> = <i>data age</i> radar, dan <code>processDelay</code>
+        = <i>loop period</i> + <i>compute time</i> + <i>output write</i>.</p>
 
       <h4>Beban komputasi per kelas mikroprosesor</h4>
       <p>Beban logic prediktif per satu siklus kontrol relatif kecil. Perkiraan orde besarnya
