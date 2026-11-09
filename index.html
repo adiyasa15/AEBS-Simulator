@@ -97,25 +97,24 @@
 
       <label class="lbl" for="leadMode">Kejadian pada truk depan</label>
       <select id="leadMode">
-        <option value="none">Normal — tidak ada kejadian</option>
         <option value="brake2">Mengerem normal (2,0 m/s²)</option>
-        <option value="brake4">Mengerem keras (4,0 m/s²)</option>
+        <option value="brake4" selected>Mengerem keras (4,0 m/s²)</option>
         <option value="brake5">Mengerem darurat (5,0 m/s²)</option>
         <option value="coast">Mogok / lepas tenaga (0,3 m/s²)</option>
-        <option value="blowout" selected>Ban pecah (±3,0 m/s²)</option>
+        <option value="blowout">Ban pecah (±3,0 m/s²)</option>
         <option value="custom">Kustom — atur sendiri</option>
       </select>
-      <p class="hint" id="leadModeNote">Truk melambat, tidak mengerem seketika.</p>
+      <p class="hint" id="leadModeNote">Truk depan melambat sesuai nilai di atas.</p>
 
       <div id="leadCustom" hidden>
-        <div class="row"><label class="lbl" for="leadDecel">Perlambatan truk depan</label><output id="leadDecelo">3.0 m/s²</output></div>
-        <input type="range" id="leadDecel" min="0.2" max="6" step="0.1" value="3" />
+        <div class="row"><label class="lbl" for="leadDecel">Perlambatan truk depan</label><output id="leadDecelo">4.0 m/s²</output></div>
+        <input type="range" id="leadDecel" min="0.2" max="6" step="0.1" value="4" />
       </div>
 
       <label class="switch">
-        <input type="checkbox" id="leadBrake" checked />
+        <input type="checkbox" id="leadBrake" />
         <span class="slider"></span>
-        <span class="switch-label">Aktifkan kejadian ini</span>
+        <span class="switch-label">Kejadian ini benar-benar terjadi</span>
       </label>
     </section>
 

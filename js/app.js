@@ -229,11 +229,10 @@ el.resetBtn.addEventListener('click', () => hardReset(false));
   el[k].addEventListener('input', () => { syncLabels(); hardReset(false); });
 });
 el.aeb.addEventListener('change', () => hardReset(false));
-el.leadBrake.addEventListener('change', () => hardReset(false));
+el.leadBrake.addEventListener('change', () => { applyLeadMode(); hardReset(false); });
 el.leadDecel.addEventListener('input', () => { syncLabels(); hardReset(false); });
 
 const LEAD_MODES = {
-  none:    { decel: null, note: 'Truk depan melanjutkan perjalanan seperti biasa.' },
   brake2:  { decel: 2.0,  note: 'Mengerem wajar. Dari 40 km/h berhenti dalam ±5,5 detik / 86 m.' },
   brake4:  { decel: 4.0,  note: 'Mengerem keras. Berhenti dalam ±2,8 detik / 74 m.' },
   brake5:  { decel: 5.0,  note: 'Mengerem darurat. Berhenti dalam ±2,2 detik / 68 m.' },
@@ -242,21 +241,16 @@ const LEAD_MODES = {
   custom:  { decel: null, note: 'Atur sendiri laju perlambatan truk depan (0,2-6 m/s²).' }
 };
 
+// Dropdown hanya memilih JENIS kejadian. Checkbox menentukan apakah kejadian itu
+// benar-benar terjadi. Tanpa centang, truk depan terus melaju di kecepatannya.
 function applyLeadMode() {
   const key = el.leadMode.value;
-  const m = LEAD_MODES[key] || LEAD_MODES.none;
-  el.leadModeNote.textContent = m.note;
-  if (key === 'none') {
-    el.leadBrake.checked = false;
-    el.leadCustom.hidden = true;
-  } else if (key === 'custom') {
-    el.leadBrake.checked = true;
-    el.leadCustom.hidden = false;
-  } else {
-    el.leadBrake.checked = true;
-    el.leadDecel.value = m.decel;
-    el.leadCustom.hidden = true;
-  }
+  const m = LEAD_MODES[key] || LEAD_MODES.brake4;
+  el.leadCustom.hidden = key !== 'custom';
+  if (m.decel !== null) el.leadDecel.value = m.decel;
+  el.leadModeNote.textContent = el.leadBrake.checked
+    ? m.note
+    : m.note + ' — saat ini NONAKTIF (centang untuk menjalankan).';
 }
 el.leadMode.addEventListener('change', () => {
   applyLeadMode();
@@ -282,11 +276,12 @@ document.querySelectorAll('[data-scenario]').forEach((b) => {
     el.vLead.value = s.vLead;
     el.grade.value = s.grade;
     el.surface.value = s.surface;
+    el.leadBrake.checked = !!s.leadBrake;
     if (s.leadBrakeDecel) el.leadDecel.value = s.leadBrakeDecel;
     const modeMap = { 2: 'brake2', 3: 'blowout', 4: 'brake4', 5: 'brake5' };
-    if (!s.leadBrake) el.leadMode.value = 'none';
-    else if (s.leadBrakeDecel) el.leadMode.value = modeMap[+s.leadBrakeDecel] || 'custom';
-    else el.leadMode.value = 'custom';
+    el.leadMode.value = s.leadBrake
+      ? (modeMap[+el.leadDecel.value] || 'custom')
+      : el.leadMode.value;
     applyLeadMode();
     syncLabels();
     hardReset(true);
