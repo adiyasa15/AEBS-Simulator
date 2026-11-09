@@ -535,6 +535,44 @@ if v &gt; v_safe + 0,15:
         <b>bukan</b> pengganti AEB: ia memperbaiki kebiasaan, bukan mencegah tabrakan.
         Nilainya bisa diubah di panel kiri (slider <b>Governor headway</b>).</p>
 
+      <h4>Pada kecepatan maksimum 70 km/h</h4>
+      <p>Aturan 4 detik berbasis <b>waktu</b>, bukan meter. Jadi jaraknya naik bersama kecepatan:</p>
+      <table class="eq wide">
+        <tr><th>Kecepatan</th><th>20</th><th>30</th><th>40</th><th>50</th><th>60</th><th>70 km/h</th></tr>
+        <tr><td>Jarak 4 detik</td><td>22,2 m</td><td>33,3 m</td><td>44,4 m</td><td>55,6 m</td><td>66,7 m</td><td><b>77,8 m</b></td></tr>
+      </table>
+      <p>Governor memakai rumus itu apa adanya: <code>v_safe = gap ÷ 4</code>. Pada 70 km/h ia baru
+        merasa aman kalau jarak ≥ 77,8 m, dan akan memperlambat truk kalau jaraknya kurang.</p>
+
+      <p><b>Tapi 4 detik di 70 km/h hampir tidak menyisakan margin.</b> Jarak henti truk 66,5 t
+        pada 70 km/h (latency 0,23 s + build 0,85 s) adalah:</p>
+      <table class="eq wide">
+        <tr><th>a_cap</th><th>Jarak henti</th><th>Setara headway</th><th>Margin vs 4 detik (77,8 m)</th></tr>
+        <tr><td>3,0 m/s² (rem sehat)</td><td>75,7 m</td><td>3,89 s</td><td><b>+2,1 m</b></td></tr>
+        <tr><td>2,4 m/s² (fade ringan)</td><td>91,4 m</td><td>4,70 s</td><td>−13,7 m</td></tr>
+        <tr><td>1,8 m/s² (gaya rem = kosong)</td><td>117,7 m</td><td>6,05 s</td><td>−39,9 m</td></tr>
+      </table>
+
+      <p>Dan simulasi memperlihatkan hal yang lebih penting: <b>4 detik belum tentu cukup
+        meski remnya sehat</b>. Dengan gap 77,8 m dan objek diam di depan:</p>
+      <table class="eq wide">
+        <tr><th>Kondisi</th><th>Hasil</th></tr>
+        <tr><td>Muat, a_cap 3,0</td><td><b>TABRAKAN 4,3 km/h</b> — kurang beberapa sentimeter</td></tr>
+        <tr><td>Muat, a_cap 2,4</td><td>TABRAKAN 23,4 km/h</td></tr>
+        <tr><td>Muat, a_cap 1,8</td><td>TABRAKAN 39,4 km/h</td></tr>
+        <tr><td>Kosong 26 t</td><td>berhenti, sisa 0,5 m</td></tr>
+      </table>
+      <p>Penyebabnya: sistem tidak langsung mengerem penuh. Ia mulai dari <b>rem sebagian</b>
+        (level 0,55) pada t = 0,28 s, dan baru beralih penuh saat ambangnya tercapai. Selama fase
+        sebagian itu, perlambatan hanya 1,65 m/s² — cukup untuk memperpanjang jarak henti
+        melewati 77,8 m.</p>
+
+      <p class="warn"><b>Artinya:</b> pada 70 km/h, aturan 4 detik hanya memadai untuk unit
+        kosong atau unit bermuatan yang remnya benar-benar 3,0 m/s². Untuk unit bermuatan pada
+        kecepatan maksimum, angka yang aman adalah <b>5 detik (± 97 m)</b> — atau batasi 70 km/h
+        hanya untuk unit kosong. Ini bisa diuji di aplikasi: atur kecepatan 70, jarak 77,8 m,
+        objek diam, lalu bandingkan dengan 97 m.</p>
+
       <h3>8. Logic 3 — prediktif (feed-forward truk depan)</h3>
 
       <p><b>Definisi.</b> Logic ini tidak menilai bahaya dari <i>closing speed saat ini</i>,
@@ -871,10 +909,10 @@ m = massa (kg) · a = perlambatan (m/s²) · h = tinggi titik berat · L = wheel
         <tr><th>Tahap</th><th>t</th><th>gap</th><th>v</th><th>level</th><th>Catatan</th></tr>
         <tr><td colspan="6" style="color:#86efac"><b>KOSONG 26 t</b></td></tr>
         <tr><td>Rem sebagian</td><td>0,10 s</td><td>43,8 m</td><td>39,9 km/h</td><td>≈0,02</td><td>THW turun di bawah 4 s</td></tr>
-        <tr><td>Stabil</td><td>11,38 s</td><td>16,4 m</td><td>14,3 km/h</td><td>0</td><td>mengikuti truk depan</td></tr>
+        <tr><td>Stabil</td><td>11,88 s</td><td>16,1 m</td><td>14,0 km/h</td><td>0</td><td>mengikuti truk depan</td></tr>
         <tr><td colspan="6" style="color:#fca5a5"><b>MUAT 66,5 t</b></td></tr>
         <tr><td>Rem sebagian</td><td>0,10 s</td><td>43,8 m</td><td>39,9 km/h</td><td>≈0,02</td><td>THW turun di bawah 4 s</td></tr>
-        <tr><td>Stabil</td><td>11,75 s</td><td>16,2 m</td><td>14,2 km/h</td><td>0</td><td>mengikuti truk depan</td></tr>
+        <tr><td>Stabil</td><td>11,91 s</td><td>16,2 m</td><td>14,2 km/h</td><td>0</td><td>mengikuti truk depan</td></tr>
       </table>
       <p>Governor bereaksi hampir seketika (0,1 s), tapi dengan level sangat kecil. Hasilnya
         paling halus dari ketiga logic — dan jarak akhirnya paling besar.</p>
@@ -895,15 +933,15 @@ a_ff     = v² / (2·∞) = 0        → tidak pernah memicu apa pun</pre>
         <tr><th>Logic</th><th>Massa</th><th>Deselerasi puncak</th><th>Gap akhir</th><th>Energi rem</th></tr>
         <tr><td>Logic 1 TTC</td><td>26 t</td><td>4,60 m/s²</td><td>5,4 m</td><td>1,41 MJ</td></tr>
         <tr><td>Logic 1 TTC</td><td>66,5 t</td><td>3,00 m/s²</td><td>3,4 m</td><td>3,47 MJ</td></tr>
-        <tr><td>Logic 2 headway</td><td>26 t</td><td><b>1,11 m/s²</b></td><td><b>16,4 m</b></td><td><b>0,93 MJ</b></td></tr>
-        <tr><td>Logic 2 headway</td><td>66,5 t</td><td><b>0,96 m/s²</b></td><td><b>16,2 m</b></td><td>2,77 MJ</td></tr>
+        <tr><td>Logic 2 headway</td><td>26 t</td><td><b>0,92 m/s²</b></td><td><b>16,1 m</b></td><td>1,10 MJ</td></tr>
+        <tr><td>Logic 2 headway</td><td>66,5 t</td><td><b>1,06 m/s²</b></td><td><b>16,2 m</b></td><td>2,97 MJ</td></tr>
         <tr><td>Logic 3 prediktif</td><td>26 t</td><td>4,60 m/s²</td><td>5,4 m</td><td>1,41 MJ</td></tr>
         <tr><td>Logic 3 prediktif</td><td>66,5 t</td><td>3,00 m/s²</td><td>3,4 m</td><td>3,47 MJ</td></tr>
       </table>
 
       <p><b>Tiga hal yang perlu dicatat:</b></p>
       <ul>
-        <li><b>Logic 2 paling halus</b> (1,1 m/s² vs 4,6 m/s²) dan menyisakan jarak paling besar
+        <li><b>Logic 2 paling halus</b> (0,9 m/s² vs 4,6 m/s²) dan menyisakan jarak paling besar
           (16 m vs 3–5 m). Tapi ia mulai bekerja 0,1 detik setelah simulasi mulai — di jalan
           nyata artinya sistem akan terus-menerus memperlambat truk setiap kali jarak menyentuh
           4 detik. Bisa terasa mengganggu bagi pengemudi.</li>

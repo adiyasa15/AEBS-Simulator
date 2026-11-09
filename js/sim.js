@@ -209,8 +209,10 @@ export class Sim {
     }
 
     // hanya kirim perintah baru kalau perubahannya berarti (kontrol kontinu tiap 5 ms
-    // akan membanjiri antrean aktuator)
-    if (Math.abs(desired - this.lastDesired) > 0.08) {
+    // akan membanjiri antrean aktuator). Pelepasan rem (desired = 0) HARUS selalu dikirim,
+    // kalau tidak level tersangkut di nilai terakhir dan truk melambat terus.
+    const release = desired === 0 && this.lastDesired !== 0;
+    if (release || Math.abs(desired - this.lastDesired) > 0.05) {
       this.queue.push({ t: this.t + p.latency, level: desired });
       if (this.queue.length > 40) this.queue.shift();
       this.lastDesired = desired;
