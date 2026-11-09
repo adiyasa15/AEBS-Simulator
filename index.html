@@ -99,14 +99,18 @@
       <select id="leadMode">
         <option value="none">Normal — tidak ada kejadian</option>
         <option value="brake2">Mengerem normal (2,0 m/s²)</option>
+        <option value="brake4">Mengerem keras (4,0 m/s²)</option>
         <option value="brake5">Mengerem darurat (5,0 m/s²)</option>
         <option value="coast">Mogok / lepas tenaga (0,3 m/s²)</option>
         <option value="blowout" selected>Ban pecah (±3,0 m/s²)</option>
+        <option value="custom">Kustom — atur sendiri</option>
       </select>
       <p class="hint" id="leadModeNote">Truk melambat, tidak mengerem seketika.</p>
 
-      <div class="row"><label class="lbl" for="leadDecel">Perlambatan truk depan</label><output id="leadDecelo">3.0 m/s²</output></div>
-      <input type="range" id="leadDecel" min="0.2" max="6" step="0.1" value="3" />
+      <div id="leadCustom" hidden>
+        <div class="row"><label class="lbl" for="leadDecel">Perlambatan truk depan</label><output id="leadDecelo">3.0 m/s²</output></div>
+        <input type="range" id="leadDecel" min="0.2" max="6" step="0.1" value="3" />
+      </div>
 
       <label class="switch">
         <input type="checkbox" id="leadBrake" checked />
@@ -1152,8 +1156,8 @@ energi rem total  = 3,47 MJ</pre>
       <h4>Cara model merepresentasikannya</h4>
       <table class="eq wide">
         <tr><th>Situasi</th><th>Cara mengaturnya di aplikasi</th></tr>
-        <tr><td>Truk depan mengerem habis lalu berhenti</td><td>centang <b>Truk depan mengerem mendadak</b>, atur <b>Laju rem truk depan</b> (0,5–6 m/s²), dan kecepatan truk depan = kecepatan kita</td></tr>
-        <tr><td>Truk sudah berhenti / mogok di lajur</td><td>kecepatan truk depan = 0, centang rem mendadak <b>tidak perlu</b></td></tr>
+        <tr><td>Truk depan mengerem habis lalu berhenti</td><td>pilih <b>Mengerem keras / darurat</b> pada <b>Kejadian pada truk depan</b>, dan samakan kecepatan truk depan dengan kita</td></tr>
+        <tr><td>Truk sudah berhenti / mogok di lajur</td><td>kecepatan truk depan = 0; pilihan kejadian tidak perlu diubah</td></tr>
         <tr><td>Truk baru terlihat setelah tikungan</td><td>sama seperti di atas — objek statis yang muncul tiba-tiba</td></tr>
       </table>
       <p>Model memakai perlambatan tetap: truk depan melambat dengan laju yang dipilih mulai
@@ -1243,9 +1247,9 @@ energi rem total  = 3,47 MJ</pre>
           pun status targetnya.</li>
       </ol>
 
-      <p>Untuk mencoba sendiri: centang <b>Truk depan mengerem mendadak</b>, geser
-        <b>Laju rem truk depan</b> ke 5 m/s², samakan kecepatan ego dan truk depan, lalu bandingkan
-        ketiga logic. Chip <b>"Truk berhenti mendadak"</b> sudah menyiapkan kombinasi itu.</p>
+      <p>Untuk mencoba sendiri: pilih <b>Mengerem darurat</b> pada <b>Kejadian pada truk depan</b>,
+        samakan kecepatan ego dan truk depan, lalu bandingkan ketiga logic. Chip
+        <b>"Truk berhenti mendadak"</b> sudah menyiapkan kombinasi itu.</p>
 
       <h3>17. Batasan model</h3>
       <ul>

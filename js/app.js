@@ -24,7 +24,7 @@ const el = {
   headway: $('#headway'), headwayo: $('#headwayo'),
   govDecel: $('#govDecel'), govDecelo: $('#govDecelo'),
   leadBrake: $('#leadBrake'), leadDecel: $('#leadDecel'), leadDecelo: $('#leadDecelo'),
-  leadMode: $('#leadMode'), leadModeNote: $('#leadModeNote'),
+  leadMode: $('#leadMode'), leadModeNote: $('#leadModeNote'), leadCustom: $('#leadCustom'),
   playBtn: $('#playBtn'),
   resetBtn: $('#resetBtn'),
   view: $('#view'),
@@ -235,19 +235,31 @@ el.leadDecel.addEventListener('input', () => { syncLabels(); hardReset(false); }
 const LEAD_MODES = {
   none:    { decel: null, note: 'Truk depan melanjutkan perjalanan seperti biasa.' },
   brake2:  { decel: 2.0,  note: 'Mengerem wajar. Dari 40 km/h berhenti dalam ±5,5 detik / 86 m.' },
+  brake4:  { decel: 4.0,  note: 'Mengerem keras. Berhenti dalam ±2,8 detik / 74 m.' },
   brake5:  { decel: 5.0,  note: 'Mengerem darurat. Berhenti dalam ±2,2 detik / 68 m.' },
   coast:   { decel: 0.3,  note: 'Tenaga hilang, truk meluncur lambat. Berhenti butuh ±37 detik / 410 m.' },
-  blowout: { decel: 3.0,  note: 'Ban pecah: seretan naik, truk melambat keras dan arahnya tidak stabil.' }
+  blowout: { decel: 3.0,  note: 'Ban pecah: seretan naik, truk melambat keras dan arahnya tidak stabil.' },
+  custom:  { decel: null, note: 'Atur sendiri laju perlambatan truk depan (0,2-6 m/s²).' }
 };
-el.leadMode.addEventListener('change', () => {
-  const m = LEAD_MODES[el.leadMode.value];
+
+function applyLeadMode() {
+  const key = el.leadMode.value;
+  const m = LEAD_MODES[key] || LEAD_MODES.none;
   el.leadModeNote.textContent = m.note;
-  if (m.decel === null) {
+  if (key === 'none') {
     el.leadBrake.checked = false;
+    el.leadCustom.hidden = true;
+  } else if (key === 'custom') {
+    el.leadBrake.checked = true;
+    el.leadCustom.hidden = false;
   } else {
     el.leadBrake.checked = true;
     el.leadDecel.value = m.decel;
+    el.leadCustom.hidden = true;
   }
+}
+el.leadMode.addEventListener('change', () => {
+  applyLeadMode();
   syncLabels();
   hardReset(false);
 });
@@ -270,8 +282,12 @@ document.querySelectorAll('[data-scenario]').forEach((b) => {
     el.vLead.value = s.vLead;
     el.grade.value = s.grade;
     el.surface.value = s.surface;
-    el.leadBrake.checked = !!s.leadBrake;
     if (s.leadBrakeDecel) el.leadDecel.value = s.leadBrakeDecel;
+    const modeMap = { 2: 'brake2', 3: 'blowout', 4: 'brake4', 5: 'brake5' };
+    if (!s.leadBrake) el.leadMode.value = 'none';
+    else if (s.leadBrakeDecel) el.leadMode.value = modeMap[+s.leadBrakeDecel] || 'custom';
+    else el.leadMode.value = 'custom';
+    applyLeadMode();
     syncLabels();
     hardReset(true);
   });

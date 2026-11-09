@@ -114,8 +114,8 @@ export const SCENARIOS = {
   sudden:   { v0: 55, gap0: 45, vLead: 0,  grade: 2,  surface: '0.6' },
   lowmu:    { v0: 35, gap0: 50, vLead: 0,  grade: 0,  surface: '0.32' },
   // konvoi haul road: kecepatan hampir sama, jarak rapat
-  convoy:   { v0: 40, gap0: 15, vLead: 38, grade: 0,  surface: '0.6', leadBrake: true },
-  headway4: { v0: 40, gap0: 44, vLead: 38, grade: 0,  surface: '0.6', leadBrake: true },
+  convoy:   { v0: 40, gap0: 15, vLead: 38, grade: 0,  surface: '0.6', leadBrake: true, leadBrakeDecel: 4 },
+  headway4: { v0: 40, gap0: 44, vLead: 38, grade: 0,  surface: '0.6', leadBrake: true, leadBrakeDecel: 4 },
   // truk depan sekecepatan kita lalu mengerem habis sampai berhenti
   suddenStop: { v0: 40, gap0: 44, vLead: 40, grade: 0, surface: '0.6', leadBrake: true, leadBrakeDecel: 5 }
 };
