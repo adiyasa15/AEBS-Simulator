@@ -21,6 +21,7 @@ const el = {
   partialTTC: $('#partialTTC'), partialTTCo: $('#partialTTCo'),
   fullTTC: $('#fullTTC'), fullTTCo: $('#fullTTCo'),
   filterTau: $('#filterTau'), filterTauo: $('#filterTauo'),
+  dynTTC: $('#dynTTC'), dynNote: $('#dynNote'),
   logic: $('#logic'),
   headway: $('#headway'), headwayo: $('#headwayo'),
   govDecel: $('#govDecel'), govDecelo: $('#govDecelo'),
@@ -148,7 +149,8 @@ function readCfg() {
     warnTTC: +el.warnTTC.value,
     partialTTC: +el.partialTTC.value,
     fullTTC: +el.fullTTC.value,
-    filterTau: +el.filterTau.value
+    filterTau: +el.filterTau.value,
+    dynamicTTC: el.dynTTC.checked
     ,
     logic: el.logic.value,
     headway: +el.headway.value,
@@ -234,6 +236,7 @@ el.resetBtn.addEventListener('click', () => hardReset(false));
 el.aeb.addEventListener('change', () => hardReset(false));
 el.leadBrake.addEventListener('change', () => { applyLeadMode(); hardReset(false); });
 el.leadDecel.addEventListener('input', () => { syncLabels(); hardReset(false); });
+el.dynTTC.addEventListener('change', () => hardReset(false));
 
 const LEAD_MODES = {
   brake2:  { decel: 2.0,  note: 'Mengerem wajar. Dari 40 km/h berhenti dalam ±5,5 detik / 86 m.' },
@@ -314,6 +317,16 @@ function updateHUD(force = false) {
   el.hBrake.textContent = `${Math.round(sim.applied * 100)} %`;
   el.hStop.textContent = `${sim.stopDist().toFixed(0)} m`;
   el.hEnergy.textContent = `${(sim.brakeEnergy / 1e6).toFixed(2)} MJ`;
+  if (el.dynNote) {
+    const a = Math.max(0.3, sim.params.aAvail);
+    const tMin = sim.params.latency + sim.vEgo / (2 * a);
+    const base = [sim.cfg.warnTTC, sim.cfg.partialTTC, sim.cfg.fullTTC];
+    const k = [2.0, 1.5, 1.1];
+    const thr = base.map((b, i) => (el.dynTTC.checked ? Math.max(b, k[i] * tMin) : b));
+    el.dynNote.textContent = el.dynTTC.checked
+      ? `Berlaku: peringatan ${thr[0].toFixed(1)} s · sebagian ${thr[1].toFixed(1)} s · penuh ${thr[2].toFixed(1)} s (TTC min ${tMin.toFixed(2)} s)`
+      : `Ambang tetap: ${base[0]} / ${base[1]} / ${base[2]} s`;
+  }
   if (el.logMeta) {
     el.logMeta.textContent = `${sim.steps.toLocaleString('id-ID')} siklus · ${logCount} perubahan`;
   }

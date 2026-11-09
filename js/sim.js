@@ -159,11 +159,19 @@ export class Sim {
     let stage = 'cruise';
 
     if (c.aebEnabled) {
-      if (ttc <= c.fullTTC || (cl > 0.05 && this.aReq >= p.aAvail * 0.9)) {
+      // Ambang TTC tidak tetap: diturunkan dari kemampuan truk saat itu.
+      // TTC_min = latency + v/(2a) adalah batas fisik; ambang di bawahnya tidak berguna.
+      const ttcMin = p.latency + this.vEgo / (2 * Math.max(0.3, p.aAvail));
+      const useDyn = c.dynamicTTC !== false;
+      const thrFull = useDyn ? Math.max(c.fullTTC, 1.1 * ttcMin) : c.fullTTC;
+      const thrPart = useDyn ? Math.max(c.partialTTC, 1.5 * ttcMin) : c.partialTTC;
+      const thrWarn = useDyn ? Math.max(c.warnTTC, 2.0 * ttcMin) : c.warnTTC;
+
+      if (ttc <= thrFull || (cl > 0.05 && this.aReq >= p.aAvail * 0.9)) {
         desired = 1; stage = 'full';
-      } else if (ttc <= c.partialTTC || (cl > 0.05 && this.aReq >= p.aAvail * 0.5)) {
+      } else if (ttc <= thrPart || (cl > 0.05 && this.aReq >= p.aAvail * 0.5)) {
         desired = 0.55; stage = 'partial';
-      } else if (ttc <= c.warnTTC) {
+      } else if (ttc <= thrWarn) {
         stage = 'warn';
       }
 

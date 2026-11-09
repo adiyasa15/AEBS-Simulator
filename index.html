@@ -86,6 +86,13 @@
 
         <div class="row"><label class="lbl" for="filterTau">Filter a_lead</label><output id="filterTauo">0.15 s</output></div>
         <input type="range" id="filterTau" min="0.05" max="0.6" step="0.01" value="0.15" />
+
+        <label class="switch">
+          <input type="checkbox" id="dynTTC" checked />
+          <span class="slider"></span>
+          <span class="switch-label">Ambang TTC mengikuti kemampuan rem</span>
+        </label>
+        <p class="hint" id="dynNote">—</p>
       </details>
     </section>
 
@@ -414,10 +421,25 @@ applied  naik linear sebesar dt / brakeBuild          (bawaan 0,85 s)</pre>
       <pre class="formula">TTC   = gap / closing                (tak terhingga jika closing ≤ 0,05)
 a_req = closing² / (2 · gap)
 
-TTC ≤ 0,9 s atau a_req ≥ 0,9 · a_tersedia   → level 1,00 (rem penuh)
-TTC ≤ 1,8 s atau a_req ≥ 0,5 · a_tersedia   → level 0,55 (rem sebagian)
-TTC ≤ 2,6 s                                  → peringatan saja
-gap &lt; 4 m                                    → level 1,00 (jaring pengaman)</pre>
+TTC_min = latency + v / (2 · a_tersedia)
+
+ambang_penuh   = max(0,9 ; 1,1 · TTC_min)
+ambang_sebagian= max(1,8 ; 1,5 · TTC_min)
+ambang_peringatan = max(2,6 ; 2,0 · TTC_min)
+
+TTC ≤ ambang_penuh     atau a_req ≥ 0,9 · a_tersedia  → level 1,00
+TTC ≤ ambang_sebagian  atau a_req ≥ 0,5 · a_tersedia  → level 0,55
+TTC ≤ ambang_peringatan                              → peringatan
+gap &lt; 4 m                                            → level 1,00</pre>
+      <p>Ambang TTC tidak berupa konstanta. Nilainya naik mengikuti <code>TTC_min</code>, yaitu
+        waktu minimum yang dibutuhkan truk untuk berhenti pada kecepatan dan kemampuan rem saat
+        itu. Karena <code>a_tersedia</code> bergantung pada massa, unit bermuatan otomatis memakai
+        ambang yang lebih awal daripada unit kosong.</p>
+      <table class="eq wide">
+        <tr><th>Kecepatan</th><th>Muat 66,5 t (a 3,0)</th><th>Kosong 26 t (a 4,6)</th></tr>
+        <tr><td>44 km/h</td><td>penuh 2,5 s · sebagian 3,5 s</td><td>penuh 1,7 s · sebagian 2,3 s</td></tr>
+        <tr><td>70 km/h</td><td>penuh 3,8 s · sebagian 5,2 s</td><td>penuh 2,6 s · sebagian 3,5 s</td></tr>
+      </table>
       <p>Logic ini menilai bahaya dari kecepatan menutup jarak saat itu. Apabila dua kendaraan
         bergerak dengan kecepatan hampir sama, nilai TTC menjadi sangat besar meskipun jaraknya
         pendek, sehingga pemicu baru bekerja setelah kendaraan depan mengerem.</p>
