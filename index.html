@@ -652,6 +652,79 @@ if v &gt; v_safe + 0,15:
         <li>Banyak target: hanya target <b>di dalam koridor lajur</b> yang dipakai.</li>
       </ul>
 
+      <h4>Objek statis — rambu, tanggul pembatas, tiang</h4>
+      <p><b>Radar tidak membaca rambu.</b> Tidak ada OCR maupun klasifikasi bentuk. Radar hanya
+        melihat satu titik dengan jarak, range-rate, dan RCS. Rambu batas kecepatan, tiang,
+        tanggul pemisah jalur — semuanya tampak sama: <b>objek statis</b>.</p>
+
+      <p>Untuk objek statis, seluruh masukan prediktif menjadi nol:</p>
+      <pre class="formula">v_lead    = v_ego + range_rate = 0       (benda diam)
+a_lead    = 0                            (tidak sedang mengerem)
+leadDist  = 0                            (v_lead &lt; 0,3)
+budget    = gap − margin
+
+→ rumusnya merosot menjadi "jarak henti", bukan prediksi</pre>
+
+      <p class="warn">Ini kelemahan desain yang ditemukan saat pengujian: karena rumusnya berubah
+        menjadi kriteria jarak henti, pemicunya terjadi dari jarak yang sangat jauh. Pada
+        70 km/h, rem sebagian akan aktif bila ada objek statis dalam <b>268 meter</b> — di jalan
+        tambang yang penuh tanggul, itu berarti truk mengerem hampir terus-menerus.</p>
+
+      <table class="eq wide">
+        <tr><th>Kecepatan</th><th>Prediktif murni: sebagian / penuh</th><th>Sekarang (TTC + a_req): sebagian / penuh</th></tr>
+        <tr><td>20 km/h</td><td>27 m / 16 m</td><td>10 m / 6 m</td></tr>
+        <tr><td>30 km/h</td><td>55 m / 29 m</td><td>23 m / 13 m</td></tr>
+        <tr><td>40 km/h</td><td>93 m / 48 m</td><td>41 m / 23 m</td></tr>
+        <tr><td>50 km/h</td><td>141 m / 71 m</td><td>64 m / 36 m</td></tr>
+        <tr><td>60 km/h</td><td>199 m / 98 m</td><td>93 m / 51 m</td></tr>
+        <tr><td>70 km/h</td><td><b>268 m / 130 m</b></td><td><b>126 m / 70 m</b></td></tr>
+      </table>
+
+      <p><b>Perbaikannya:</b> feed-forward hanya dipakai untuk target yang <b>pernah bergerak</b>
+        (kendaraan). Objek yang sejak awal diam dipercayakan ke TTC dan <code>a_req</code>, yang
+        ambangnya berbasis waktu, bukan jarak henti. Hasilnya: perbaikan jarak pemicu 2–3 kali
+        lipat, dan logic 3 pada objek statis identik dengan logic 1.</p>
+
+      <p>Sebagai patokan, pada kecepatan yang sama atau di atas 43 km/h, pemicu <code>a_req</code>
+        justru terjadi lebih awal daripada aturan 4 detik — karena a_req adalah kriteria jarak
+        henti, sementara 4 detik adalah kriteria waktu. Di bawah 43 km/h, aturan 4 detik yang
+        lebih ketat.</p>
+
+      <h4>Tanggul pemisah jalur kosongan dan muatan</h4>
+      <p>Tanggul pemisah adalah <b>objek statis memanjang</b> — perilakunya sama seperti rambu di
+        atas, tapi ada dua faktor tambahan:</p>
+      <ul>
+        <li><b>Jalan lurus:</b> dengan FoV selebar badan truk, tanggul berada di luar berkas —
+          tidak terdeteksi, tidak ada masalah.</li>
+        <li><b>Tikungan:</b> berkas lurus ke depan sedangkan lajur membelok. Berkas keluar dari
+          lajur (menyimpang &gt; 5 m) mulai jarak:</li>
+      </ul>
+      <table class="eq wide">
+        <tr><th>Radius tikungan</th><th>80 m</th><th>100 m</th><th>150 m</th><th>200 m</th><th>300 m</th></tr>
+        <tr><td>Berkas keluar lajur pada</td><td>28 m</td><td>32 m</td><td>39 m</td><td>45 m</td><td>55 m</td></tr>
+      </table>
+      <p>Jadi pada tikungan R = 150 m, mulai 39 m berkas menunjuk tanggul — dan pada 70 km/h
+        pemicu <code>a_req</code> sudah aktif di 126 m, jauh sebelum itu. Artinya <b>di tikungan,
+        pemicu rem karena tanggul bukan soal logic, tapi soal geometri</b>.</p>
+
+      <p class="warn">Konsekuensinya: memperbaiki logic tidak akan menghilangkan rem palsu di
+        tikungan. Yang diperlukan adalah penyaringan persepsi — RCS minimum, konfirmasi
+        multi-frame, dan koreksi sudut dari yaw-rate — plus batas kecepatan per radius tikungan.
+        Lihat tabel radius pada dokumen <code>ANALISIS-RISIKO.md</code>.</p>
+
+      <h4>Kalau ingin truk mematuhi rambu batas kecepatan</h4>
+      <p>Itu bukan pekerjaan radar, dan bukan pekerjaan logic AEB. Radar tidak bisa membaca angka
+        pada rambu. Yang diperlukan adalah sumber lain:</p>
+      <table class="eq wide">
+        <tr><th>Pendekatan</th><th>Kebutuhan</th><th>Cocok untuk</th></tr>
+        <tr><td>Peta kecepatan per segmen + GNSS</td><td>modul GNSS, data rute</td><td>haul road tetap — paling praktis</td></tr>
+        <tr><td>Operator memasukkan batas hari itu</td><td>tanpa hardware tambahan</td><td>uji coba awal</td></tr>
+        <tr><td>Kamera pembaca rambu</td><td>kamera + klasifikasi</td><td>tidak disarankan: bermasalah di gelap &amp; debu</td></tr>
+      </table>
+      <p>Untuk haul road yang rutenya tetap dan berulang, <b>peta kecepatan + GNSS</b> jauh lebih
+        andal daripada membaca rambu — dan bisa langsung dijadikan masukan ke governor headway
+        (batas atas <code>v_safe</code> per segmen).</p>
+
       <h3>9. Alur keputusan — dari radar ke perlambatan</h3>
       <p>Diagram ini merangkum ketiga logic yang sudah dijelaskan di bagian 6–8, dan
         menunjukkan di mana masing-masing berada dalam rantai keseluruhan dari radar sampai

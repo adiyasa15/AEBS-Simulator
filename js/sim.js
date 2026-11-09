@@ -65,6 +65,7 @@ export class Sim {
     this.settledT = 0;
     this.leadBrakeApplied = false;
     this.aLeadEst = 0;        // estimasi perlambatan truk depan (di radar: turunan range-rate)
+    this.leadMovingSeen = false;  // target pernah bergerak? (= kendaraan, bukan rambu/tanggul)
     this.brakeEnergy = 0;     // Joule — energi yang dibuang lewat rem servis
     this.peakDecel = 0;       // m/s²
     this.stage = c.aebEnabled ? 'cruise' : 'off';
@@ -140,6 +141,7 @@ export class Sim {
       this.vLead = Math.max(0, this.vLead - netLead * dt);
       this.leadBrakeApplied = true;
     }
+    if (this.vLead > 1.0) this.leadMovingSeen = true;
     // filter orde-1 ~0.15 s, meniru derivatif range-rate radar
     const aLeadRaw = dt > 0 ? (vLeadPrev - this.vLead) / dt : 0;
     this.aLeadEst += (aLeadRaw - this.aLeadEst) * Math.min(1, dt / 0.15);
@@ -164,7 +166,11 @@ export class Sim {
 
       // ---- pemicu prediktif: feed-forward perlambatan truk depan ----
       // Butuh a_ego sedemikian rupa sehingga jarak berhenti ego <= gap + jarak berhenti truk depan.
-      if (c.logic === 'predictive') {
+      // Feed-forward HANYA untuk target bergerak. Untuk objek statis (rambu, tanggul,
+      // pembatas jalan) a_lead selalu 0 sehingga rumusnya merosot menjadi "jarak henti",
+      // dan itu memicu rem dari jarak yang sangat jauh (268 m pada 70 km/h).
+      // Target statis diserahkan ke TTC/a_req yang ambangnya berbasis waktu.
+      if (c.logic === 'predictive' && this.leadMovingSeen) {
         const aL = Math.max(0, this.aLeadEst);
         // sisa jarak truk depan: kalau sudah berhenti = 0 (bukan tak terhingga),
         // kalau masih melaju tanpa mengerem = tak terhingga
