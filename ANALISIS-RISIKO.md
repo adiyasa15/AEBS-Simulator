@@ -438,3 +438,74 @@ jumlah near-miss (min gap < 5 m), per radius tikungan.
 6. Hasil brake test FAW JH6 kosong & bermuatan 66,5 t, termasuk di turunan.
 6b. Kondisi chipseal aktual: ada binder bleed? seberapa tebal debu batubara di permukaan?
 7. Radius tikungan minimum di 30 km haul road, dan batas kecepatan yang berlaku sekarang.
+
+---
+
+## Lampiran A — Beban mekanis dan keausan
+
+Dua besaran yang dihitung simulasi untuk menilai konsekuensi mekanis pengereman:
+
+```
+energi rem   E = ∫ (m · a_fric) · v · dt          [Joule]
+beban depan  ΔW = (m · a / g) · (h / L)          [ton-gaya]
+```
+
+| Kejadian (66,5 t) | Energi | Kenaikan suhu drum* |
+|---|---|---|
+| Rem penuh dari 40 km/h sampai berhenti | 4,10 MJ | ±17 °C |
+| Rem sebagian dari 40 ke 20 km/h | 3,08 MJ | ±13 °C |
+| Rem penuh dari 30 km/h sampai berhenti | 2,31 MJ | ±10 °C |
+
+\* asumsi 6 drum, massa efektif besi ±480 kg, kalor jenis 490 J/kg·K, tanpa pendinginan.
+Drum brake mulai kehilangan performa (fade) di sekitar 300 °C.
+
+Pada 3,0 m/s² dengan h = 1,9 m dan L = 4,2 m, beban pindah ke depan
+ΔW ≈ **+9,2 ton** — diterima axle depan, kingpin, tie rod, dan drag link, di luar beban statis.
+Angka ini batas atas karena model menganggap perlambatan terbagi rata; truk nyata memakai
+katup pengindra beban (load sensing) yang membatasi tekanan rem depan.
+
+Yang paling menentukan keausan bukan pengereman darurat yang sah, melainkan **pemicu palsu**.
+Sepuluh pemicu palsu berturut-turut menaikkan suhu drum ±130 °C tanpa kesempatan mendingin.
+
+## Lampiran B — Perangkat aktuator
+
+Rangkaian: radar → mikroprosesor terpisah → relai → solenoid → penyadapan tekanan rem
+(+ sensor pneumatik untuk umpan balik); cabang lain: motor DC → kabel → pedal kopling.
+
+Anggaran penundaan: radar 50–100 ms, mikroprosesor 10–30 ms, relai/katup 20–50 ms,
+kenaikan tekanan ke 75 % 200–600 ms. Total 0,3–0,8 s. Motor kopling 300–800 ms dan harus
+berjalan paralel, tidak serial.
+
+Beban komputasi logic prediktif per siklus (perkiraan): Cortex-M3 72 MHz tanpa FPU
+±0,2–0,4 ms; Cortex-M4F 84–168 MHz ±0,02–0,05 ms. Seluruh keluarga STM32 memadai; batas nyata
+bukan kecepatan hitung melainkan penanganan data radar tanpa blocking, watchdog, dan ketahanan
+kelistrikan.
+
+Umpan balik tekanan bukan umpan balik perlambatan. Tekanan yang sama dapat menghasilkan
+perlambatan berbeda sesuai kondisi kampas, suhu, penyetelan, massa, dan gesekan permukaan.
+Diperlukan umpan balik deselerasi (IMU) atau pembanding kecepatan roda.
+
+Fail-safe minimum: katup normally closed, rem pengemudi selalu menang, kebocoran pada titik
+penyadapan tidak mengurangi kemampuan rem servis, radar hilang berarti sistem mati dengan
+peringatan, dan rekaman 10 detik sebelum pemicu.
+
+## Lampiran C — Jenis kejadian pada kendaraan depan
+
+| Kejadian | Perlambatan | Berhenti dari 40 km/h |
+|---|---|---|
+| Mogok / lepas tenaga | 0,3 m/s² | ±37 detik, ±410 m |
+| Mengerem normal | 2,0 m/s² | 5,5 detik, 86 m |
+| Ban pecah | ±3,0 m/s² | 3,7 detik, 76 m |
+| Mengerem darurat | 5,0 m/s² | 2,2 detik, 68 m |
+
+Mogok bukan pengereman: kendaraan meluncur dan baru berhenti setelah ±410 m, sehingga menjadi
+penghalang bergerak lambat.
+
+Hasil simulasi pada jarak awal 44,4 m (40 km/h):
+
+| Kejadian | TTC relatif | Prediktif |
+|---|---|---|
+| Mogok (0,3) | berhenti, sisa 3,5 m | berhenti, sisa 3,5 m |
+| Ban pecah (3,0) | berhenti, sisa 0,3 m | berhenti, sisa 3,5 m |
+| Mengerem normal (2,0) | tabrakan 12,0 km/h | berhenti, sisa 3,4 m |
+| Mengerem darurat (5,0) | tabrakan 3,2 km/h | berhenti, sisa 3,7 m |
