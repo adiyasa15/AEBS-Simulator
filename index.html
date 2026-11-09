@@ -915,7 +915,110 @@ a_ff     = v² / (2·∞) = 0        → tidak pernah memicu apa pun</pre>
           sebagian sudah lebih dulu menstabilkan TTC.</li>
       </ul>
 
-      <h3>15. Batasan model</h3>
+      <h3>15. Contoh numerik — angka dimasukkan ke persamaan</h3>
+      <p class="lead">Bagian ini menunjukkan substitusi angkanya, dari variabel keadaan sampai
+        hasil akhir. Kasus: <b>FAW JH6 bermuatan 66,5 t</b>, 40 km/h mengejar truk yang melaju 15 km/h,
+        jarak awal 44,4 m, jalan datar, μ 0,60, logic TTC relatif.</p>
+
+      <h4>Langkah 0 — kondisi awal (t = 0)</h4>
+      <pre class="formula">v_ego   = 40 ÷ 3,6             = 11,111 m/s
+v_lead  = 15 ÷ 3,6             =  4,167 m/s
+gap     = 4 s × 11,111         = 44,40 m
+closing = 11,111 − 4,167       =  6,944 m/s      (25 km/h)
+TTC     = 44,40 ÷ 6,944        =  6,39 s
+a_req   = 6,944² ÷ (2 × 44,40) =  0,54 m/s²
+a_tersedia = min(0,6 × 9,81 ; 3,00) = min(5,89 ; 3,00) = 3,00 m/s²</pre>
+      <p>Karena a_req 0,54 jauh di bawah ambang 0,5 × 3,00 = 1,50, sistem masih diam.</p>
+
+      <h4>Langkah 1 — saat keputusan diambil (t = 4,20 s)</h4>
+      <pre class="formula">s_ego = 46,43 m      s_lead = 61,97 m
+gap     = 61,97 − 46,43        = 15,54 m
+closing = 11,001 − 4,167       =  6,835 m/s
+TTC     = 15,54 ÷ 6,835        =  2,27 s
+a_req   = 6,835² ÷ (2 × 15,54) = 46,72 ÷ 31,08 = 1,503 m/s²
+
+ambang sebagian = 0,5 × 3,00   = 1,50 m/s²
+1,503 ≥ 1,50                   → keputusan: REM SEBAGIAN
+level = 0,55
+a_diminta = 0,55 × 3,00        = 1,65 m/s²</pre>
+      <p>Perhatikan: yang memicu di sini <b>a_req</b>, bukan TTC. TTC 2,27 s masih di atas
+        ambang 1,8 s — tapi a_req sudah menyentuh ambangnya.</p>
+
+      <h4>Langkah 2 — perintah berjalan ke aktuator (t = 4,20 → 4,43 s)</h4>
+      <pre class="formula">tunda = sensorDelay + processDelay + valveDelay
+      = 0,12 + 0,06 + 0,05     = 0,23 s     → perintah sampai pada t = 4,43 s
+
+laju build = 1 ÷ brakeBuild = 1 ÷ 0,85 = 1,176 per detik
+
+pada t = 4,60 s (0,17 s setelah perintah sampai):
+applied = 1,176 × 0,17 = 0,206</pre>
+      <p>Selama 0,23 detik itu truk masih melaju tanpa tambahan rem sama sekali.</p>
+
+      <h4>Langkah 3 — gaya menjadi percepatan (t = 4,60 s)</h4>
+      <pre class="formula">v = 10,680 m/s
+
+a_fric   = applied × a_tersedia = 0,206 × 3,00        = 0,618 m/s²
+a_resist = 0,045 + (0,00016 × 114,06) = 0,045 + 0,018 = 0,063 m/s²
+a_grade  = 9,81 × 0 ÷ 100                             = 0
+a_retard = 0            (AEB aktif → throttle mati, retarder tidak dipakai)
+a_throttle = 0
+
+a_net = 0,618 + 0,063           = 0,681 m/s²
+        (grade, retarder, throttle semuanya 0)</pre>
+
+      <h4>Langkah 4 — satu langkah integrasi (dt = 0,005 s)</h4>
+      <pre class="formula">v′ = v − a_net × dt = 10,680 − 0,681 × 0,005
+   = 10,680 − 0,00340 = 10,6766 m/s          (turun 0,012 km/h)
+
+s′ = s + ½ (v + v′) × dt
+   = 50,75 + ½ (10,680 + 10,6766) × 0,005
+   = 50,75 + 0,0534 = 50,803 m</pre>
+
+      <h4>Langkah 5 — saat level mencapai 0,55 penuh (t = 5,50 s)</h4>
+      <pre class="formula">applied  = 0,550
+a_fric   = 0,550 × 3,00 = 1,650 m/s²
+a_resist = 0,045 + 0,00016 × 9,289² = 0,045 + 0,014 = 0,059 m/s²
+a_net    = 1,650 + 0,059 = 1,709 m/s²
+
+Δv per langkah = 1,709 × 0,005 = 0,00854 m/s
+
+energi rem per langkah = m × a_fric × v × dt
+                       = 66.500 kg × 1,650 × 9,289 × 0,005
+                       = 5.096 J  (≈ 5,1 kJ tiap 5 milidetik)</pre>
+
+      <h4>Langkah 6 — rem penuh (t = 6,32 s)</h4>
+      <pre class="formula">gap = 3,96 m  &lt; 4 m   → jaring pengaman aktif
+level = 1,00
+a_fric = 1,00 × 3,00 = 3,00 m/s²
+a_net  = 3,00 + 0,055 = 3,055 m/s²
+Δv per langkah = 3,055 × 0,005 = 0,01527 m/s</pre>
+
+      <h4>Langkah 7 — hasil akhir</h4>
+      <pre class="formula">t = 7,72 s : v_ego 15,1 km/h ≈ v_lead 15,0 km/h → closing ≈ 0
+t ≈ 10,9 s : stabil mengikuti, v 13,7 km/h, gap akhir 3,4 m
+
+deselerasi puncak = 3,00 m/s²
+energi rem total  = 3,47 MJ</pre>
+
+      <h4>Rekap seluruh langkah</h4>
+      <table class="eq wide">
+        <tr><th>t (s)</th><th>v ego</th><th>gap</th><th>closing</th><th>TTC</th><th>a_req</th><th>applied</th><th>a_net</th></tr>
+        <tr><td>0,00</td><td>40,0 km/h</td><td>44,40 m</td><td>6,944</td><td>6,39 s</td><td>0,54</td><td>0</td><td>0</td></tr>
+        <tr><td>3,88</td><td>39,6</td><td>17,73</td><td>6,847</td><td>2,59</td><td>1,32</td><td>0</td><td>0,064</td></tr>
+        <tr><td>4,20</td><td>39,6</td><td>15,54</td><td>6,835</td><td>2,27</td><td><b>1,503</b></td><td>0 → perintah</td><td>0,064</td></tr>
+        <tr><td>4,60</td><td>38,4</td><td>12,88</td><td>6,514</td><td>1,98</td><td>1,65</td><td>0,206</td><td>0,681</td></tr>
+        <tr><td>5,50</td><td>33,4</td><td>7,59</td><td>5,122</td><td>1,48</td><td>1,73</td><td>0,550</td><td>1,709</td></tr>
+        <tr><td>6,32</td><td>28,4</td><td><b>3,96</b></td><td>3,722</td><td>1,07</td><td>1,75</td><td>0,550 → 1,00</td><td>3,055</td></tr>
+        <tr><td>7,72</td><td>15,1</td><td>1,08</td><td>0,016</td><td>69 s</td><td>0</td><td>1,00</td><td>3,048</td></tr>
+      </table>
+
+      <p class="warn">Dua hal yang terlihat dari tabel ini: (1) keputusan rem sebagian dipicu
+        <b>a_req</b>, bukan TTC; (2) rem penuh tercapai lewat jaring <code>gap &lt; 4 m</code>,
+        bukan ambang TTC 0,9 s — karena TTC berhenti menurun begitu truk mulai melambat.
+        Di t = 7,72 TTC sempat terbaca 69 s, tanda bahwa TTC sangat sensitif saat closing
+        mendekati nol.</p>
+
+      <h3>16. Batasan model</h3>
       <ul>
         <li>1 dimensi — tanpa rotasi, tanpa manuver mengelak.</li>
         <li>Tanpa load transfer dan tanpa inersia rotasi. Faktor massa ekuivalen 1,04–1,06 belum
