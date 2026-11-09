@@ -171,7 +171,157 @@
         Tidak ada animasi atau kurva yang digambar manual — kecepatan, jarak, dan status
         datang dari persamaan di bawah.</p>
 
-      <h3>1. Variabel keadaan</h3>
+      <h3>1. Penjelasan sederhana — cara kerja simulasi ini</h3>
+      <p class="lead">Bagian ini tanpa rumus. Tujuannya supaya siapa pun bisa membaca apa yang
+        sebenarnya dihitung aplikasi ini, sebelum masuk ke bagian teknis di bawahnya.</p>
+
+      <h4>Gerak dipotong menjadi potongan 5 milidetik</h4>
+      <p>Cara kerja simulasi ini mirip film. Gerak yang mengalir dipotong menjadi bingkai-bingkai
+        sangat pendek. Bedanya, tiap bingkai <b>dihitung</b> dari hukum fisika, bukan direkam
+        kamera.</p>
+      <p>Panjang satu bingkai di sini <b>5 milidetik</b> (0,005 detik). Artinya dalam satu detik
+        ada <b>200 hitungan</b>. Itulah yang dimaksud <b>200 Hz</b> — <i>Hz (hertz) hanya berarti
+        "berapa kali per detik"</i>.</p>
+
+      <h4>Apa hubungan frekuensi dengan "integrasi"</h4>
+      <p><b>Integrasi</b> berarti menjumlahkan potongan-potongan kecil untuk mendapat hasil besar.
+        Contoh sehari-hari: kalau kamu tahu jarak yang ditempuh tiap detik, jarak total adalah
+        jumlahnya. Integrasi di sini sama: jarak total = jumlah dari semua potongan 5 milidetik.</p>
+      <p>Semakin kecil potongannya, semakin halus penjumlahannya. Ini efeknya pada satu kasus nyata
+        (truk 66,5 t, rem penuh dari 40 km/h):</p>
+      <table class="eq wide">
+        <tr><th>Frekuensi</th><th>Panjang satu langkah</th><th>Jarak henti terhitung</th><th>Selisih</th></tr>
+        <tr><td>200 Hz (dipakai)</td><td>5 ms</td><td>24,76 m</td><td>acuan</td></tr>
+        <tr><td>50 Hz</td><td>20 ms</td><td>24,84 m</td><td>+0,3 %</td></tr>
+        <tr><td>20 Hz</td><td>50 ms</td><td>25,01 m</td><td>+1,0 %</td></tr>
+        <tr><td>10 Hz</td><td>100 ms</td><td>25,29 m</td><td>+2,1 %</td></tr>
+        <tr><td>4 Hz</td><td>250 ms</td><td>26,19 m</td><td>+5,8 %</td></tr>
+      </table>
+      <p>Perhatikan: selisihnya kecil sampai 20 Hz, lalu membesar. <b>Kenapa?</b> Karena dalam satu
+        langkah, gaya dianggap <i>tetap</i>. Selama 5 ms anggapan itu masih wajar — tekanan rem
+        belum banyak berubah. Kalau satu langkah 250 ms, di dalamnya tekanan rem sudah naik jauh,
+        jadi hasilnya meleset.</p>
+      <p class="tl2note">Fakta menarik: kalau gaya benar-benar konstan, semua frekuensi memberi hasil
+        yang sama persis (20,576 m). Kesalahan baru muncul saat gaya <i>berubah cepat</i> — dan di
+        sistem rem, itulah yang justru selalu terjadi.</p>
+
+      <h4>Kenapa simulator 200 Hz, padahal ECU truk lebih lambat</h4>
+      <p>200 Hz adalah pilihan untuk <b>ketepatan hitungan</b>, bukan gambaran hardware. Radar
+        mengirim data tiap 20–50 ms, dan sistem AEB di truk cukup berjalan 20–50 Hz. Semua
+        keterlambatan nyata sudah dimasukkan sebagai parameter tersendiri
+        (<code>latency</code> 0,23 s dan <code>build-up</code> 0,85 s), jadi memperlambat
+        hitungan simulasi tidak akan membuat sistem terlihat lebih responsif.</p>
+
+      <h4>Istilah "ego" — apa artinya</h4>
+      <p><b>Ego</b> di sini bukan sifat manusia. Ini istilah baku di dunia kendaraan otonom:
+        <i>ego vehicle</i> = <b>kendaraan yang sedang kita amati atau kendalikan sendiri</b>.
+        Istilah terkait <i>ego-motion</i> berarti "gerak diri sendiri", dipakai untuk membedakan
+        dari gerak objek lain.</p>
+      <p>Padanan yang sering dipakai: <i>host vehicle</i>, <i>own vehicle</i>, atau sederhananya
+        "truk kita".</p>
+      <table class="eq wide">
+        <tr><th>Istilah</th><th>Arti sehari-hari</th></tr>
+        <tr><td>s_ego</td><td>posisi bemper depan <b>truk kita</b> di jalan (meter)</td></tr>
+        <tr><td>v_ego</td><td>kecepatan <b>truk kita</b> (m/s; km/h dibagi 3,6)</td></tr>
+        <tr><td>lead / target</td><td>objek di depan: truk lain, LV, atau tanggul yang salah terdeteksi</td></tr>
+        <tr><td>gap</td><td>jarak dari bemper depan kita ke buritan objek</td></tr>
+        <tr><td>closing</td><td>kecepatan mendekat = v_ego − v_lead</td></tr>
+        <tr><td>a_net</td><td>percepatan total (m/s²); negatif = melambat</td></tr>
+        <tr><td>TTC</td><td>sisa waktu sebelum menabrak kalau kondisi tidak berubah</td></tr>
+        <tr><td>THW</td><td>jarak dalam satuan waktu (gap ÷ kecepatan) — dasar aturan 4 detik</td></tr>
+        <tr><td>level</td><td>seberapa keras rem diminta: 0 = lepas, 0,55 = sebagian, 1 = penuh</td></tr>
+        <tr><td>a_tersedia</td><td>perlambatan maksimum yang <i>mungkin</i> dihasilkan saat itu</td></tr>
+      </table>
+
+      <h4>Perhitungan berputar, bukan berjalan lurus</h4>
+      <p>Ini yang sering membingungkan: percepatan bukan hasil akhir. Percepatan adalah
+        <b>titik tengah</b> dari sebuah lingkaran yang berputar 200 kali per detik.</p>
+      <p>Percepatan dihitung dari gaya → mengubah kecepatan → mengubah posisi → mengubah jarak ke
+        objek → mengubah keputusan rem → dan keputusan itu mengubah gaya. Putaran berikutnya
+        dimulai lagi.</p>
+      <svg viewBox="0 0 720 210" class="diagram" role="img" aria-label="Lingkaran perhitungan tiap 5 milidetik">
+        <defs>
+          <marker id="la" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#5b7793"/>
+          </marker>
+        </defs>
+
+        <rect x="19" y="30" width="130" height="54" rx="8" class="dbox" style="stroke:#f59e0b"/>
+        <text x="84" y="50" class="dt" text-anchor="middle" fill="#fbbf24">a_net</text>
+        <text x="84" y="66" class="ds" text-anchor="middle">ΣF / m</text>
+        <text x="84" y="78" class="ds" text-anchor="middle">gaya → percepatan</text>
+
+        <rect x="157" y="30" width="130" height="54" rx="8" class="dbox"/>
+        <text x="222" y="50" class="dt" text-anchor="middle">v′</text>
+        <text x="222" y="66" class="ds" text-anchor="middle">v − a·dt</text>
+        <text x="222" y="78" class="ds" text-anchor="middle">kecepatan baru</text>
+
+        <rect x="295" y="30" width="130" height="54" rx="8" class="dbox"/>
+        <text x="360" y="50" class="dt" text-anchor="middle">s′</text>
+        <text x="360" y="66" class="ds" text-anchor="middle">s + ½(v+v′)·dt</text>
+        <text x="360" y="78" class="ds" text-anchor="middle">posisi baru</text>
+
+        <rect x="433" y="30" width="130" height="54" rx="8" class="dbox"/>
+        <text x="498" y="50" class="dt" text-anchor="middle">gap · TTC</text>
+        <text x="498" y="66" class="ds" text-anchor="middle">a_req</text>
+        <text x="498" y="78" class="ds" text-anchor="middle">seberapa bahaya</text>
+
+        <rect x="571" y="30" width="130" height="54" rx="8" class="dbox" style="stroke:#f59e0b"/>
+        <text x="636" y="50" class="dt" text-anchor="middle" fill="#fbbf24">level 0…1</text>
+        <text x="636" y="66" class="ds" text-anchor="middle">keputusan rem</text>
+        <text x="636" y="78" class="ds" text-anchor="middle">sebagian / penuh</text>
+
+        <line x1="149" y1="57" x2="155" y2="57" class="darrow" marker-end="url(#la)"/>
+        <line x1="287" y1="57" x2="293" y2="57" class="darrow" marker-end="url(#la)"/>
+        <line x1="425" y1="57" x2="431" y2="57" class="darrow" marker-end="url(#la)"/>
+        <line x1="563" y1="57" x2="569" y2="57" class="darrow" marker-end="url(#la)"/>
+
+        <path d="M636,84 L636,120 L474,120" class="darrow" marker-end="url(#la)"/>
+
+        <rect x="250" y="104" width="222" height="46" rx="8" class="dbox" style="stroke:#ef4444"/>
+        <text x="361" y="122" class="dt" text-anchor="middle" fill="#fca5a5">latency + build-up</text>
+        <text x="361" y="138" class="ds" text-anchor="middle">perintah → tekanan → a_aktual nyata</text>
+
+        <path d="M250,127 L84,127 L84,86" class="darrow" marker-end="url(#la)"/>
+        <text x="92" y="100" class="ds">t + 5 ms</text>
+        <text x="92" y="112" class="ds">siklus berikutnya</text>
+
+        <text x="19" y="182" class="ds">Satu putaran = satu langkah waktu. Dalam satu detik, putaran ini berjalan 200 kali.</text>
+        <text x="19" y="196" class="ds">Kotak kuning = titik keputusan. Kotak merah = penundaan nyata yang tidak bisa dilewati.</text>
+      </svg>
+
+      <h4>Di mana percepatan dipakai</h4>
+      <p>Satu nilai <code>a_net</code> itu dipakai di tujuh tempat — ini yang membuatnya terasa
+        "hilang" dari persamaan, padahal justru dia yang menggerakkan semuanya:</p>
+      <table class="eq wide">
+        <tr><th>Dipakai untuk</th><th>Caranya</th><th>Yang terlihat di aplikasi</th></tr>
+        <tr><td>memperbarui kecepatan</td><td>v′ = v − a·dt</td><td>angka kecepatan &amp; grafik biru</td></tr>
+        <tr><td>memperbarui posisi</td><td>s′ = s + ½(v+v′)·dt</td><td>truk bergerak di layar</td></tr>
+        <tr><td>menghitung jarak henti</td><td>d_henti(a)</td><td>garis merah "titik henti"</td></tr>
+        <tr><td>memutuskan pemicu</td><td>requiredDecel → a_ff</td><td>rem mulai bekerja</td></tr>
+        <tr><td>menghitung energi rem</td><td>E += m·a·v·dt</td><td>kartu "Energi rem" (MJ)</td></tr>
+        <tr><td>menghitung beban depan</td><td>ΔW = m·a/g · h/L</td><td>kartu "Beban ke depan" (ton)</td></tr>
+        <tr><td>membandingkan kapasitas</td><td>a_req vs a_tersedia</td><td>status: sebagian / penuh</td></tr>
+      </table>
+
+      <h4>Contoh lima langkah pertama</h4>
+      <p>Truk 40 km/h, rem penuh 3,0 m/s², satu langkah 5 ms. Perhatikan kecepatan turun sedikit
+        dan posisi bertambah sedikit di setiap langkah:</p>
+      <table class="eq wide">
+        <tr><th>Langkah</th><th>Waktu (s)</th><th>Kecepatan (m/s)</th><th>Kecepatan (km/h)</th><th>Posisi (m)</th></tr>
+        <tr><td>0</td><td>0,000</td><td>11,111</td><td>40,00</td><td>0,0000</td></tr>
+        <tr><td>1</td><td>0,005</td><td>11,096</td><td>39,95</td><td>0,0555</td></tr>
+        <tr><td>2</td><td>0,010</td><td>11,081</td><td>39,89</td><td>0,1110</td></tr>
+        <tr><td>3</td><td>0,015</td><td>11,066</td><td>39,84</td><td>0,1663</td></tr>
+        <tr><td>4</td><td>0,020</td><td>11,051</td><td>39,78</td><td>0,2216</td></tr>
+        <tr><td>5</td><td>0,025</td><td>11,036</td><td>39,73</td><td>0,2768</td></tr>
+      </table>
+
+      <p class="tl2note">Dalam 5 langkah (25 ms) truk baru bergerak 28 cm dan kecepatannya turun
+        0,27 km/h. Kelihatan kecil — tapi 200 langkah seperti ini per detik, dan itulah yang
+        menghasilkan truk benar-benar berhenti dalam 27 meter tanpa pernah "melompat".</p>
+
+      <h3>2. Variabel keadaan</h3>
       <table class="eq">
         <tr><td>s<sub>ego</sub></td><td>posisi bemper depan ego (m)</td></tr>
         <tr><td>v<sub>ego</sub></td><td>kecepatan ego (m/s), dari km/h dibagi 3,6</td></tr>
@@ -180,7 +330,7 @@
         <tr><td>closing</td><td>v<sub>ego</sub> − v<sub>lead</sub> (positif = mendekat)</td></tr>
       </table>
 
-      <h3>2. Persamaan gerak — di sinilah momentum dipakai</h3>
+      <h3>3. Persamaan gerak — di sinilah momentum dipakai</h3>
       <p>Model ini tidak menghitung "momentum setelah pengereman" sebagai langkah terpisah,
         karena <b>momentum adalah variabel keadaan itu sendiri</b>:</p>
       <pre class="formula">p = m · v          dp/dt = ΣF          →        a = ΣF / m</pre>
@@ -263,7 +413,7 @@ s′    = s + ½ (v + v′) · dt                         # integrasi trapesium<
         dengan truk 26 t <i>kalau</i> gaya remnya memang cukup — dan itu yang perlu dibuktikan
         lewat brake test.</p>
 
-      <h3>3. Rantai aktuator: latensi lalu build-up</h3>
+      <h3>4. Rantai aktuator: latensi lalu build-up</h3>
       <pre class="formula">t_latency = sensorDelay + processDelay        # radar + keputusan
 applied   naik linear: Δapplied = dt / brakeBuild   (per detik)</pre>
 
@@ -285,7 +435,7 @@ applied   naik linear: Δapplied = dt / brakeBuild   (per detik)</pre>
         <text x="300" y="36" class="tl2">a penuh</text>
       </svg>
 
-      <h3>4. Alur keputusan — dari radar ke perlambatan</h3>
+      <h3>5. Alur keputusan — dari radar ke perlambatan</h3>
       <p>Rantai lengkap yang dijalankan simulator setiap 5 ms. Kotak abu-abu adalah perhitungan;
         kotak berwarna adalah titik keputusan yang menentukan rem.</p>
       <svg viewBox="0 0 720 470" class="diagram" role="img" aria-label="Alur logic AEB dari radar ke perlambatan">
@@ -375,7 +525,7 @@ applied   naik linear: Δapplied = dt / brakeBuild   (per detik)</pre>
         <text x="20" y="452" class="ds">saat AEB aktif</text>
       </svg>
 
-      <h3>5. Definisi "rem sebagian" dan "rem penuh"</h3>
+      <h3>6. Definisi "rem sebagian" dan "rem penuh"</h3>
       <p>Yang dikirim controller adalah <b>level</b>, yaitu <b>fraksi dari kapasitas yang
         tersedia</b> — bukan angka m/s² yang tetap:</p>
       <pre class="formula">a_diminta = level × a_tersedia
@@ -419,7 +569,7 @@ level = 1,00  → REM PENUH      (100 % kapasitas)</pre>
         lebih dari <code>0,08</code> level. Tanpa ambang ini, kontrol kontinu akan membanjiri
         antrean perintah aktuator setiap 5 ms.</p>
 
-      <h3>6. Logic 1 — TTC relatif <span class="tag">terpasang sekarang</span></h3>
+      <h3>7. Logic 1 — TTC relatif <span class="tag">terpasang sekarang</span></h3>
       <pre class="formula">TTC    = gap / closing                 (∞ jika closing ≤ 0,05)
 a_req  = closing² / (2 · gap)
 
@@ -431,7 +581,7 @@ if   gap &lt; 4 m dan closing &gt; 0                    → REM PENUH (jaring pe
         kecepatannya hampir sama, closing ≈ 0 sehingga TTC sangat besar — padahal jaraknya
         bisa tinggal 1,3 detik. Sistem baru bereaksi setelah truk depan mengerem.</p>
 
-      <h3>7. Logic 2 — governor jarak aman (headway)</h3>
+      <h3>8. Logic 2 — governor jarak aman (headway)</h3>
       <pre class="formula">v_safe = gap / headway                 # batas kecepatan agar THW terjaga
 if v &gt; v_safe + 0,15:
     a_butuh = (v − v_safe) / 2         # konvergen ~2 detik
@@ -439,7 +589,7 @@ if v &gt; v_safe + 0,15:
       <p>Dibatasi 1,2 m/s² supaya menjadi pelambatan halus, bukan pengereman mendadak.
         Pengereman keras karena alasan jarak justru berisiko ditabrak dari belakang.</p>
 
-      <h3>8. Logic 3 — prediktif (feed-forward truk depan)</h3>
+      <h3>9. Logic 3 — prediktif (feed-forward truk depan)</h3>
 
       <p><b>Definisi.</b> Logic ini tidak menilai bahaya dari <i>closing speed saat ini</i>,
         tapi dari <b>apa yang akan terjadi</b> kalau truk depan terus mengerem. Inputnya adalah
@@ -518,7 +668,7 @@ if v &gt; v_safe + 0,15:
         <li>Banyak target: hanya target <b>di dalam koridor lajur</b> yang dipakai.</li>
       </ul>
 
-      <h3>9. Jarak henti dan TTC minimum</h3>
+      <h3>10. Jarak henti dan TTC minimum</h3>
       <pre class="formula">d_henti = v·T − a·T²/6 + (v − a·T/2)² / (2a) + v·latency
           # T = brakeBuild; bentuk tertutup: latency → ramp linear → penuh
 
@@ -527,14 +677,14 @@ TTC_min = t_latency + v / (2a)</pre>
         Angka ini <b>naik dengan kecepatan</b> — karena itu ambang TTC berupa konstanta selalu
         salah di salah satu ujung rentang kecepatan.</p>
 
-      <h3>10. Retarder dan engine brake</h3>
+      <h3>11. Retarder dan engine brake</h3>
       <pre class="formula">avail(v) = clamp( (v_kmh − retardOn) / retardFade , 0 , 1 )
 a_retard = a_retardMax × avail(v)</pre>
       <p>Retarder hidrolik/elektrik butuh putaran minimum, jadi kontribusinya nol di bawah
         ambang dan bertambah sampai pita fade habis. Karena itu retarder tidak pernah masuk ke
         <code>a_tersedia</code> — hanya membantu menahan laju, bukan berhenti.</p>
 
-      <h3>11. Rantai aktuator retrofit (mikroprosesor terpisah)</h3>
+      <h3>12. Rantai aktuator retrofit (mikroprosesor terpisah)</h3>
 
       <p>Arsitektur yang dipakai bukan lewat ECU/EBS bawaan, melainkan:</p>
       <pre class="formula">radar 77 GHz
@@ -602,7 +752,7 @@ mikroprosesor terpisah
         <li>Watchdog + log 10 detik pra-pemicu.</li>
       </ul>
 
-      <h3>12. Beban mekanis dan keausan</h3>
+      <h3>13. Beban mekanis dan keausan</h3>
       <p>Dua indikator di HUD mengukur konsekuensi mekanis setiap pengereman:</p>
       <pre class="formula">energi rem   E = ∫ (m · a_fric) · v · dt          [Joule]
 beban depan  ΔW = (m · a / g) · (h / L)          [ton-gaya]
@@ -632,7 +782,7 @@ m = massa (kg) · a = perlambatan (m/s²) · h = tinggi titik berat · L = wheel
         drum ±130 °C tanpa sempat mendingin — dan itu jauh lebih merusak daripada satu
         pengereman darurat yang benar-benar menyelamatkan truk.</p>
 
-      <h3>13. Batasan model</h3>
+      <h3>14. Batasan model</h3>
       <ul>
         <li>1 dimensi — tanpa rotasi, tanpa manuver mengelak.</li>
         <li>Tanpa load transfer dan tanpa inersia rotasi. Faktor massa ekuivalen 1,04–1,06 belum
