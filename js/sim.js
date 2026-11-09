@@ -343,7 +343,7 @@ export class Sim {
     return {
       ok: true,
       title: `BERHENTI aman — sisa jarak ${this.gap().toFixed(1)} m`,
-      sub: `Deselerasi maks ${(this.decel).toFixed(1)} m/s² · waktu ${this.t.toFixed(2)} s · massa ${p.massT.toFixed(1)} t.`
+      sub: `Deselerasi puncak ${this.peakDecel.toFixed(1)} m/s² · energi rem ${(this.brakeEnergy / 1e6).toFixed(2)} MJ · waktu ${this.t.toFixed(2)} s · massa ${p.massT.toFixed(1)} t.`
     };
   }
 }

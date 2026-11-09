@@ -365,3 +365,12 @@ svg.timeline .tl2 { fill: #5d7186; font-size: 9.5px; font-family: Inter, system-
 body.resizing { cursor: ns-resize; user-select: none; }
 
 .modal-content .tl2note { font-size: 11px; color: #5d7186; margin-top: -2px; }
+
+/* ---------- diagram SVG di menu metode ---------- */
+svg.diagram { width: 100%; height: auto; margin: 12px 0 6px; display: block; }
+svg.diagram .dbox { fill: #111a24; stroke: #33475b; stroke-width: 1.2; }
+svg.diagram .dt { fill: #dbe6f2; font: 600 11.5px Inter, system-ui, sans-serif; }
+svg.diagram .ds { fill: #7f94aa; font: 9.5px Inter, system-ui, sans-serif; }
+svg.diagram .dlabel { fill: #cbd5e1; font: 600 11px Inter, system-ui, sans-serif; }
+svg.diagram .dsmall { fill: #7f94aa; font: 9.5px Inter, system-ui, sans-serif; }
+svg.diagram .darrow { stroke: #5b7793; stroke-width: 1.6; fill: none; }

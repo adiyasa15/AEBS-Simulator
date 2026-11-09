@@ -200,6 +200,64 @@ a_net = a_fric + a_regen + a_resist + a_retard − a_grade − a_throttle
 v′    = max(0, v − a_net · dt)
 s′    = s + ½ (v + v′) · dt                         # integrasi trapesium</pre>
 
+      <p><b>Diagram gaya</b> — semua suku di atas adalah gaya per satuan massa yang bekerja
+        sepanjang sumbu jalan:</p>
+      <svg viewBox="0 0 720 320" class="diagram" role="img" aria-label="Diagram gaya pada truk di tanjakan">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#6f8aa6"/>
+          </marker>
+          <marker id="ahr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
+          </marker>
+          <marker id="aho" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#f59e0b"/>
+          </marker>
+          <marker id="ahb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#38bdf8"/>
+          </marker>
+          <marker id="ahg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#22c55e"/>
+          </marker>
+        </defs>
+
+        <line x1="20" y1="270" x2="700" y2="238" stroke="#33475b" stroke-width="2"/>
+        <line x1="20" y1="288" x2="700" y2="256" stroke="#1b2634" stroke-width="1"/>
+
+        <polygon points="250,214 470,229 470,203 250,188" fill="#1e4fa3" stroke="#3b82f6" stroke-width="1.2" opacity="0.9"/>
+        <polygon points="470,229 520,232 520,208 470,203" fill="#2f6fd0" stroke="#60a5fa" stroke-width="1.2"/>
+        <circle cx="285" cy="232" r="12" fill="#0a0f14" stroke="#33475b"/>
+        <circle cx="350" cy="236" r="12" fill="#0a0f14" stroke="#33475b"/>
+        <circle cx="430" cy="241" r="12" fill="#0a0f14" stroke="#33475b"/>
+        <circle cx="495" cy="245" r="12" fill="#0a0f14" stroke="#33475b"/>
+        <circle cx="360" cy="209" r="4" fill="#e2e8f0"/>
+
+        <line x1="120" y1="252" x2="196" y2="256" stroke="#6f8aa6" stroke-width="2" marker-end="url(#ah)"/>
+        <text x="120" y="243" class="dlabel">v = 11,1 m/s</text>
+
+        <line x1="360" y1="209" x2="452" y2="215" stroke="#38bdf8" stroke-width="3" marker-end="url(#ahb)"/>
+        <text x="392" y="170" class="dlabel" fill="#7dd3fc">g · sin θ</text>
+        <text x="392" y="184" class="dsmall" fill="#7dd3fc">= g × grade/100 = 0,59 m/s² (6 %)</text>
+
+        <line x1="360" y1="238" x2="352" y2="196" stroke="#22c55e" stroke-width="3" marker-end="url(#ahg)"/>
+        <text x="236" y="146" class="dlabel" fill="#86efac">N = m·g·cos θ</text>
+        <text x="236" y="160" class="dsmall" fill="#86efac">menentukan batas gesek μ·g</text>
+        <line x1="300" y1="153" x2="349" y2="201" stroke="#1f5136" stroke-width="1" stroke-dasharray="3 3"/>
+
+        <line x1="470" y1="252" x2="360" y2="245" stroke="#ef4444" stroke-width="4" marker-end="url(#ahr)"/>
+        <text x="474" y="266" class="dlabel" fill="#fca5a5">F_rem = applied × m × a_tersedia</text>
+
+        <line x1="524" y1="268" x2="470" y2="263" stroke="#f59e0b" stroke-width="3" stroke-dasharray="6 3" marker-end="url(#aho)"/>
+        <text x="532" y="282" class="dlabel" fill="#fbbf24">F_ret</text>
+        <text x="532" y="296" class="dsmall" fill="#fbbf24">engine brake + retarder</text>
+
+        <line x1="628" y1="246" x2="588" y2="243" stroke="#94a3b8" stroke-width="2" marker-end="url(#ah)"/>
+        <text x="556" y="228" class="dsmall">gelinding + aero</text>
+
+        <text x="20" y="312" class="dlabel">a_net = F_rem/m + F_ret/m + F_gelinding/m − g·sin θ − a_throttle</text>
+      </svg>
+      <p class="tl2note">Digambar pada kemiringan yang dilebihkan agar terlihat; 6 % sebenarnya = 3,4°.</p>
+
       <p><b>Penting:</b> massa tidak muncul di <code>a = μ·g</code>, tapi muncul di
         <code>a_cap = F_rem / m</code>. Karena itu truk 66,5 t bisa punya perlambatan sama
         dengan truk 26 t <i>kalau</i> gaya remnya memang cukup — dan itu yang perlu dibuktikan
@@ -227,7 +285,97 @@ applied   naik linear: Δapplied = dt / brakeBuild   (per detik)</pre>
         <text x="300" y="36" class="tl2">a penuh</text>
       </svg>
 
-      <h3>4. Definisi "rem sebagian" dan "rem penuh"</h3>
+      <h3>4. Alur keputusan — dari radar ke perlambatan</h3>
+      <p>Rantai lengkap yang dijalankan simulator setiap 5 ms. Kotak abu-abu adalah perhitungan;
+        kotak berwarna adalah titik keputusan yang menentukan rem.</p>
+      <svg viewBox="0 0 720 470" class="diagram" role="img" aria-label="Alur logic AEB dari radar ke perlambatan">
+        <defs>
+          <marker id="fa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#5b7793"/>
+          </marker>
+        </defs>
+
+        <rect x="14" y="16" width="196" height="54" rx="8" class="dbox"/>
+        <text x="112" y="36" class="dt" text-anchor="middle">Radar 77 GHz</text>
+        <text x="112" y="53" class="ds" text-anchor="middle">range · range-rate (Doppler)</text>
+
+        <rect x="252" y="16" width="196" height="54" rx="8" class="dbox"/>
+        <text x="350" y="36" class="dt" text-anchor="middle">Target track</text>
+        <text x="350" y="53" class="ds" text-anchor="middle">koreksi heading · koridor lajur</text>
+
+        <rect x="490" y="16" width="216" height="54" rx="8" class="dbox"/>
+        <text x="598" y="36" class="dt" text-anchor="middle">gap · closing · v_ego</text>
+        <text x="598" y="53" class="ds" text-anchor="middle">TTC = gap / closing</text>
+
+        <line x1="210" y1="43" x2="249" y2="43" class="darrow" marker-end="url(#fa)"/>
+        <line x1="448" y1="43" x2="487" y2="43" class="darrow" marker-end="url(#fa)"/>
+
+        <line x1="112" y1="70" x2="112" y2="104" class="darrow" marker-end="url(#fa)"/>
+        <line x1="350" y1="70" x2="350" y2="104" class="darrow" marker-end="url(#fa)"/>
+        <line x1="598" y1="70" x2="598" y2="104" class="darrow" marker-end="url(#fa)"/>
+
+        <rect x="14" y="104" width="196" height="92" rx="8" class="dbox"/>
+        <text x="112" y="124" class="dt" text-anchor="middle">Logic 1 — TTC relatif</text>
+        <text x="112" y="142" class="ds" text-anchor="middle">TTC ≤ 1,8 s → sebagian</text>
+        <text x="112" y="157" class="ds" text-anchor="middle">TTC ≤ 0,9 s → penuh</text>
+        <text x="112" y="172" class="ds" text-anchor="middle">a_req = closing² / 2·gap</text>
+        <text x="112" y="187" class="ds" text-anchor="middle">gap &lt; 4 m → penuh</text>
+
+        <rect x="252" y="104" width="196" height="92" rx="8" class="dbox"/>
+        <text x="350" y="124" class="dt" text-anchor="middle">Logic 2 — headway</text>
+        <text x="350" y="142" class="ds" text-anchor="middle">v_safe = gap / 4 s</text>
+        <text x="350" y="157" class="ds" text-anchor="middle">a = (v − v_safe) / 2</text>
+        <text x="350" y="172" class="ds" text-anchor="middle">dibatasi 1,2 m/s²</text>
+        <text x="350" y="187" class="ds" text-anchor="middle">governor, bukan AEB</text>
+
+        <rect x="490" y="104" width="216" height="92" rx="8" class="dbox" style="stroke:#f59e0b"/>
+        <text x="598" y="124" class="dt" text-anchor="middle" fill="#fbbf24">Logic 3 — prediktif</text>
+        <text x="598" y="142" class="ds" text-anchor="middle">a_lead = d(−range-rate)/dt</text>
+        <text x="598" y="157" class="ds" text-anchor="middle">a_ff = requiredDecel(v, budget)</text>
+        <text x="598" y="172" class="ds" text-anchor="middle">budget = gap + leadDist − 3 m</text>
+        <text x="598" y="187" class="ds" text-anchor="middle">≥ 0,55·a_tersedia → penuh</text>
+
+        <line x1="112" y1="196" x2="112" y2="232" class="darrow"/>
+        <line x1="350" y1="196" x2="350" y2="232" class="darrow"/>
+        <line x1="598" y1="196" x2="598" y2="232" class="darrow"/>
+        <line x1="112" y1="232" x2="588" y2="232" class="darrow"/>
+        <line x1="598" y1="232" x2="610" y2="232" class="darrow" marker-end="url(#fa)"/>
+        <line x1="350" y1="232" x2="350" y2="258" class="darrow" marker-end="url(#fa)"/>
+
+        <rect x="252" y="258" width="196" height="46" rx="8" class="dbox" style="stroke:#f59e0b"/>
+        <text x="350" y="274" class="dt" text-anchor="middle" fill="#fbbf24">level 0 … 1</text>
+        <text x="350" y="292" class="ds" text-anchor="middle">fraksi a_tersedia</text>
+
+        <line x1="350" y1="304" x2="350" y2="326" class="darrow" marker-end="url(#fa)"/>
+
+        <rect x="14" y="326" width="216" height="54" rx="8" class="dbox"/>
+        <text x="122" y="345" class="dt" text-anchor="middle">Latency</text>
+        <text x="122" y="362" class="ds" text-anchor="middle">sensor + mikroprosesor + valve</text>
+        <text x="122" y="375" class="ds" text-anchor="middle">±0,23 s (parameter)</text>
+
+        <rect x="252" y="326" width="196" height="54" rx="8" class="dbox"/>
+        <text x="350" y="345" class="dt" text-anchor="middle">Build-up pneumatik</text>
+        <text x="350" y="362" class="ds" text-anchor="middle">tekanan naik 0,85 s</text>
+        <text x="350" y="375" class="ds" text-anchor="middle">batas R13: 75 % di 0,6 s</text>
+
+        <rect x="470" y="326" width="236" height="54" rx="8" class="dbox" style="stroke:#ef4444"/>
+        <text x="588" y="345" class="dt" text-anchor="middle" fill="#fca5a5">a_aktual</text>
+        <text x="588" y="362" class="ds" text-anchor="middle">deselerasi nyata di roda</text>
+        <text x="588" y="375" class="ds" text-anchor="middle">dibatasi μ·g dan kapasitas rem</text>
+        <line x1="230" y1="353" x2="249" y2="353" class="darrow" marker-end="url(#fa)"/>
+        <line x1="448" y1="353" x2="467" y2="353" class="darrow" marker-end="url(#fa)"/>
+
+        <line x1="588" y1="380" x2="588" y2="404" class="darrow" marker-end="url(#fa)"/>
+        <rect x="330" y="404" width="376" height="52" rx="8" class="dbox"/>
+        <text x="518" y="422" class="dt" text-anchor="middle">v′ = max(0, v − a_net·dt)</text>
+        <text x="518" y="440" class="ds" text-anchor="middle">s′ = s + ½(v + v′)·dt · integrasi 200 Hz</text>
+
+        <text x="20" y="424" class="ds">pengemudi:</text>
+        <text x="20" y="438" class="ds">jaga v₀, throttle mati</text>
+        <text x="20" y="452" class="ds">saat AEB aktif</text>
+      </svg>
+
+      <h3>5. Definisi "rem sebagian" dan "rem penuh"</h3>
       <p>Yang dikirim controller adalah <b>level</b>, yaitu <b>fraksi dari kapasitas yang
         tersedia</b> — bukan angka m/s² yang tetap:</p>
       <pre class="formula">a_diminta = level × a_tersedia
@@ -271,7 +419,7 @@ level = 1,00  → REM PENUH      (100 % kapasitas)</pre>
         lebih dari <code>0,08</code> level. Tanpa ambang ini, kontrol kontinu akan membanjiri
         antrean perintah aktuator setiap 5 ms.</p>
 
-      <h3>5. Logic 1 — TTC relatif <span class="tag">terpasang sekarang</span></h3>
+      <h3>6. Logic 1 — TTC relatif <span class="tag">terpasang sekarang</span></h3>
       <pre class="formula">TTC    = gap / closing                 (∞ jika closing ≤ 0,05)
 a_req  = closing² / (2 · gap)
 
@@ -283,7 +431,7 @@ if   gap &lt; 4 m dan closing &gt; 0                    → REM PENUH (jaring pe
         kecepatannya hampir sama, closing ≈ 0 sehingga TTC sangat besar — padahal jaraknya
         bisa tinggal 1,3 detik. Sistem baru bereaksi setelah truk depan mengerem.</p>
 
-      <h3>6. Logic 2 — governor jarak aman (headway)</h3>
+      <h3>7. Logic 2 — governor jarak aman (headway)</h3>
       <pre class="formula">v_safe = gap / headway                 # batas kecepatan agar THW terjaga
 if v &gt; v_safe + 0,15:
     a_butuh = (v − v_safe) / 2         # konvergen ~2 detik
@@ -291,7 +439,7 @@ if v &gt; v_safe + 0,15:
       <p>Dibatasi 1,2 m/s² supaya menjadi pelambatan halus, bukan pengereman mendadak.
         Pengereman keras karena alasan jarak justru berisiko ditabrak dari belakang.</p>
 
-      <h3>7. Logic 3 — prediktif (feed-forward truk depan)</h3>
+      <h3>8. Logic 3 — prediktif (feed-forward truk depan)</h3>
 
       <p><b>Definisi.</b> Logic ini tidak menilai bahaya dari <i>closing speed saat ini</i>,
         tapi dari <b>apa yang akan terjadi</b> kalau truk depan terus mengerem. Inputnya adalah
@@ -370,7 +518,7 @@ if v &gt; v_safe + 0,15:
         <li>Banyak target: hanya target <b>di dalam koridor lajur</b> yang dipakai.</li>
       </ul>
 
-      <h3>8. Jarak henti dan TTC minimum</h3>
+      <h3>9. Jarak henti dan TTC minimum</h3>
       <pre class="formula">d_henti = v·T − a·T²/6 + (v − a·T/2)² / (2a) + v·latency
           # T = brakeBuild; bentuk tertutup: latency → ramp linear → penuh
 
@@ -379,14 +527,14 @@ TTC_min = t_latency + v / (2a)</pre>
         Angka ini <b>naik dengan kecepatan</b> — karena itu ambang TTC berupa konstanta selalu
         salah di salah satu ujung rentang kecepatan.</p>
 
-      <h3>9. Retarder dan engine brake</h3>
+      <h3>10. Retarder dan engine brake</h3>
       <pre class="formula">avail(v) = clamp( (v_kmh − retardOn) / retardFade , 0 , 1 )
 a_retard = a_retardMax × avail(v)</pre>
       <p>Retarder hidrolik/elektrik butuh putaran minimum, jadi kontribusinya nol di bawah
         ambang dan bertambah sampai pita fade habis. Karena itu retarder tidak pernah masuk ke
         <code>a_tersedia</code> — hanya membantu menahan laju, bukan berhenti.</p>
 
-      <h3>10. Rantai aktuator retrofit (mikroprosesor terpisah)</h3>
+      <h3>11. Rantai aktuator retrofit (mikroprosesor terpisah)</h3>
 
       <p>Arsitektur yang dipakai bukan lewat ECU/EBS bawaan, melainkan:</p>
       <pre class="formula">radar 77 GHz
@@ -454,7 +602,7 @@ mikroprosesor terpisah
         <li>Watchdog + log 10 detik pra-pemicu.</li>
       </ul>
 
-      <h3>11. Beban mekanis dan keausan</h3>
+      <h3>12. Beban mekanis dan keausan</h3>
       <p>Dua indikator di HUD mengukur konsekuensi mekanis setiap pengereman:</p>
       <pre class="formula">energi rem   E = ∫ (m · a_fric) · v · dt          [Joule]
 beban depan  ΔW = (m · a / g) · (h / L)          [ton-gaya]
@@ -484,7 +632,7 @@ m = massa (kg) · a = perlambatan (m/s²) · h = tinggi titik berat · L = wheel
         drum ±130 °C tanpa sempat mendingin — dan itu jauh lebih merusak daripada satu
         pengereman darurat yang benar-benar menyelamatkan truk.</p>
 
-      <h3>12. Batasan model</h3>
+      <h3>13. Batasan model</h3>
       <ul>
         <li>1 dimensi — tanpa rotasi, tanpa manuver mengelak.</li>
         <li>Tanpa load transfer dan tanpa inersia rotasi. Faktor massa ekuivalen 1,04–1,06 belum

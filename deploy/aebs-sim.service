@@ -1,0 +1,26 @@
+[Unit]
+Description=AEBS Simulator (situs statis)
+Documentation=https://github.com/adiyasa15/AEBS-Simulator
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/aebs-sim
+ExecStart=/usr/bin/python3 -m http.server 4317 --bind 0.0.0.0 --directory /opt/aebs-sim
+Restart=on-failure
+RestartSec=3
+
+# Pengerasan dasar
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+ReadOnlyPaths=/opt/aebs-sim
+
+[Install]
+WantedBy=multi-user.target

@@ -8,6 +8,12 @@ python3 -m http.server 4317
 # buka http://127.0.0.1:4317/
 ```
 
+Cara deploy (Docker, nginx, LAN site, hosting statis, offline tablet): lihat
+[DEPLOY.md](DEPLOY.md).
+
+Di dalam aplikasi, tombol **📐 Metode perhitungan** membuka 13 bagian dokumentasi
+perhitungan — termasuk diagram gaya (free-body) dan diagram alur keputusan dalam SVG.
+
 ## Cara kerja model
 
 1D memanjang. `sEgo` = bemper depan, `sLead` = buritan objek.
