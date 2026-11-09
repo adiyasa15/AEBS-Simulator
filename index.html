@@ -442,14 +442,26 @@ gap &lt; 4 m                                    → level 1,00 (jaring pengaman)
 
       <h4>4.2 Logic 2 — TTC relatif + jarak aman 4 detik</h4>
       <pre class="formula">v_safe = gap / headway               (headway = jarak aman dalam detik, bawaan 4)
-jika v &gt; v_safe + 0,15 :
-    a_butuh = (v − v_safe) / 2       (konvergen sekitar 2 detik)
-    level   = min( 1 , a_butuh / a_tersedia , 1,2 / a_tersedia )</pre>
-      <p>Batas 1,2 m/s² (setara 0,12 g) ditetapkan agar pelambatan berlangsung bertahap, bukan
-        mendadak. Nilai ini berada dalam rentang pengereman servis kendaraan berat
-        (0,10–0,15 g), jauh di bawah pengereman darurat yang berkisar 0,30 g. Logic ini menjaga
-        jarak, bukan mencegah tabrakan; pada jarak yang sudah terlalu dekat, waktu yang
-        dibutuhkan untuk memulihkan jarak melebihi waktu yang tersedia.</p>
+THW    = gap / v
+
+penjaga aktif bila THW &lt; headway; lepas bila THW &gt; headway + 0,05
+
+selama aktif:
+    a_butuh = (v − v_safe) / 2         (konvergen sekitar 2 detik)
+    t       = (headway − THW) / 2      (dibatasi 0 sampai 1)
+    batas   = govDecel × (1 + t)       (bawaan: 1,2 naik sampai 2,4 m/s²)
+    level   = min( 1 , a_butuh / a_tersedia , batas / a_tersedia )</pre>
+      <p>Penjaga aktif tepat pada saat THW turun di bawah 4 detik, tanpa toleransi saat
+        mengaktifkan. Histeresis 0,05 detik hanya dipakai saat melepas, agar rem tidak berkedip
+        ketika nilai berada di sekitar batas.</p>
+      <p>Batas pelambatan bertingkat: 1,2 m/s² (setara 0,12 g) pada pelanggaran kecil, naik
+        bertahap sampai 2,4 m/s² pada THW 2 detik. Nilai dasar 1,2 m/s² berada dalam rentang
+        pengereman servis kendaraan berat (0,10–0,15 g), sedangkan pengereman darurat berada
+        pada kisaran 0,30 g. Pelanggaran kecil dikoreksi dengan halus; pelanggaran besar tidak
+        dibiarkan menumpuk.</p>
+      <p>Logic ini menjaga jarak, bukan mencegah tabrakan. Pada jarak yang sudah sangat dekat,
+        waktu yang dibutuhkan untuk memulihkan jarak melebihi waktu yang tersedia, sehingga
+        penghentian tetap menjadi tugas ambang AEB.</p>
 
       <h4>Frekuensi pemeriksaan</h4>
       <p>Ketiga logic diperiksa pada siklus yang sama, yaitu setiap 5 milidetik di dalam
@@ -459,12 +471,13 @@ jika v &gt; v_safe + 0,15 :
       <table class="eq wide">
         <tr><th>Logic</th><th>Besaran yang dinilai</th><th>Kapan mulai bekerja</th></tr>
         <tr><td>TTC relatif</td><td>jarak dan kecepatan menutup jarak</td><td>ketika TTC atau a_req melewati ambang</td></tr>
-        <tr><td>Jarak aman 4 detik</td><td>jarak dibandingkan dengan 4 kali kecepatan</td><td>ketika kecepatan melebihi <code>gap / 4</code> lebih dari 0,15 m/s</td></tr>
+        <tr><td>Jarak aman 4 detik</td><td>jarak dibandingkan dengan 4 kali kecepatan</td><td>ketika THW turun di bawah 4 detik</td></tr>
         <tr><td>Prediktif</td><td>perlambatan kendaraan depan</td><td>ketika kebutuhan perlambatan melewati 25 % kapasitas</td></tr>
       </table>
-      <p>Logic jarak aman memeriksa setiap siklus, tetapi tidak melakukan apa pun selama
-        kecepatan masih di bawah <code>gap / 4</code>. Selisih ambang 0,15 m/s (0,54 km/h)
-        berfungsi mencegah pengereman berkedip ketika nilai berada tepat di batas.</p>
+      <p>Logic jarak aman memeriksa setiap siklus, tetapi tidak melakukan apa pun selama THW
+        masih 4 detik atau lebih. Begitu THW turun di bawah 4 detik, penjaga aktif dan besarnya
+        pelambatan mengikuti selisih jarak. Histeresis 0,05 detik hanya berlaku saat melepas,
+        bukan saat mengaktifkan.</p>
 
       <h4>4.3 Logic 3 — prediktif</h4>
       <p>Logic ini tidak menilai bahaya dari jarak, melainkan dari <b>perlambatan kendaraan

@@ -66,6 +66,7 @@ export class Sim {
     this.leadBrakeApplied = false;
     this.aLeadEst = 0;        // estimasi perlambatan truk depan (di radar: turunan range-rate)
     this.leadMovingSeen = false;  // target pernah bergerak? (= kendaraan, bukan rambu/tanggul)
+    this.govActive = false;       // status penjaga jarak (histeresis lepas)
     this.brakeEnergy = 0;     // Joule — energi yang dibuang lewat rem servis
     this.peakDecel = 0;       // m/s²
     this.stage = c.aebEnabled ? 'cruise' : 'off';
@@ -197,11 +198,22 @@ export class Sim {
       // TTC-relatif buta saat kecepatan hampir sama: itu justru kondisi normal di haul road.
       // Governor menahan kecepatan supaya THW tidak turun di bawah ambang.
       if (c.logic === 'headway' && c.headway > 0) {
-        const vSafe = gap / c.headway;            // batas atas kecepatan utk menjaga THW
-        if (this.vEgo > vSafe + 0.15) {
-          const need = (this.vEgo - vSafe) / 2.0; // konvergen ~2 detik, tidak menghentak
-          // governor hanya boleh melambat halus; rem keras tetap domain AEB
-          const lvl = Math.min(1, Math.max(0, need / p.aAvail), (c.govDecel || 1.2) / p.aAvail);
+        // Aturan jarak bersifat wajib: penjaga aktif tepat saat THW < headway,
+        // tanpa ambang mati saat mengaktifkan. Histeresis hanya saat melepas
+        // (0,05 detik) supaya pengereman tidak berkedip di sekitar batas.
+        const thw = this.vEgo > 0.3 ? gap / this.vEgo : Infinity;
+        if (thw < c.headway) this.govActive = true;
+        else if (thw > c.headway + 0.05) this.govActive = false;
+
+        if (this.govActive) {
+          const vSafe = gap / c.headway;               // batas kecepatan agar THW terjaga
+          const need = (this.vEgo - vSafe) / 2.0;      // konvergen ~2 detik
+          // Batas pelambatan bertingkat: makin besar pelanggaran, makin tegas,
+          // tetapi tetap di bawah kemampuan rem darurat.
+          const t = Math.min(1, Math.max(0, (c.headway - (isFinite(thw) ? thw : c.headway)) / 2));
+          const base = c.govDecel || 1.2;
+          const cap = base * (1 + t);                  // base .. 2 x base
+          const lvl = Math.min(1, Math.max(0, need / p.aAvail), cap / p.aAvail);
           if (lvl > desired) {
             desired = lvl;
             stage = 'partial';
