@@ -58,7 +58,7 @@ perintah AEB ──latency──▶ rem bangun (build-up) ──▶ a_aktual
 Tiga mode logic bisa dibandingkan langsung:
 
 - **`TTC relatif`** — meniru logic yang terpasang sekarang. Pemicu hanya TTC/`a_req`.
-- **`TTC relatif + jarak aman 4 s`** — ditambah governor headway (THW = gap / v_ego),
+- **`TTC relatif + jarak aman 4 s`** — ditambah pembatas jarak berbasis waktu (THW = gap / v_ego),
   dibatasi 1,2 m/s² supaya tidak jadi pengereman mendadak.
 - **`Prediktif`** — feed-forward perlambatan truk depan. Radar memberi range-rate;
   turunannya = `a_lead`. Lalu `a_req_ff = v²/(2·(gap + v_lead²/2a_lead − v·latency − margin))`.
