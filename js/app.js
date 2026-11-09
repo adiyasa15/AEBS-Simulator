@@ -46,8 +46,8 @@ let sim, renderer, running = false, prevStage = null, logCount = 0;
 
 const TIPE_LABEL = {
   DT:  'DT — rigid (fokus sekarang)',
-  SDT: 'SDT — single trailer (spek menyusul)',
-  DDT: 'DDT — double trailer (spek menyusul)'
+  SDT: 'SDT — single trailer (belum diizinkan)',
+  DDT: 'DDT — double trailer (belum diizinkan)'
 };
 for (const tipe of ['DT', 'SDT', 'DDT']) {
   const list = VEHICLES.filter((v) => v.tipe === tipe);

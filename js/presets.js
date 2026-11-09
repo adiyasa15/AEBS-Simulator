@@ -34,7 +34,7 @@ export const VEHICLES = [
   {
     id: 'scania-single',
     tipe: 'SDT',
-    name: 'Scania + single trailer (spek menyusul)',
+    name: 'Scania + single trailer (belum diizinkan)',
     fuel: 'diesel',
     layout: 'single',
     massEmptyT: 22,
@@ -47,12 +47,12 @@ export const VEHICLES = [
     sensorDelay: 0.12,
     processDelay: 0.06,
     regen: 0,
-    note: 'ASUMSI: tare 22 t, GVW 56 t. Ganti sesuai spek unit.'
+    note: 'BELUM DIIZINKAN: pemasangan pada unit Scania berisiko membatalkan garansi. Preset ini hanya untuk pengujian, bukan unit terpasang.'
   },
   {
     id: 'scania-double',
     tipe: 'DDT',
-    name: 'Scania + double trailer (spek menyusul)',
+    name: 'Scania + double trailer (belum diizinkan)',
     fuel: 'diesel',
     layout: 'double',
     massEmptyT: 28,
@@ -65,7 +65,7 @@ export const VEHICLES = [
     sensorDelay: 0.12,
     processDelay: 0.06,
     regen: 0,
-    note: 'ASUMSI: tare 28 t, GVW 78 t. Air brake build-up lebih lambat (banyak aktuator).'
+    note: 'BELUM DIIZINKAN: pemasangan pada unit Scania berisiko membatalkan garansi. Preset ini hanya untuk pengujian.'
   },
   {
     id: 'ev-rigid',
@@ -91,7 +91,7 @@ export const VEHICLES = [
   {
     id: 'ev-double',
     tipe: 'DDT',
-    name: 'EV + double trailer (spek menyusul)',
+    name: 'EV + double trailer (belum diizinkan)',
     fuel: 'ev',
     layout: 'double',
     massEmptyT: 34,
@@ -104,7 +104,7 @@ export const VEHICLES = [
     sensorDelay: 0.08,
     processDelay: 0.04,
     regen: 1.2,
-    note: 'ASUMSI total. Regen hanya di tractor; trailer tetap rem angin.'
+    note: 'BELUM DIIZINKAN: preset untuk pengujian konfigurasi trailer; belum ada unit terpasang.'
   }
 ];
 

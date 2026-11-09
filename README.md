@@ -82,7 +82,9 @@ Panel **Spek teknis (bisa diubah)** — semua angka yang dipakai simulasi bisa d
 
 Preset bawaan:
 
-Cakupan sekarang: **DT (rigid)**. Spek akan diisi per tipe unit — DT, SDT, DDT.
+Cakupan terpasang: **DT (FAW JH6) saja**. Unit SDT/DDT merek Scania **belum diizinkan**
+principal karena berisiko membatalkan garansi, sehingga preset-nya hanya untuk pengujian.
+Seluruh unit yang terpasang memakai firmware yang sama (tidak ada arsitektur client–server).
 
 | Tipe | Preset | Kosong | +batubara | Catatan |
 |---|---|---|---|---|
