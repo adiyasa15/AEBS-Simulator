@@ -442,9 +442,183 @@ applied   naik linear: Δapplied = dt / brakeBuild   (per detik)</pre>
         <text x="300" y="36" class="tl2">a penuh</text>
       </svg>
 
-      <h3>5. Alur keputusan — dari radar ke perlambatan</h3>
-      <p>Rantai lengkap yang dijalankan simulator setiap 5 ms. Kotak abu-abu adalah perhitungan;
-        kotak berwarna adalah titik keputusan yang menentukan rem.</p>
+      <h3>5. Definisi "rem sebagian" dan "rem penuh"</h3>
+      <p>Yang dikirim controller adalah <b>level</b>, yaitu <b>fraksi dari kapasitas yang
+        tersedia</b> — bukan angka m/s² yang tetap:</p>
+      <pre class="formula">a_diminta = level × a_tersedia
+
+level = 0,00  → tidak ada rem (hanya peringatan / coasting)
+level = 0,55  → REM SEBAGIAN   (55 % kapasitas)
+level = 1,00  → REM PENUH      (100 % kapasitas)</pre>
+      <p>Karena <code>a_tersedia = min(μ·g, a_cap)</code>, <b>"penuh" bukan angka tetap</b>.
+        Di chipseal kering "penuh" berarti 3,0 m/s²; di jalan berlumpur "penuh" hanya 2,45.
+        Jadi rem penuh = <i>semua yang dimiliki kendaraan saat itu</i>, bukan angka absolut.</p>
+
+      <table class="eq wide">
+        <tr><th>Kondisi</th><th>a_tersedia</th><th>Sebagian (0,55)</th><th>Penuh (1,0)</th><th>Jarak henti dari 40 km/h<br>sebagian / penuh</th></tr>
+        <tr><td>Chipseal kering μ 0,60</td><td>3,00</td><td>1,65 m/s²</td><td>3,00 m/s²</td><td>44,1 m / 27,2 m</td></tr>
+        <tr><td>Chipseal berdebu μ 0,32</td><td>3,00</td><td>1,65 m/s²</td><td>3,00 m/s²</td><td>44,1 m / 27,2 m</td></tr>
+        <tr><td>Berlumpur μ 0,25</td><td>2,45</td><td>1,35 m/s²</td><td>2,45 m/s²</td><td>52,4 m / 31,8 m</td></tr>
+        <tr><td>Kalau a_cap hanya 1,80</td><td>1,80</td><td>0,99 m/s²</td><td>1,80 m/s²</td><td>69,0 m / 41,0 m</td></tr>
+      </table>
+
+      <p><b>Makna fisiknya:</b></p>
+      <ul>
+        <li><b>Rem sebagian (55 %)</b> — bukan untuk berhenti, tapi untuk <i>membuang energi
+          kinetik</i> dan memberi waktu. Buktinya dari 40 km/h: sebagian butuh 44,1 m,
+          penuh 27,2 m. Pada jarak 4 detik (44 m), rem sebagian saja akan menghabiskan
+          seluruh jarak yang ada — tanpa sisa.</li>
+        <li><b>Rem penuh (100 %)</b> — batas kemampuan kendaraan, dibatasi ABS dan gesekan.
+          Ini yang harus dihindari sampai benar-benar perlu, karena pengereman maksimum
+          pada truk 66,5 t berisiko muatan bergeser, dan kendaraan di belakang bisa
+          menabrak.</li>
+      </ul>
+
+      <p>Kapan masing-masing dipicu, per logic (rinciannya di bagian 6–8):</p>
+      <table class="eq wide">
+        <tr><th>Logic</th><th>Rem sebagian dipicu saat</th><th>Rem penuh dipicu saat</th></tr>
+        <tr><td>TTC relatif</td><td>TTC ≤ 1,8 s atau a_req ≥ 0,5·a_tersedia</td><td>TTC ≤ 0,9 s atau a_req ≥ 0,9·a_tersedia, atau gap &lt; 4 m</td></tr>
+        <tr><td>Headway</td><td>level kontinu, dibatasi 1,2 m/s²</td><td>tidak pernah — ini governor, bukan AEB</td></tr>
+        <tr><td>Prediktif</td><td>a_ff ≥ 0,25·a_tersedia</td><td>a_ff ≥ 0,55·a_tersedia</td></tr>
+      </table>
+
+      <p class="warn">Catatan teknis: perintah hanya dikirim ke aktuator kalau perubahannya
+        lebih dari <code>0,08</code> level. Tanpa ambang ini, kontrol kontinu akan membanjiri
+        antrean perintah aktuator setiap 5 ms.</p>
+
+      <h3>6. Logic 1 — TTC relatif <span class="tag">terpasang sekarang</span></h3>
+      <pre class="formula">TTC    = gap / closing                 (∞ jika closing ≤ 0,05)
+a_req  = closing² / (2 · gap)
+
+if   TTC ≤ 0,9 s  atau  a_req ≥ 0,9 · a_tersedia   → REM PENUH
+elif TTC ≤ 1,8 s  atau  a_req ≥ 0,5 · a_tersedia   → rem sebagian 55 %
+elif TTC ≤ 2,6 s                                   → peringatan
+if   gap &lt; 4 m dan closing &gt; 0                    → REM PENUH (jaring pengaman)</pre>
+      <p class="warn">Kelemahan: TTC memakai closing speed <i>saat itu</i>. Kalau dua truk
+        kecepatannya hampir sama, closing ≈ 0 sehingga TTC sangat besar — padahal jaraknya
+        bisa tinggal 1,3 detik. Sistem baru bereaksi setelah truk depan mengerem.</p>
+
+      <h3>7. Logic 2 — governor jarak aman (headway)</h3>
+      <pre class="formula">v_safe = gap / headway                 # batas kecepatan agar THW terjaga
+if v &gt; v_safe + 0,15:
+    a_butuh = (v − v_safe) / 2         # konvergen ~2 detik
+    level   = min(1, a_butuh / a_tersedia, 1,2 / a_tersedia)   # maks 1,2 m/s²</pre>
+      <p><b>Dari mana angka 1,2 m/s²?</b> Jujur: itu <b>batas kenyamanan yang kami pilih</b>,
+        bukan angka yang diturunkan dari aturan 4 detik. Aturan 4 detik menentukan
+        <i>target jarak</i>; angka ini hanya menentukan <i>seberapa cepat</i> jarak itu
+        dikembalikan. 1,2 m/s² = <b>0,12 g</b>, di dalam rentang pengereman normal truk berat
+        (0,1–0,15 g). Rem darurat ada di 0,3 g, jadi angka ini sengaja jauh di bawahnya.</p>
+      <p><b>Asal angka 1,2 m/s² — rincian asumsinya:</b></p>
+      <table class="eq wide">
+        <tr><th>Parameter</th><th>Nilai</th><th>Dari mana</th><th>Sifat</th></tr>
+        <tr><td>Rentang nyaman pengereman truk berat</td><td>0,10–0,15 g</td><td>praktik umum pengereman servis kendaraan berat</td><td>rujukan umum</td></tr>
+        <tr><td><b>Batas yang dipakai</b></td><td><b>1,2 m/s² = 0,12 g</b></td><td>titik tengah rentang di atas</td><td><b>asumsi kami</b></td></tr>
+        <tr><td>Waktu konvergensi yang diinginkan</td><td>2 detik</td><td>dipilih agar pelambatan tidak menghentak</td><td><b>asumsi kami</b></td></tr>
+        <tr><td>Rumus yang dipakai</td><td>a = (v − v_safe) / 2</td><td>lalu dibatasi 1,2 m/s²</td><td>kode, baris &nbsp;<code>need / 2</code></td></tr>
+        <tr><td>Pembanding: rem darurat</td><td>3,0 m/s² = 0,31 g</td><td><code>a_cap</code> 66,5 t (masih asumsi brake test)</td><td>perlu diverifikasi</td></tr>
+        <tr><td>Pembanding: retarder + engine brake</td><td>0,43–0,56 m/s²</td><td>4.000 Nm × final drive ÷ jari-jari roda</td><td>turunan</td></tr>
+      </table>
+      <p class="warn">Tidak ada standar yang menetapkan angka ini. UN R13/R131 mengatur respons rem dan
+        kinerja AEB, tapi tidak mengatur "governor jarak" — karena itu bukan fungsi AEB.
+        Jadi 1,2 m/s² murni <b>pilihan desain</b>, dan sebaiknya disepakati bersama tim operasi
+        sebelum dipakai sebagai aturan.</p>
+
+      <p>Konsekuensinya terlihat begini (pelambatan halus, tidak menghentak):</p>
+      <table class="eq wide">
+        <tr><th>Kondisi</th><th>THW sekarang</th><th>Kecepatan aman</th><th>Waktu kembali ke 4 s</th></tr>
+        <tr><td>40 km/h, gap 30 m</td><td>2,7 s</td><td>27 km/h</td><td>±3,0 s</td></tr>
+        <tr><td>40 km/h, gap 20 m</td><td>1,8 s</td><td>18 km/h</td><td>±5,1 s</td></tr>
+        <tr><td>55 km/h, gap 34 m</td><td>2,2 s</td><td>31 km/h</td><td>±5,6 s</td></tr>
+      </table>
+      <p>Perhatikan: pada gap 1,8 detik, governor butuh 5 detik untuk kembali ke 4 detik —
+        sementara tabrakan bisa terjadi dalam 2–3 detik. Inilah alasan governor
+        <b>bukan</b> pengganti AEB: ia memperbaiki kebiasaan, bukan mencegah tabrakan.
+        Nilainya bisa diubah di panel kiri (slider <b>Governor headway</b>).</p>
+
+      <h3>8. Logic 3 — prediktif (feed-forward truk depan)</h3>
+
+      <p><b>Definisi.</b> Logic ini tidak menilai bahaya dari <i>closing speed saat ini</i>,
+        tapi dari <b>apa yang akan terjadi</b> kalau truk depan terus mengerem. Inputnya adalah
+        <b>perlambatan truk depan</b> (<code>a_lead</code>), yang diperoleh dari turunan
+        range-rate radar — data yang sudah tersedia tanpa sensor tambahan.</p>
+
+      <p><b>Data yang dibutuhkan:</b></p>
+      <table class="eq wide">
+        <tr><th>Data</th><th>Sumber</th><th>Status</th></tr>
+        <tr><td>jarak ke objek (range)</td><td>track radar 77 GHz</td><td>sudah ada</td></tr>
+        <tr><td><b>range-rate (dR/dt)</b></td><td><b>Doppler radar</b> — kuncinya di sini</td><td>sudah ada</td></tr>
+        <tr><td>v_lead absolut</td><td>v_ego + range-rate</td><td>hasil hitung</td></tr>
+        <tr><td>v_ego</td><td>CAN kendaraan / EBS</td><td>sudah ada</td></tr>
+        <tr><td>a_tersedia</td><td>μ permukaan + a_cap hasil brake test</td><td>perlu diisi</td></tr>
+        <tr><td>latency aktual</td><td>kalibrasi unit</td><td>perlu diukur</td></tr>
+      </table>
+
+      <p><b>Langkah perhitungan:</b></p>
+      <pre class="formula">1  a_lead   = filter_0,15s( d(−range_rate)/dt )     # positif = truk depan melambat
+2  leadDist = a_lead &gt; 0,1 ? v_lead² / (2·a_lead) : (v_lead &lt; 0,3 ? 0 : ∞)
+3  budget   = gap + leadDist − margin(3 m)           # jarak yang benar-benar tersedia
+4  a_ff     = requiredDecel(v, budget, latency, build)
+
+   requiredDecel mencari a terkecil sehingga d_henti(a) ≤ budget, dengan
+   d_henti(a) = v·T − a·T²/6 + (v − a·T/2)²/(2a) + v·latency
+   latency    = sensorDelay + processDelay + valveDelay
+   T          = brakeBuild
+
+5  if a_ff ≥ 0,55·a_tersedia → REM PENUH
+   elif a_ff ≥ 0,25·a_tersedia → REM SEBAGIAN</pre>
+
+      <p class="ok"><b>Kedua delay sudah masuk ke rumus pemicu</b> — bukan hanya ke model
+        aktuator. Latency total (radar + mikroprosesor + relay/solenoid) dipotong sebagai
+        <code>v·latency</code> di dalam <code>d_henti</code>, dan build-up pneumatik masuk
+        lewat suku <code>v·T − a·T²/6 + (v − a·T/2)²/(2a)</code>. Karena itu rumus
+        sederhana <code>v²/(2a)</code> tidak dipakai lagi: pada 40 km/h dengan a = 3 m/s²
+        rumus sederhana memberi 23,1 m sedangkan rantai nyata 27,8 m — selisih 4,6 m
+        yang sebelumnya tertutupi secara kebetulan oleh margin.</p>
+
+      <p><b>Contoh nyata</b> — 66,5 t, 40 km/h, truk depan 38 km/h, gap 44 m (4 detik),
+        truk depan mengerem 3 m/s² pada t = 1 s:</p>
+      <table class="eq wide">
+        <tr><th>Besaran</th><th>Nilai saat pemicu (t = 1,34 s)</th></tr>
+        <tr><td>gap</td><td>43,1 m</td></tr>
+        <tr><td>v_ego / v_lead</td><td>39,5 / 34,3 km/h</td></tr>
+        <tr><td>a_lead (setelah filter)</td><td>2,71 m/s²</td></tr>
+        <tr><td>leadDist = v_lead²/(2·a_lead)</td><td>16,7 m</td></tr>
+        <tr><td>budget = 43,1 + 16,7 − 3</td><td>56,9 m</td></tr>
+        <tr><td>a_ff = requiredDecel(...)</td><td><b>1,21 m/s²</b></td></tr>
+        <tr><td>ambang sebagian 0,25 × 3,0 = 0,75</td><td>terlampaui → <b>REM SEBAGIAN</b></td></tr>
+        <tr><td>ambang penuh 0,55 × 3,0 = 1,65</td><td>belum → naik ke penuh saat a_ff naik</td></tr>
+        <tr><td>jarak henti pada a = 3,0</td><td>27,1 m (dari 39,5 km/h)</td></tr>
+      </table>
+      <p class="ok">Bereaksi sekitar 0,34 s setelah truk depan mengerem — pada t = 1,34 s.
+        Bandingkan dengan TTC relatif yang baru bereaksi t = 4,2 s pada skenario yang sama.</p>
+
+      <p><b>Tidak perlu sensor tambahan.</b> Radar 77 GHz sudah mengukur range-rate secara
+        langsung lewat Doppler; yang belum dimanfaatkan adalah <i>turunannya</i>. Syaratnya
+        satu: radar harus mengirim <b>object/track list</b> (jarak, sudut, kecepatan relatif
+        per target) ke ECU — bukan hanya flag "ada bahaya". Kalau radar hanya mengirim flag,
+        feed-forward tidak bisa dihitung dan perlu akses data track (konfigurasi/firmware,
+        bukan sensor baru).</p>
+
+      <p><b>Jebakan implementasi:</b></p>
+      <ul>
+        <li><code>leadDist</code> harus <b>0</b> ketika truk depan sudah berhenti. Kalau dibuat
+          ∞, rem justru dilepas tepat di depan objek diam.</li>
+        <li><code>margin</code> jangan dihilangkan — tanpa itu sistem hanya berhenti tepat di
+          buritan, tanpa ruang untuk ketidakpastian sensor dan fade.</li>
+        <li>Turunan range-rate memperkuat noise. Filter 0,1–0,2 s wajib; itu menambah lag
+          kecil, tapi jauh lebih kecil dari lag TTC relatif.</li>
+        <li>Kalau truk depan <b>berakselerasi</b>, <code>a_lead</code> dijepit di 0 dan
+          keputusan dikembalikan ke TTC.</li>
+        <li>Kalau track hilang (tikungan, saat menyalip), sistem harus fallback ke TTC —
+          bukan menganggap jalan kosong.</li>
+        <li>Banyak target: hanya target <b>di dalam koridor lajur</b> yang dipakai.</li>
+      </ul>
+
+      <h3>9. Alur keputusan — dari radar ke perlambatan</h3>
+      <p>Diagram ini merangkum ketiga logic yang sudah dijelaskan di bagian 6–8, dan
+        menunjukkan di mana masing-masing berada dalam rantai keseluruhan dari radar sampai
+        truk benar-benar melambat. Kotak abu-abu adalah perhitungan; kotak berwarna adalah
+        titik keputusan yang menentukan rem.</p>
       <svg viewBox="0 0 720 470" class="diagram" role="img" aria-label="Alur logic AEB dari radar ke perlambatan">
         <defs>
           <marker id="fa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -531,178 +705,6 @@ applied   naik linear: Δapplied = dt / brakeBuild   (per detik)</pre>
         <text x="20" y="438" class="ds">jaga v₀, throttle mati</text>
         <text x="20" y="452" class="ds">saat AEB aktif</text>
       </svg>
-
-      <h3>6. Definisi "rem sebagian" dan "rem penuh"</h3>
-      <p>Yang dikirim controller adalah <b>level</b>, yaitu <b>fraksi dari kapasitas yang
-        tersedia</b> — bukan angka m/s² yang tetap:</p>
-      <pre class="formula">a_diminta = level × a_tersedia
-
-level = 0,00  → tidak ada rem (hanya peringatan / coasting)
-level = 0,55  → REM SEBAGIAN   (55 % kapasitas)
-level = 1,00  → REM PENUH      (100 % kapasitas)</pre>
-      <p>Karena <code>a_tersedia = min(μ·g, a_cap)</code>, <b>"penuh" bukan angka tetap</b>.
-        Di chipseal kering "penuh" berarti 3,0 m/s²; di jalan berlumpur "penuh" hanya 2,45.
-        Jadi rem penuh = <i>semua yang dimiliki kendaraan saat itu</i>, bukan angka absolut.</p>
-
-      <table class="eq wide">
-        <tr><th>Kondisi</th><th>a_tersedia</th><th>Sebagian (0,55)</th><th>Penuh (1,0)</th><th>Jarak henti dari 40 km/h<br>sebagian / penuh</th></tr>
-        <tr><td>Chipseal kering μ 0,60</td><td>3,00</td><td>1,65 m/s²</td><td>3,00 m/s²</td><td>44,1 m / 27,2 m</td></tr>
-        <tr><td>Chipseal berdebu μ 0,32</td><td>3,00</td><td>1,65 m/s²</td><td>3,00 m/s²</td><td>44,1 m / 27,2 m</td></tr>
-        <tr><td>Berlumpur μ 0,25</td><td>2,45</td><td>1,35 m/s²</td><td>2,45 m/s²</td><td>52,4 m / 31,8 m</td></tr>
-        <tr><td>Kalau a_cap hanya 1,80</td><td>1,80</td><td>0,99 m/s²</td><td>1,80 m/s²</td><td>69,0 m / 41,0 m</td></tr>
-      </table>
-
-      <p><b>Makna fisiknya:</b></p>
-      <ul>
-        <li><b>Rem sebagian (55 %)</b> — bukan untuk berhenti, tapi untuk <i>membuang energi
-          kinetik</i> dan memberi waktu. Buktinya dari 40 km/h: sebagian butuh 44,1 m,
-          penuh 27,2 m. Pada jarak 4 detik (44 m), rem sebagian saja akan menghabiskan
-          seluruh jarak yang ada — tanpa sisa.</li>
-        <li><b>Rem penuh (100 %)</b> — batas kemampuan kendaraan, dibatasi ABS dan gesekan.
-          Ini yang harus dihindari sampai benar-benar perlu, karena pengereman maksimum
-          pada truk 66,5 t berisiko muatan bergeser, dan kendaraan di belakang bisa
-          menabrak.</li>
-      </ul>
-
-      <p>Kapan masing-masing dipicu, per logic:</p>
-      <table class="eq wide">
-        <tr><th>Logic</th><th>Rem sebagian dipicu saat</th><th>Rem penuh dipicu saat</th></tr>
-        <tr><td>TTC relatif</td><td>TTC ≤ 1,8 s atau a_req ≥ 0,5·a_tersedia</td><td>TTC ≤ 0,9 s atau a_req ≥ 0,9·a_tersedia, atau gap &lt; 4 m</td></tr>
-        <tr><td>Headway</td><td>level kontinu, dibatasi 1,2 m/s²</td><td>tidak pernah — ini governor, bukan AEB</td></tr>
-        <tr><td>Prediktif</td><td>a_ff ≥ 0,25·a_tersedia</td><td>a_ff ≥ 0,55·a_tersedia</td></tr>
-      </table>
-
-      <p class="warn">Catatan teknis: perintah hanya dikirim ke aktuator kalau perubahannya
-        lebih dari <code>0,08</code> level. Tanpa ambang ini, kontrol kontinu akan membanjiri
-        antrean perintah aktuator setiap 5 ms.</p>
-
-      <h3>7. Logic 1 — TTC relatif <span class="tag">terpasang sekarang</span></h3>
-      <pre class="formula">TTC    = gap / closing                 (∞ jika closing ≤ 0,05)
-a_req  = closing² / (2 · gap)
-
-if   TTC ≤ 0,9 s  atau  a_req ≥ 0,9 · a_tersedia   → REM PENUH
-elif TTC ≤ 1,8 s  atau  a_req ≥ 0,5 · a_tersedia   → rem sebagian 55 %
-elif TTC ≤ 2,6 s                                   → peringatan
-if   gap &lt; 4 m dan closing &gt; 0                    → REM PENUH (jaring pengaman)</pre>
-      <p class="warn">Kelemahan: TTC memakai closing speed <i>saat itu</i>. Kalau dua truk
-        kecepatannya hampir sama, closing ≈ 0 sehingga TTC sangat besar — padahal jaraknya
-        bisa tinggal 1,3 detik. Sistem baru bereaksi setelah truk depan mengerem.</p>
-
-      <h3>8. Logic 2 — governor jarak aman (headway)</h3>
-      <pre class="formula">v_safe = gap / headway                 # batas kecepatan agar THW terjaga
-if v &gt; v_safe + 0,15:
-    a_butuh = (v − v_safe) / 2         # konvergen ~2 detik
-    level   = min(1, a_butuh / a_tersedia, 1,2 / a_tersedia)   # maks 1,2 m/s²</pre>
-      <p><b>Dari mana angka 1,2 m/s²?</b> Jujur: itu <b>batas kenyamanan yang kami pilih</b>,
-        bukan angka yang diturunkan dari aturan 4 detik. Aturan 4 detik menentukan
-        <i>target jarak</i>; angka ini hanya menentukan <i>seberapa cepat</i> jarak itu
-        dikembalikan. 1,2 m/s² = <b>0,12 g</b>, di dalam rentang pengereman normal truk berat
-        (0,1–0,15 g). Rem darurat ada di 0,3 g, jadi angka ini sengaja jauh di bawahnya.</p>
-      <p><b>Asal angka 1,2 m/s² — rincian asumsinya:</b></p>
-      <table class="eq wide">
-        <tr><th>Parameter</th><th>Nilai</th><th>Dari mana</th><th>Sifat</th></tr>
-        <tr><td>Rentang nyaman pengereman truk berat</td><td>0,10–0,15 g</td><td>praktik umum pengereman servis kendaraan berat</td><td>rujukan umum</td></tr>
-        <tr><td><b>Batas yang dipakai</b></td><td><b>1,2 m/s² = 0,12 g</b></td><td>titik tengah rentang di atas</td><td><b>asumsi kami</b></td></tr>
-        <tr><td>Waktu konvergensi yang diinginkan</td><td>2 detik</td><td>dipilih agar pelambatan tidak menghentak</td><td><b>asumsi kami</b></td></tr>
-        <tr><td>Rumus yang dipakai</td><td>a = (v − v_safe) / 2</td><td>lalu dibatasi 1,2 m/s²</td><td>kode, baris &nbsp;<code>need / 2</code></td></tr>
-        <tr><td>Pembanding: rem darurat</td><td>3,0 m/s² = 0,31 g</td><td><code>a_cap</code> 66,5 t (masih asumsi brake test)</td><td>perlu diverifikasi</td></tr>
-        <tr><td>Pembanding: retarder + engine brake</td><td>0,43–0,56 m/s²</td><td>4.000 Nm × final drive ÷ jari-jari roda</td><td>turunan</td></tr>
-      </table>
-      <p class="warn">Tidak ada standar yang menetapkan angka ini. UN R13/R131 mengatur respons rem dan
-        kinerja AEB, tapi tidak mengatur "governor jarak" — karena itu bukan fungsi AEB.
-        Jadi 1,2 m/s² murni <b>pilihan desain</b>, dan sebaiknya disepakati bersama tim operasi
-        sebelum dipakai sebagai aturan.</p>
-
-      <p>Konsekuensinya terlihat begini (pelambatan halus, tidak menghentak):</p>
-      <table class="eq wide">
-        <tr><th>Kondisi</th><th>THW sekarang</th><th>Kecepatan aman</th><th>Waktu kembali ke 4 s</th></tr>
-        <tr><td>40 km/h, gap 30 m</td><td>2,7 s</td><td>27 km/h</td><td>±3,0 s</td></tr>
-        <tr><td>40 km/h, gap 20 m</td><td>1,8 s</td><td>18 km/h</td><td>±5,1 s</td></tr>
-        <tr><td>55 km/h, gap 34 m</td><td>2,2 s</td><td>31 km/h</td><td>±5,6 s</td></tr>
-      </table>
-      <p>Perhatikan: pada gap 1,8 detik, governor butuh 5 detik untuk kembali ke 4 detik —
-        sementara tabrakan bisa terjadi dalam 2–3 detik. Inilah alasan governor
-        <b>bukan</b> pengganti AEB: ia memperbaiki kebiasaan, bukan mencegah tabrakan.
-        Nilainya bisa diubah di panel kiri (slider <b>Governor headway</b>).</p>
-
-      <h3>9. Logic 3 — prediktif (feed-forward truk depan)</h3>
-
-      <p><b>Definisi.</b> Logic ini tidak menilai bahaya dari <i>closing speed saat ini</i>,
-        tapi dari <b>apa yang akan terjadi</b> kalau truk depan terus mengerem. Inputnya adalah
-        <b>perlambatan truk depan</b> (<code>a_lead</code>), yang diperoleh dari turunan
-        range-rate radar — data yang sudah tersedia tanpa sensor tambahan.</p>
-
-      <p><b>Data yang dibutuhkan:</b></p>
-      <table class="eq wide">
-        <tr><th>Data</th><th>Sumber</th><th>Status</th></tr>
-        <tr><td>jarak ke objek (range)</td><td>track radar 77 GHz</td><td>sudah ada</td></tr>
-        <tr><td><b>range-rate (dR/dt)</b></td><td><b>Doppler radar</b> — kuncinya di sini</td><td>sudah ada</td></tr>
-        <tr><td>v_lead absolut</td><td>v_ego + range-rate</td><td>hasil hitung</td></tr>
-        <tr><td>v_ego</td><td>CAN kendaraan / EBS</td><td>sudah ada</td></tr>
-        <tr><td>a_tersedia</td><td>μ permukaan + a_cap hasil brake test</td><td>perlu diisi</td></tr>
-        <tr><td>latency aktual</td><td>kalibrasi unit</td><td>perlu diukur</td></tr>
-      </table>
-
-      <p><b>Langkah perhitungan:</b></p>
-      <pre class="formula">1  a_lead   = filter_0,15s( d(−range_rate)/dt )     # positif = truk depan melambat
-2  leadDist = a_lead &gt; 0,1 ? v_lead² / (2·a_lead) : (v_lead &lt; 0,3 ? 0 : ∞)
-3  budget   = gap + leadDist − margin(3 m)           # jarak yang benar-benar tersedia
-4  a_ff     = requiredDecel(v, budget, latency, build)
-
-   requiredDecel mencari a terkecil sehingga d_henti(a) ≤ budget, dengan
-   d_henti(a) = v·T − a·T²/6 + (v − a·T/2)²/(2a) + v·latency
-   latency    = sensorDelay + processDelay + valveDelay
-   T          = brakeBuild
-
-5  if a_ff ≥ 0,55·a_tersedia → REM PENUH
-   elif a_ff ≥ 0,25·a_tersedia → REM SEBAGIAN</pre>
-
-      <p class="ok"><b>Kedua delay sudah masuk ke rumus pemicu</b> — bukan hanya ke model
-        aktuator. Latency total (radar + mikroprosesor + relay/solenoid) dipotong sebagai
-        <code>v·latency</code> di dalam <code>d_henti</code>, dan build-up pneumatik masuk
-        lewat suku <code>v·T − a·T²/6 + (v − a·T/2)²/(2a)</code>. Karena itu rumus
-        sederhana <code>v²/(2a)</code> tidak dipakai lagi: pada 40 km/h dengan a = 3 m/s²
-        rumus sederhana memberi 23,1 m sedangkan rantai nyata 27,8 m — selisih 4,6 m
-        yang sebelumnya tertutupi secara kebetulan oleh margin.</p>
-
-      <p><b>Contoh nyata</b> — 66,5 t, 40 km/h, truk depan 38 km/h, gap 44 m (4 detik),
-        truk depan mengerem 3 m/s² pada t = 1 s:</p>
-      <table class="eq wide">
-        <tr><th>Besaran</th><th>Nilai saat pemicu (t = 1,34 s)</th></tr>
-        <tr><td>gap</td><td>43,1 m</td></tr>
-        <tr><td>v_ego / v_lead</td><td>39,5 / 34,3 km/h</td></tr>
-        <tr><td>a_lead (setelah filter)</td><td>2,71 m/s²</td></tr>
-        <tr><td>leadDist = v_lead²/(2·a_lead)</td><td>16,7 m</td></tr>
-        <tr><td>budget = 43,1 + 16,7 − 3</td><td>56,9 m</td></tr>
-        <tr><td>a_ff = requiredDecel(...)</td><td><b>1,21 m/s²</b></td></tr>
-        <tr><td>ambang sebagian 0,25 × 3,0 = 0,75</td><td>terlampaui → <b>REM SEBAGIAN</b></td></tr>
-        <tr><td>ambang penuh 0,55 × 3,0 = 1,65</td><td>belum → naik ke penuh saat a_ff naik</td></tr>
-        <tr><td>jarak henti pada a = 3,0</td><td>27,1 m (dari 39,5 km/h)</td></tr>
-      </table>
-      <p class="ok">Bereaksi sekitar 0,34 s setelah truk depan mengerem — pada t = 1,34 s.
-        Bandingkan dengan TTC relatif yang baru bereaksi t = 4,2 s pada skenario yang sama.</p>
-
-      <p><b>Tidak perlu sensor tambahan.</b> Radar 77 GHz sudah mengukur range-rate secara
-        langsung lewat Doppler; yang belum dimanfaatkan adalah <i>turunannya</i>. Syaratnya
-        satu: radar harus mengirim <b>object/track list</b> (jarak, sudut, kecepatan relatif
-        per target) ke ECU — bukan hanya flag "ada bahaya". Kalau radar hanya mengirim flag,
-        feed-forward tidak bisa dihitung dan perlu akses data track (konfigurasi/firmware,
-        bukan sensor baru).</p>
-
-      <p><b>Jebakan implementasi:</b></p>
-      <ul>
-        <li><code>leadDist</code> harus <b>0</b> ketika truk depan sudah berhenti. Kalau dibuat
-          ∞, rem justru dilepas tepat di depan objek diam.</li>
-        <li><code>margin</code> jangan dihilangkan — tanpa itu sistem hanya berhenti tepat di
-          buritan, tanpa ruang untuk ketidakpastian sensor dan fade.</li>
-        <li>Turunan range-rate memperkuat noise. Filter 0,1–0,2 s wajib; itu menambah lag
-          kecil, tapi jauh lebih kecil dari lag TTC relatif.</li>
-        <li>Kalau truk depan <b>berakselerasi</b>, <code>a_lead</code> dijepit di 0 dan
-          keputusan dikembalikan ke TTC.</li>
-        <li>Kalau track hilang (tikungan, saat menyalip), sistem harus fallback ke TTC —
-          bukan menganggap jalan kosong.</li>
-        <li>Banyak target: hanya target <b>di dalam koridor lajur</b> yang dipakai.</li>
-      </ul>
 
       <h3>10. Jarak henti dan TTC minimum</h3>
       <pre class="formula">d_henti = v·T − a·T²/6 + (v − a·T/2)² / (2a) + v·latency
