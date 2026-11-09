@@ -509,3 +509,36 @@ Hasil simulasi pada jarak awal 44,4 m (40 km/h):
 | Ban pecah (3,0) | berhenti, sisa 0,3 m | berhenti, sisa 3,5 m |
 | Mengerem normal (2,0) | tabrakan 12,0 km/h | berhenti, sisa 3,4 m |
 | Mengerem darurat (5,0) | tabrakan 3,2 km/h | berhenti, sisa 3,7 m |
+
+## Lampiran D — Perambatan pengereman antar truk
+
+Semua truk hauling dilengkapi AEBS, tetapi perilaku truk di belakang bergantung pada logic yang
+dipakai, bukan semata pada ada atau tidaknya AEBS. Uji: dua truk 66,5 t berjarak 4 detik,
+truk depan mengerem dengan laju tertentu, truk belakang mengikuti dengan logic yang diuji.
+
+| Rem truk depan | Logic pengikut | Mulai mengerem | Gap saat itu | Hasil |
+|---|---|---|---|---|
+| 0,80 m/s² | TTC relatif | 9,91 s | 13,5 m | **tabrakan 13,7 km/h** |
+| 0,80 m/s² | prediktif | 4,04 s | 41,0 m | aman, sisa 3,4 m |
+| 1,20 m/s² | TTC relatif | 7,77 s | 17,5 m | **tabrakan 19,3 km/h** |
+| 1,20 m/s² | prediktif | 1,79 s | 44,1 m | aman, sisa 3,3 m |
+| 1,65 m/s² | TTC relatif | 6,40 s | 20,8 m | **tabrakan 16,4 km/h** |
+| 1,65 m/s² | prediktif | 1,48 s | 44,3 m | aman, sisa 3,4 m |
+| 2,50 m/s² | TTC relatif | 4,96 s | 25,1 m | aman, sisa 0,3 m |
+| 2,50 m/s² | prediktif | 1,38 s | 44,3 m | aman, sisa 3,7 m |
+
+Kesimpulan:
+
+1. Pengikut dengan logic TTC relatif baru bereaksi saat TTC turun ke 1,9–2,4 s, yaitu 4–9 detik
+   setelah truk depan mulai mengerem.
+2. Pada rentang perlambatan 0,8–1,65 m/s² — rentang pengereman yang paling umum — pengikut TTC
+   gagal berhenti. Bukan karena tidak ada AEBS, tetapi karena pemicunya terlambat.
+3. Pengikut dengan logic prediktif bereaksi pada 1,4–1,8 s dan berhenti dengan sisa 3,3–3,7 m
+   pada seluruh rentang.
+4. Karena setiap pengereman satu truk menjadi "truk depan mengerem" bagi truk berikutnya,
+   keandalan konvoi ditentukan oleh logic di seluruh armada, bukan oleh satu unit.
+
+Catatan: kendaraan pendukung (LV, kendaraan antar-jemput, pengangkut HD/Loboy) tidak dilengkapi
+AEBS. Apabila berada tepat di belakang truk bermuatan pada jarak 4 detik, simulasinya memberi
+tabrakan pada 39,6 km/h. Risiko ini terbatas pada posisi tersebut, tetapi tetap perlu
+diperhitungkan pada segmen menanjak ketika kendaraan pendukung bergerak lebih lambat.
