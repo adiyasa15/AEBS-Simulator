@@ -207,6 +207,12 @@
         <tr><td><code>gap</code></td><td><code>s_lead − s_ego</code></td></tr>
         <tr><td><code>closing</code></td><td><code>v_ego − v_lead</code> (positif berarti mendekat)</td></tr>
       </table>
+      <p>Sebelum AEB bekerja, kecepatan dijaga tetap pada nilai awal dengan model pengemudi
+        sederhana (throttle menyesuaikan agar kecepatan awal tercapai). Begitu AEB aktif,
+        throttle dianggap tidak bekerja sehingga seluruh perlambatan berasal dari sistem rem.
+        Model ini dipakai agar skenario realistis; pada sistem nyata, penurunan torsi mesin
+        bukan bagian dari fungsi AEB.</p>
+
       <p><i>Ego vehicle</i> adalah istilah baku untuk kendaraan yang diamati atau dikendalikan;
         padanannya <i>host vehicle</i>. Istilah ini dipertahankan dalam bahasa Inggris karena
         padanan Indonesianya belum baku.</p>
@@ -562,9 +568,6 @@ TTC_min = latency + v / (2a)</pre>
         <text x="518" y="422" class="dt" text-anchor="middle">v′ = max(0, v − a_net·dt)</text>
         <text x="518" y="440" class="ds" text-anchor="middle">s′ = s + ½(v + v′)·dt · integrasi 200 Hz</text>
 
-        <text x="20" y="424" class="ds">pengemudi:</text>
-        <text x="20" y="438" class="ds">jaga v₀, throttle mati</text>
-        <text x="20" y="452" class="ds">saat AEB aktif</text>
       </svg>
 
 
