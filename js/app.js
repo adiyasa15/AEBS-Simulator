@@ -23,6 +23,7 @@ const el = {
   filterTau: $('#filterTau'), filterTauo: $('#filterTauo'),
   dynTTC: $('#dynTTC'), dynNote: $('#dynNote'),
   capFromForce: $('#capFromForce'), capNote: $('#capNote'),
+  capVerified: $('#capVerified'), verifyChip: $('#verifyChip'),
   logic: $('#logic'),
   headway: $('#headway'), headwayo: $('#headwayo'),
   govDecel: $('#govDecel'), govDecelo: $('#govDecelo'),
@@ -144,6 +145,8 @@ function loadSpec(id) {
   el.vehNote.textContent = v.note;
   if (el.specGrid.children.length) fillSpec();
   el.capFromForce.checked = !!currentSpec.aCapFromForce;
+  el.capVerified.checked = !!currentSpec.aCapVerified;
+  el.verifyChip.hidden = !!currentSpec.aCapVerified;
   refreshCapNote();
 }
 
@@ -256,6 +259,11 @@ el.aeb.addEventListener('change', () => hardReset(false));
 el.leadBrake.addEventListener('change', () => { applyLeadMode(); hardReset(false); });
 el.leadDecel.addEventListener('input', () => { syncLabels(); hardReset(false); });
 el.dynTTC.addEventListener('change', () => hardReset(false));
+el.capVerified.addEventListener('change', () => {
+  currentSpec.aCapVerified = el.capVerified.checked;
+  el.verifyChip.hidden = !!currentSpec.aCapVerified;
+  hardReset(false);
+});
 el.capFromForce.addEventListener('change', () => {
   currentSpec.aCapFromForce = el.capFromForce.checked;
   refreshCapNote();

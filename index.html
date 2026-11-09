@@ -37,6 +37,11 @@
         <summary>Spek teknis (bisa diubah)</summary>
         <div class="spec-grid" id="specGrid"></div>
         <label class="switch">
+          <input type="checkbox" id="capVerified" />
+          <span class="slider"></span>
+          <span class="switch-label">a_cap sudah diverifikasi brake test</span>
+        </label>
+        <label class="switch">
           <input type="checkbox" id="capFromForce" />
           <span class="slider"></span>
           <span class="switch-label">Hitung a_cap dari gaya rem konstan</span>
@@ -181,6 +186,7 @@
         <div class="card state" id="hStateCard"><span class="k">Status</span><b id="hState">—</b></div>
       </div>
 
+      <div class="verifychip" id="verifyChip">Parameter rem belum terverifikasi — angka bersifat indikatif</div>
       <div class="verdict" id="verdict"></div>
     </div>
 
