@@ -23,7 +23,7 @@ const el = {
   logic: $('#logic'),
   headway: $('#headway'), headwayo: $('#headwayo'),
   govDecel: $('#govDecel'), govDecelo: $('#govDecelo'),
-  leadBrake: $('#leadBrake'),
+  leadBrake: $('#leadBrake'), leadDecel: $('#leadDecel'), leadDecelo: $('#leadDecelo'),
   playBtn: $('#playBtn'),
   resetBtn: $('#resetBtn'),
   view: $('#view'),
@@ -152,7 +152,7 @@ function readCfg() {
     govDecel: +el.govDecel.value,
     leadBrake: el.leadBrake.checked,
     leadBrakeAt: 1,
-    leadBrakeDecel: 3
+    leadBrakeDecel: +el.leadDecel.value
   };
 }
 
@@ -167,6 +167,7 @@ function syncLabels() {
   el.fullTTCo.textContent = `${(+el.fullTTC.value).toFixed(1)} s`;
   el.headwayo.textContent = `${(+el.headway.value).toFixed(1)} s`;
   el.govDecelo.textContent = `${(+el.govDecel.value).toFixed(1)} m/s²`;
+  el.leadDecelo.textContent = `${(+el.leadDecel.value).toFixed(1)} m/s²`;
 
   const v = currentVehicle();
   const m = v.massEmptyT + (v.massLoadedT - v.massEmptyT) * loadState;
@@ -228,6 +229,7 @@ el.resetBtn.addEventListener('click', () => hardReset(false));
 });
 el.aeb.addEventListener('change', () => hardReset(false));
 el.leadBrake.addEventListener('change', () => hardReset(false));
+el.leadDecel.addEventListener('input', () => { syncLabels(); hardReset(false); });
 el.logic.addEventListener('change', () => { syncLabels(); hardReset(false); });
 
 el.loadSeg.addEventListener('click', (e) => {
@@ -248,6 +250,7 @@ document.querySelectorAll('[data-scenario]').forEach((b) => {
     el.grade.value = s.grade;
     el.surface.value = s.surface;
     el.leadBrake.checked = !!s.leadBrake;
+    if (s.leadBrakeDecel) el.leadDecel.value = s.leadBrakeDecel;
     syncLabels();
     hardReset(true);
   });

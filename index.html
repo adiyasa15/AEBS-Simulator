@@ -100,6 +100,9 @@
         <span class="slider"></span>
         <span class="switch-label">Truk depan mengerem mendadak</span>
       </label>
+
+      <div class="row"><label class="lbl" for="leadDecel">Laju rem truk depan</label><output id="leadDecelo">3.0 m/s²</output></div>
+      <input type="range" id="leadDecel" min="0.5" max="6" step="0.1" value="3" />
     </section>
 
     <section class="group actions">
@@ -120,6 +123,7 @@
         <button data-scenario="lowmu">Jalan berlumpur</button>
         <button data-scenario="convoy">Konvoi rapat 15 m</button>
         <button data-scenario="headway4">Konvoi 4 detik</button>
+        <button data-scenario="suddenStop">Truk berhenti mendadak</button>
       </div>
     </section>
 
@@ -1131,7 +1135,68 @@ energi rem total  = 3,47 MJ</pre>
         Di t = 7,72 TTC sempat terbaca 69 s, tanda bahwa TTC sangat sensitif saat closing
         mendekati nol.</p>
 
-      <h3>16. Batasan model</h3>
+      <h3>16. Kasus khusus: truk depan berhenti mendadak</h3>
+      <p class="lead">Di simulator ini ada tiga situasi berbeda yang semuanya terlihat seperti
+        "truk berhenti", tapi aturannya tidak sama.</p>
+
+      <h4>Cara model merepresentasikannya</h4>
+      <table class="eq wide">
+        <tr><th>Situasi</th><th>Cara mengaturnya di aplikasi</th></tr>
+        <tr><td>Truk depan mengerem habis lalu berhenti</td><td>centang <b>Truk depan mengerem mendadak</b>, atur <b>Laju rem truk depan</b> (0,5–6 m/s²), dan kecepatan truk depan = kecepatan kita</td></tr>
+        <tr><td>Truk sudah berhenti / mogok di lajur</td><td>kecepatan truk depan = 0, centang rem mendadak <b>tidak perlu</b></td></tr>
+        <tr><td>Truk baru terlihat setelah tikungan</td><td>sama seperti di atas — objek statis yang muncul tiba-tiba</td></tr>
+      </table>
+      <p>Model memakai perlambatan tetap: truk depan melambat dengan laju yang dipilih mulai
+        t = 1 s, sampai kecepatannya nol, lalu tetap berhenti. Bukan lompatan kecepatan
+        mendadak — karena truk 40 ton memang tidak bisa berhenti seketika.</p>
+
+      <h4>Situasi 1 — mengerem habis sampai berhenti (40 km/h, gap 44,4 m)</h4>
+      <table class="eq wide">
+        <tr><th>Laju rem depan</th><th>Logic</th><th>Rem ego mulai</th><th>Hasil</th></tr>
+        <tr><td rowspan="3">3 m/s²</td><td>TTC relatif</td><td>t = 4,45 s (gap 27 m)</td><td>berhenti, sisa 0,3 m</td></tr>
+        <tr><td>Headway</td><td>t = 2,43 s (gap 42 m)</td><td>berhenti, sisa 1,0 m</td></tr>
+        <tr><td>Prediktif</td><td><b>t = 1,35 s</b> (gap 44 m)</td><td><b>berhenti, sisa 3,5 m</b></td></tr>
+        <tr><td rowspan="3">5 m/s²</td><td>TTC relatif</td><td>t = 3,32 s (gap 31 m)</td><td><b>TABRAKAN 3,2 km/h</b></td></tr>
+        <tr><td>Headway</td><td>t = 2,13 s (gap 41 m)</td><td>berhenti, sisa 1,1 m</td></tr>
+        <tr><td>Prediktif</td><td><b>t = 1,32 s</b> (gap 44 m)</td><td><b>berhenti, sisa 3,7 m</b></td></tr>
+      </table>
+      <p>Pola yang terlihat: makin keras truk depan mengerem, makin buruk logic TTC relatif —
+        karena ia baru menyadari bahaya setelah closing speed terbentuk. Logic prediktif tidak
+        terpengaruh, karena ia bereaksi pada <i>perlambatan</i> truk depan, bukan pada jarak.</p>
+
+      <h4>Situasi 2 — truk sudah berhenti di lajur (gap 4 detik)</h4>
+      <table class="eq wide">
+        <tr><th>Kecepatan ego</th><th>Logic</th><th>Rem mulai</th><th>Hasil</th></tr>
+        <tr><td rowspan="3">40 km/h (gap 44,4 m)</td><td>TTC relatif</td><td>t = 0,59 s (gap 38 m)</td><td>berhenti, sisa 0,6 m</td></tr>
+        <tr><td>Headway</td><td>t = 0,42 s (gap 40 m)</td><td>berhenti, sisa 1,6 m</td></tr>
+        <tr><td>Prediktif</td><td>t = 0,59 s (gap 38 m)</td><td>berhenti, sisa 0,6 m</td></tr>
+        <tr><td rowspan="3">70 km/h (gap 77,8 m)</td><td>TTC relatif</td><td>t = 0,28 s (gap 72 m)</td><td><b>TABRAKAN 4,3 km/h</b></td></tr>
+        <tr><td>Headway</td><td>t = 0,28 s (gap 72 m)</td><td><b>TABRAKAN 4,3 km/h</b></td></tr>
+        <tr><td>Prediktif</td><td>t = 0,28 s (gap 72 m)</td><td><b>TABRAKAN 4,3 km/h</b></td></tr>
+      </table>
+      <p class="warn">Perhatikan situasi 2 pada 70 km/h: <b>ketiga logic hasilnya sama dan sama-sama
+        gagal</b>. Ini bukan kelemahan logic, tapi kelemahan aturan 4 detik pada kecepatan itu
+        (lihat bagian 7). Ketiganya sudah mengerem sejak 0,28 s — sedini mungkin — tapi 77,8 m
+        memang tidak cukup untuk berhenti dari 70 km/h dengan truk 66,5 t.</p>
+
+      <h4>Aturannya secara ringkas</h4>
+      <ol>
+        <li><b>Selama truk depan masih bergerak</b>, logic prediktif mengukur perlambatannya
+          lewat turunan range-rate dan mulai mengerem ±0,24 detik setelah lampu rem menyala.</li>
+        <li><b>Setelah truk depan berhenti</b>, ia menjadi objek statis. Feed-forward tetap
+          aktif (karena target pernah bergerak) dan rumusnya berubah menjadi kriteria jarak
+          henti: <code>a_ff = requiredDecel(v, gap − 3 m)</code>.</li>
+        <li><b>Kalau truk itu sejak awal diam</b> (mogok, atau baru terlihat setelah tikungan),
+          feed-forward tidak dipakai — target statis diserahkan ke TTC dan <code>a_req</code>.</li>
+        <li><b>Jaring pengaman <code>gap &lt; 4 m</code> selalu aktif</b> untuk semua logic, apa
+          pun status targetnya.</li>
+      </ol>
+
+      <p>Untuk mencoba sendiri: centang <b>Truk depan mengerem mendadak</b>, geser
+        <b>Laju rem truk depan</b> ke 5 m/s², samakan kecepatan ego dan truk depan, lalu bandingkan
+        ketiga logic. Chip <b>"Truk berhenti mendadak"</b> sudah menyiapkan kombinasi itu.</p>
+
+      <h3>17. Batasan model</h3>
       <ul>
         <li>1 dimensi — tanpa rotasi, tanpa manuver mengelak.</li>
         <li>Tanpa load transfer dan tanpa inersia rotasi. Faktor massa ekuivalen 1,04–1,06 belum
