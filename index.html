@@ -422,6 +422,24 @@ gap &lt; 4 m                                    → level 1,00 (jaring pengaman)
         bergerak dengan kecepatan hampir sama, nilai TTC menjadi sangat besar meskipun jaraknya
         pendek, sehingga pemicu baru bekerja setelah kendaraan depan mengerem.</p>
 
+      <h4>Hubungan dengan aturan jarak aman 4 detik</h4>
+      <p>Aturan 4 detik dan ambang <code>a_req</code> merupakan dua kriteria yang berbeda dan
+        tidak selalu berimpit. Aturan 4 detik menetapkan jarak berdasarkan waktu, sedangkan
+        <code>a_req</code> menetapkan kebutuhan perlambatan untuk berhenti tepat pada objek.
+        Keduanya berimpit hanya pada satu kecepatan, yaitu saat <code>v = 4 × a_tersedia</code>
+        atau sekitar <b>43 km/h</b> untuk a_tersedia 3,0 m/s².</p>
+      <table class="eq wide">
+        <tr><th>Kecepatan</th><th>Jarak 4 detik</th><th>Jarak saat a_req = 0,5·a_tersedia</th><th>Kriteria yang bekerja lebih dahulu</th></tr>
+        <tr><td>40 km/h</td><td>44 m</td><td>41 m</td><td>jarak 4 detik</td></tr>
+        <tr><td>50 km/h</td><td>56 m</td><td>64 m</td><td>a_req</td></tr>
+        <tr><td>70 km/h</td><td>78 m</td><td>126 m</td><td>a_req</td></tr>
+      </table>
+      <p>Pada kecepatan di atas 43 km/h, <code>a_req</code> mencapai 50 % kapasitas sebelum jarak
+        menyusut sampai 4 detik, sehingga rem sebagian sudah bekerja meskipun jarak masih di atas
+        4 detik. Hal ini bukan kesalahan perhitungan: 4 detik menjamin waktu reaksi terhadap
+        kendaraan yang bergerak, sedangkan <code>a_req</code> mengukur kemampuan berhenti terhadap
+        objek yang diam. Kedua kebutuhan itu memang berbeda.</p>
+
       <h4>4.2 Logic 2 — TTC relatif + jarak aman 4 detik</h4>
       <pre class="formula">v_safe = gap / headway               (headway = jarak aman dalam detik, bawaan 4)
 jika v &gt; v_safe + 0,15 :
