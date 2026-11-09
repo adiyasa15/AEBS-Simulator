@@ -85,7 +85,15 @@ export class Sim {
     const v = this.cfg.vehicle;
     const c = this.cfg;
     const massT = v.massEmptyT + (v.massLoadedT - v.massEmptyT) * c.loaded01;
-    const aCap = v.aCapEmpty + (v.aCapLoaded - v.aCapEmpty) * c.loaded01;
+    // a_cap dapat diisi langsung (hasil brake test) atau diturunkan dari gaya rem konstan:
+    // F = a_cap_kosong x massa_kosong, sehingga a_cap(m) = F / m.
+    let aCap;
+    if (v.aCapFromForce) {
+      const force = v.aCapEmpty * v.massEmptyT;   // ton x m/s^2 (satuan saling menghapus)
+      aCap = force / Math.max(1, massT);
+    } else {
+      aCap = v.aCapEmpty + (v.aCapLoaded - v.aCapEmpty) * c.loaded01;
+    }
     const aAvail = Math.min(c.mu * G, aCap);
     return {
       massT,

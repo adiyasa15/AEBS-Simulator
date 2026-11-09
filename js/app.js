@@ -22,6 +22,7 @@ const el = {
   fullTTC: $('#fullTTC'), fullTTCo: $('#fullTTCo'),
   filterTau: $('#filterTau'), filterTauo: $('#filterTauo'),
   dynTTC: $('#dynTTC'), dynNote: $('#dynNote'),
+  capFromForce: $('#capFromForce'), capNote: $('#capNote'),
   logic: $('#logic'),
   headway: $('#headway'), headwayo: $('#headwayo'),
   govDecel: $('#govDecel'), govDecelo: $('#govDecelo'),
@@ -112,6 +113,21 @@ function buildSpecGrid() {
   }
 }
 
+function refreshCapNote() {
+  if (!el.capNote || !currentSpec) return;
+  const v = currentSpec;
+  const load = loadState;
+  const m = v.massEmptyT + (v.massLoadedT - v.massEmptyT) * load;
+  let aCap;
+  if (el.capFromForce.checked) {
+    aCap = (v.aCapEmpty * v.massEmptyT) / Math.max(1, m);
+  } else {
+    aCap = v.aCapEmpty + (v.aCapLoaded - v.aCapEmpty) * load;
+  }
+  el.capNote.textContent = `a_cap berlaku: ${aCap.toFixed(2)} m/s² untuk ${m.toFixed(1)} t`
+    + (el.capFromForce.checked ? ' (diturunkan dari gaya rem konstan)' : ' (nilai isian)');
+}
+
 function fillSpec() {
   for (const inp of el.specGrid.querySelectorAll('input')) {
     const k = inp.dataset.key;
@@ -127,6 +143,8 @@ function loadSpec(id) {
   currentSpec = { ...v };
   el.vehNote.textContent = v.note;
   if (el.specGrid.children.length) fillSpec();
+  el.capFromForce.checked = !!currentSpec.aCapFromForce;
+  refreshCapNote();
 }
 
 el.vehicle.addEventListener('change', () => {
@@ -173,6 +191,7 @@ function syncLabels() {
   el.headwayo.textContent = `${(+el.headway.value).toFixed(1)} s`;
   el.govDecelo.textContent = `${(+el.govDecel.value).toFixed(1)} m/s²`;
   el.leadDecelo.textContent = `${(+el.leadDecel.value).toFixed(1)} m/s²`;
+  refreshCapNote();
   el.filterTauo.textContent = `${(+el.filterTau.value).toFixed(2)} s`;
 
   const v = currentVehicle();
@@ -237,6 +256,11 @@ el.aeb.addEventListener('change', () => hardReset(false));
 el.leadBrake.addEventListener('change', () => { applyLeadMode(); hardReset(false); });
 el.leadDecel.addEventListener('input', () => { syncLabels(); hardReset(false); });
 el.dynTTC.addEventListener('change', () => hardReset(false));
+el.capFromForce.addEventListener('change', () => {
+  currentSpec.aCapFromForce = el.capFromForce.checked;
+  refreshCapNote();
+  hardReset(false);
+});
 
 const LEAD_MODES = {
   brake2:  { decel: 2.0,  note: 'Mengerem wajar. Dari 40 km/h berhenti dalam ±5,5 detik / 86 m.' },
