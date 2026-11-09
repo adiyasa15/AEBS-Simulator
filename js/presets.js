@@ -20,6 +20,7 @@ export const VEHICLES = [
     hCoG: 1.9,
     wheelbase: 4.2,
     aCapVerified: false,
+    aCapFromForce: true,
     aCapEmpty: 4.6,
     aCapLoaded: 3.0,
     brakeBuild: 0.85,

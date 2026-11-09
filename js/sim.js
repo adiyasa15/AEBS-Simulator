@@ -112,6 +112,25 @@ export class Sim {
   gap() { return Math.max(0, this.sLead - this.sEgo); }
 
   /**
+   * Perlambatan yang dibutuhkan untuk berhenti sebelum objek di depan,
+   * dengan memperhitungkan sisa jarak berhenti objek dan latency + build-up.
+   * Mengembalikan null bila objek bergerak tetap (tidak ada indikasi akan berhenti),
+   * sehingga keputusan diserahkan ke kriteria TTC/jarak.
+   */
+  demandDecel() {
+    const p = this.params;
+    const gap = this.gap();
+    const aLead = Math.max(0, this.aLeadEst);
+    let leadDist;
+    if (!this.leadMovingSeen || this.vLead < 0.3) leadDist = 0;          // objek diam
+    else if (aLead > 0.1) leadDist = (this.vLead * this.vLead) / (2 * aLead); // objek mengerem
+    else return null;                                                     // objek melaju tetap
+    const budget = gap + leadDist - (this.cfg.aebMargin ?? 3);
+    return requiredDecel(this.vEgo, budget, p.latency, Math.max(0, p.build));
+  }
+
+
+  /**
    * Estimasi beban pindah ke axle depan saat mengerem: ΔW = m·a·h / L
    * Hasil dalam ton (gaya). Indikator saja — tidak mempengaruhi dinamika model.
    */
@@ -181,6 +200,15 @@ export class Sim {
         desired = 0.55; stage = 'partial';
       } else if (ttc <= thrWarn) {
         stage = 'warn';
+      }
+
+      // Lantai keselamatan untuk SELURUH logic: bila perlambatan yang dibutuhkan
+      // sudah mendekati atau melewati kemampuan truk, rem langsung dinaikkan
+      // tanpa menunggu ambang TTC. Berlaku juga saat objek diam atau sedang berhenti.
+      const dem = this.demandDecel();
+      if (dem !== null && isFinite(dem)) {
+        if (dem >= p.aAvail * 0.85) { desired = 1; stage = 'full'; }
+        else if (dem >= p.aAvail * 0.40 && desired < 0.55) { desired = 0.55; stage = 'partial'; }
       }
 
       // ---- pemicu prediktif: feed-forward perlambatan truk depan ----

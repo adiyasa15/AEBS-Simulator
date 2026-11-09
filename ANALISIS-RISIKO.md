@@ -563,3 +563,31 @@ Catatan: kendaraan pendukung (LV, kendaraan antar-jemput, pengangkut HD/Loboy) t
 AEBS. Apabila berada tepat di belakang truk bermuatan pada jarak 4 detik, simulasinya memberi
 tabrakan pada 39,6 km/h. Risiko ini terbatas pada posisi tersebut, tetapi tetap perlu
 diperhitungkan pada segmen menanjak ketika kendaraan pendukung bergerak lebih lambat.
+
+## Lampiran E — Kecukupan aturan 4 detik pada unit bermuatan (a_cap 1,80 m/s²)
+
+Dihitung ulang setelah `a_cap` unit bermuatan diturunkan dari gaya rem konstan
+(F = 4,6 × 26 = 119,6 kN → 1,80 m/s² pada 66,5 t).
+
+### Objek diam di lajur (truk parkir, mogok permanen, material jatuh)
+
+| Kecepatan | Jarak 4 detik | Hasil pada 4 detik | Jarak yang dibutuhkan |
+|---|---|---|---|
+| 30 km/h | 33 m | berhenti, sisa 3,7 m | — |
+| 40 km/h | 44 m | berhenti, sisa 3,4 m | 39 m (3,5 s) |
+| 50 km/h | 56 m | **tabrakan 12,1 km/h** | 59 m (4,2 s) |
+| 60 km/h | 67 m | **tabrakan 27,5 km/h** | 83 m (5,0 s) |
+| 70 km/h | 78 m | **tabrakan 39,5 km/h** | 111 m (5,7 s) |
+
+Pengereman dimulai pada 0,25 detik — yaitu secepat mungkin. Jadi kegagalan di sini **bukan
+kegagalan pemicu**, melainkan kekurangan jarak: pada 50 km/h ke atas, jarak henti truk
+bermuatan melebihi jarak yang disediakan aturan 4 detik.
+
+### Objek yang bergerak lalu mogok (0,3 m/s²)
+
+Dengan 4 detik, seluruh kecepatan 30–70 km/h berhasil berhenti (sisa 3,0–3,7 m), karena objek
+bergerak maju saat melambat sehingga memberi tambahan ruang.
+
+**Kesimpulan:** aturan 4 detik memadai untuk objek bergerak, tetapi **tidak memadai untuk objek
+diam pada kecepatan di atas ±45 km/h** bagi unit bermuatan dengan `a_cap` 1,80 m/s².
+Kebutuhan jarak naik menjadi sekitar 5,7 detik pada 70 km/h.

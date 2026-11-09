@@ -443,6 +443,20 @@ TTC ≤ ambang_penuh     atau a_req ≥ 0,9 · a_tersedia  → level 1,00
 TTC ≤ ambang_sebagian  atau a_req ≥ 0,5 · a_tersedia  → level 0,55
 TTC ≤ ambang_peringatan                              → peringatan
 gap &lt; 4 m                                            → level 1,00</pre>
+      <h4>Lantai keselamatan untuk seluruh logic</h4>
+      <p>Selain ambang di atas, setiap siklus juga menghitung <b>perlambatan yang dibutuhkan</b>
+        untuk berhenti sebelum objek di depan, termasuk sisa jarak berhenti objek tersebut:</p>
+      <pre class="formula">leadDist = objek diam ? 0 : v_lead² / (2 · a_lead)      (bila objek sedang berhenti)
+budget   = gap + leadDist − margin
+demand   = requiredDecel(v, budget, latency, build)
+
+demand ≥ 0,85 · a_tersedia → rem penuh
+demand ≥ 0,40 · a_tersedia → rem sebagian</pre>
+      <p>Lantai ini berlaku pada <b>ketiga logic</b>, dan tidak menunggu ambang TTC. Tujuannya
+        satu: rem tidak boleh menunggu sampai perlambatan yang dibutuhkan melampaui kemampuan
+        truk. Karena <code>a_tersedia</code> diturunkan dari massa, lantai ini otomatis bekerja
+        lebih awal pada unit bermuatan.</p>
+
       <p>Ambang TTC tidak berupa konstanta. Nilainya naik mengikuti <code>TTC_min</code>, yaitu
         waktu minimum yang dibutuhkan truk untuk berhenti pada kecepatan dan kemampuan rem saat
         itu. Karena <code>a_tersedia</code> bergantung pada massa, unit bermuatan otomatis memakai
