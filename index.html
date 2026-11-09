@@ -697,10 +697,55 @@ a_mentah = −Δ(range_rate) / Δt</pre>
         <li>Apabila terdapat banyak target, hanya target di dalam <b>lane corridor</b> (koridor lajur) yang digunakan.</li>
       </ul>
 
+      <h4>Apa yang diukur radar</h4>
+      <p>Radar 77 GHz jenis FMCW memancarkan gelombang kontinu yang frekuensinya diayun, lalu
+        mengolah gema yang kembali. Dari gema itu diperoleh besaran fisis berikut:</p>
+      <table class="eq wide">
+        <tr><th>Besaran</th><th>Diperoleh dari</th><th>Keterangan</th></tr>
+        <tr><td>Jarak (<i>range</i>)</td><td>waktu tempuh gema</td><td>ketelitian beberapa sentimeter hingga desimeter</td></tr>
+        <tr><td>Kecepatan relatif radial (<i>range-rate</i>)</td><td>pergeseran Doppler</td><td>diukur langsung, bukan hasil turunan posisi</td></tr>
+        <tr><td>Sudut azimuth</td><td>beda fasa antar-antena</td><td>ketelitian sudut terbatas; melebar terhadap jarak</td></tr>
+        <tr><td>Elevasi</td><td>susunan antena vertikal</td><td>hanya pada radar 4D; radar 2D tidak memilikinya</td></tr>
+        <tr><td>Kekuatan gema (RCS)</td><td>amplitudo gema</td><td>bergantung pada bahan, ukuran, dan sudut datang</td></tr>
+        <tr><td>Luas dan panjang target</td><td>sebaran titik-titik deteksi</td><td>dasar perkiraan apakah objek memanjang atau kompak</td></tr>
+      </table>
+      <p>Radar tidak memberikan identitas objek. Tidak ada bentuk, warna, maupun tulisan yang
+        terbaca. Yang tersedia hanya besaran fisis di atas, dan dari besaran itulah objek harus
+        dinilai relevan atau tidak.</p>
+
+      <h4>Rambu, tiang, dan bangunan atas jalan</h4>
+      <p>Rambu lalu lintas berbahan logam merupakan reflektor yang baik. Nilai RCS-nya tinggi,
+        sehingga <b>justru mudah terdeteksi</b> — pada sudut tertentu dapat lebih kuat daripada
+        gema kendaraan. Karena itu persoalannya bukan ketidakmampuan mendeteksi, melainkan
+        ketidakmampuan membedakan.</p>
+      <p>Kendaraan yang berhenti, pagar pengaman, rambu, jembatan penyeberangan, dan dinding
+        terowongan dapat menghasilkan gema yang sama kuatnya. Sistem harus memutuskan mana yang
+        berada di jalur lintasan kendaraan dan mana yang tidak. Doppler saja tidak cukup: pada
+        kendaraan yang sedang bergerak, semua objek diam tampak bergerak relatif terhadap radar,
+        dan nilainya berubah mengikuti kecepatan kendaraan, sudut pemasangan sensor, kelengkungan
+        jalan, serta laju simpangan (yaw rate).</p>
+      <p>Ciri yang dipakai literatur untuk memisahkannya:</p>
+      <ul>
+        <li><b>Besaran dan kestabilan RCS.</b> Rambu, lampu lalu lintas, dan bangunan atas
+          memiliki pola RCS yang berbeda dari kendaraan dan cenderung menurun seiring jarak
+          dengan laju yang berbeda.</li>
+        <li><b>Ekstensi target.</b> Pagar dan tanggul membentuk satu target memanjang; kendaraan
+          membentuk target kompak dengan panjang tertentu.</li>
+        <li><b>Riwayat track.</b> Objek yang muncul dan hilang sesuai pergerakan kendaraan
+          (misalnya rambu yang lewat di sisi kiri) bukan target di jalur.</li>
+        <li><b>Posisi terhadap jalur lintasan.</b> Diperlukan estimasi jalur dari kecepatan dan
+          yaw rate kendaraan.</li>
+        <li><b>Ketinggian objek.</b> Hanya tersedia pada radar dengan elevasi; pada radar 2D
+          tidak dapat dibedakan.</li>
+      </ul>
+      <p class="warn">Objek statis tidak boleh diabaikan seluruhnya. Rambu, tiang, atau material
+        yang roboh dan jatuh ke lajur merupakan bahaya nyata yang harus memicu pengereman.
+        Yang diperlukan bukan menonaktifkan deteksi objek statis, melainkan menilai apakah objek
+        tersebut berada di jalur lintasan.</p>
+
       <h4>Objek statis — rambu, tanggul pembatas, tiang</h4>
-      <p><b>Radar tidak membaca rambu.</b> Tidak ada OCR maupun klasifikasi bentuk. Radar hanya
-        melihat satu titik dengan jarak, range-rate, dan RCS. Rambu batas kecepatan, tiang,
-        tanggul pemisah jalur — semuanya tampak sama: <b>objek statis</b>.</p>
+      <p>Bagi logic di simulator, rambu, tiang, tanggul, dan kendaraan yang berhenti diperlakukan
+        sama: <b>objek statis</b>, yaitu objek dengan kecepatan relatif nol.</p>
 
       <p>Untuk objek statis, seluruh masukan prediktif bernilai nol:</p>
       <pre class="formula">v_lead    = v_ego + range_rate = 0       (benda diam)
@@ -759,18 +804,24 @@ budget    = gap − margin
         multi-frame, dan koreksi sudut dari yaw-rate — plus batas kecepatan per radius tikungan.
         Lihat tabel radius pada dokumen <code>ANALISIS-RISIKO.md</code>.</p>
 
-      <h4>jika ingin truk mematuhi rambu batas kecepatan</h4>
-      <p>Itu bukan pekerjaan radar, dan bukan pekerjaan logic AEB. Radar tidak bisa membaca angka
-        pada rambu. Yang diperlukan adalah sumber lain:</p>
+      <h4>Pemenuhan batas kecepatan pada rambu</h4>
+      <p>Radar mendeteksi keberadaan rambu, tetapi tidak membaca angka yang tertera padanya.
+        Karena itu kepatuhan terhadap batas kecepatan memerlukan sumber data lain, dan bukan
+        merupakan fungsi logic AEB:</p>
       <table class="eq wide">
         <tr><th>Pendekatan</th><th>Kebutuhan</th><th>Cocok untuk</th></tr>
         <tr><td>Peta kecepatan per segmen + GNSS</td><td>modul GNSS, data rute</td><td>haul road tetap — paling praktis</td></tr>
         <tr><td>Operator memasukkan batas hari itu</td><td>tanpa hardware tambahan</td><td>uji coba awal</td></tr>
         <tr><td>Kamera pembaca rambu</td><td>kamera + klasifikasi</td><td>tidak disarankan: bermasalah di gelap &amp; debu</td></tr>
       </table>
-      <p>Untuk haul road yang rutenya tetap dan berulang, <b>peta kecepatan + GNSS</b> jauh lebih
-        andal daripada membaca rambu — dan bisa langsung dijadikan masukan ke governor headway
-        (batas atas <code>v_safe</code> per segmen).</p>
+      <p>Untuk haul road yang rutenya tetap dan berulang, <b>peta kecepatan + GNSS</b> lebih
+        andal daripada pembacaan rambu, dan keluarannya dapat langsung dijadikan batas atas
+        <code>v_safe</code> pada governor headway per segmen.</p>
+      <p class="tl2note">Rujukan: Yoon dkk. (2024), <i>Discrimination of various upper structures
+        and vehicles using radar cross section of FMCW radar</i>, Electronics Letters — pemisahan
+        rambu, lampu lalu lintas, jembatan penyeberangan, dan kendaraan berdasarkan RCS;
+        Chipengo dkk. (2018) — pelat logam pada area kerja menimbulkan pengereman darurat palsu;
+        serta pembahasan umum mengenai kesulitan target statis pada radar otomotif.</p>
 
       <h3>9. Alur keputusan — dari radar ke perlambatan</h3>
       <p>Diagram ini merangkum ketiga logic yang sudah dijelaskan di bagian 6–8, dan
