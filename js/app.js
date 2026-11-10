@@ -370,7 +370,7 @@ function updateHUD(force = false) {
     cruise: ['Normal', 's-cruise'],
     off: ['AEBS off', 's-cruise'],
     warn: ['WARNING', 's-warn'],
-    partial: ['Partial brake', 's-partial'],
+    partial: ['Soft brake', 's-partial'],
     full: ['FULL BRAKE', 's-full'],
     stopped: ['Stopped', 's-stopped'],
     settled: ['Selesai', 's-stopped'],
@@ -385,7 +385,7 @@ function updateHUD(force = false) {
   const key = sim.done ? sim.outcome : sim.stage;
   if (key !== prevStage) {
     if (key === 'warn') addLog('AEBS: warning — driver must react', 'warn');
-    else if (key === 'partial') addLog('AEBS: partial brake', 'partial');
+    else if (key === 'partial') addLog('AEBS: soft brake', 'partial');
     else if (key === 'full') addLog('AEBS: FULL BRAKE', 'full');
     else if (key === 'collision') addLog(`COLLISION at ${(sim.impactV * 3.6).toFixed(1)} km/h`, 'bad');
     else if (key === 'stopped') addLog(`Stopped, gap ${sim.gap().toFixed(1)} m`, 'ok');

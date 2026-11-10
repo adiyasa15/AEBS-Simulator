@@ -84,7 +84,7 @@
         <div class="row"><label class="lbl" for="warnTTC">Warning</label><output id="warnTTCo">2.6 s</output></div>
         <input type="range" id="warnTTC" min="1" max="5" step="0.1" value="2.6" />
 
-        <div class="row"><label class="lbl" for="partialTTC">Partial brake</label><output id="partialTTCo">1.8 s</output></div>
+        <div class="row"><label class="lbl" for="partialTTC">Soft brake</label><output id="partialTTCo">1.8 s</output></div>
         <input type="range" id="partialTTC" min="0.5" max="4" step="0.1" value="1.8" />
 
         <div class="row"><label class="lbl" for="fullTTC">Full brake</label><output id="fullTTCo">0.9 s</output></div>
@@ -498,8 +498,8 @@ gap &lt; 4 m                                            → level 1,00</pre>
 budget   = gap + leadDist − margin
 demand   = requiredDecel(v, budget, latency, build)
 
-demand ≥ 0,85 · a_tersedia → rem penuh
-demand ≥ 0,40 · a_tersedia → rem sebagian</pre>
+demand ≥ 0,85 · a_tersedia → full brake
+demand ≥ 0,40 · a_tersedia → soft brake</pre>
       <p><i>Safety override</i> ini berlaku pada <b>ketiga logic</b> dan tidak menunggu ambang
         TTC. Tujuannya satu: rem tidak boleh menunggu sampai <i>required deceleration</i> melampaui
         kemampuan truk. Karena <code>a_tersedia</code> diturunkan dari massa, override ini bekerja
@@ -559,7 +559,7 @@ demand ≥ 0,40 · a_tersedia → rem sebagian</pre>
         <text x="353" y="244" class="ds" text-anchor="middle">THW = gap ÷ kecepatan = 44 m ÷ 11,1 m/s = 4,0 detik</text>
 
         <rect x="250" y="256" width="420" height="34" rx="7" class="dbox" style="stroke:#f59e0b"/>
-        <text x="460" y="270" class="dt" text-anchor="middle" fill="#fbbf24">THW &lt; 4 detik → comfort braking</text>
+        <text x="460" y="270" class="dt" text-anchor="middle" fill="#fbbf24">THW &lt; 4 detik → soft brake</text>
         <text x="460" y="284" class="ds" text-anchor="middle">1,2 m/s² naik bertahap, dibatasi 80 % kapasitas · THW ≥ 4 detik → tidak ada aksi</text>
 
         <text x="16" y="268" class="ds">jaga</text>
@@ -600,18 +600,15 @@ selama aktif:
         pengereman darurat</b>, bukan pengereman ringan. Hal ini bukan pilihan desain, melainkan
         konsekuensi kapasitas rem yang kecil.</p>
 
-      <h4>Istilah untuk tingkat pengereman</h4>
+      <h4>Istilah tingkat pengereman</h4>
+      <p>Sistem AEBS yang terpasang memakai dua istilah saja:</p>
       <table class="eq wide">
-        <tr><th>Level</th><th>Istilah</th><th>Arti</th></tr>
-        <tr><td>0</td><td>no brake</td><td>tidak ada pengereman, hanya peringatan</td></tr>
-        <tr><td>0,1 – 0,5</td><td><b>comfort braking</b> / soft braking</td><td>pelambatan ringan, terasa seperti deselerasi biasa</td></tr>
-        <tr><td>0,55</td><td><b>partial brake</b></td><td>tahap pertama AEB, 55 % kapasitas</td></tr>
-        <tr><td>1,00</td><td><b>full brake</b> / emergency braking</td><td>seluruh kapasitas, dibatasi ABS dan gesekan</td></tr>
+        <tr><th>Istilah</th><th>Level</th><th>Arti</th></tr>
+        <tr><td><b>soft brake</b></td><td>0,55</td><td>55 % kapasitas; tahap pertama, untuk mengurangi kecepatan dan memberi waktu</td></tr>
+        <tr><td><b>full brake</b></td><td>1,00</td><td>100 % kapasitas; tahap terakhir, dibatasi ABS dan gesekan</td></tr>
       </table>
-      <p>Istilah <i>hard brake</i> memang dipakai untuk pengereman keras, tetapi kurang tepat
-        sebagai nama tingkat karena tidak menunjukkan besaran. Dalam dokumen ini, istilah yang
-        dipakai adalah <b>comfort braking</b> untuk tingkat ringan dan <b>full brake</b> untuk
-        tingkat penuh.</p>
+      <p>Istilah lain seperti <i>partial brake</i>, <i>comfort braking</i>, atau <i>hard brake</i>
+        tidak dipakai agar tidak terjadi perbedaan penafsiran antara dokumen dan unit terpasang.</p>
       <p>Logic ini menjaga jarak, bukan mencegah tabrakan. Pada jarak yang sudah sangat dekat,
         waktu yang dibutuhkan untuk memulihkan jarak melebihi waktu yang tersedia, sehingga
         penghentian tetap menjadi tugas ambang AEB.</p>
@@ -630,7 +627,7 @@ selama aktif:
         <tr><td>70 km/h</td><td>78 m</td><td>210 m</td><td>a_req</td></tr>
       </table>
       <p>Di atas 26 km/h, <code>a_req</code> sudah mencapai 50 % kapasitas sebelum jarak
-        menyusut sampai 4 detik. Karena itu rem sebagian bekerja meskipun jarak masih di atas
+        menyusut sampai 4 detik. Karena itu soft brake bekerja meskipun jarak masih di atas
         4 detik — dan hal ini bukan kesalahan perhitungan.</p>
       <p>Kedua kriteria mengukur hal yang berbeda: 4 detik menjamin waktu reaksi terhadap
         kendaraan yang <b>bergerak</b>, sedangkan <code>a_req</code> mengukur kemampuan berhenti
@@ -744,12 +741,12 @@ reaksi ≈ 0,03 + 0,23 = 0,26 s … 0,10 + 0,23 = 0,33 s</pre>
         objek statis.</p>
       <p>Untuk objek statis, nilai <code>a_lead</code> sama dengan nol sehingga rumus pada logic
         prediktif berubah fungsi menjadi kriteria jarak henti. Akibatnya pemicu terjadi dari
-        jarak yang sangat jauh: pada 70 km/h, rem sebagian akan aktif bila terdapat objek statis
+        jarak yang sangat jauh: pada 70 km/h, soft brake akan aktif bila terdapat objek statis
         dalam 268 meter. Karena itu, <i>feed-forward</i> hanya diterapkan pada target yang
         pernah bergerak, sedangkan objek yang sejak awal diam ditangani oleh TTC dan
         <code>a_req</code>.</p>
 
-      <h4>4.4 Rem sebagian dan rem penuh</h4>
+      <h4>4.4 Soft brake dan full brake</h4>
       <table class="eq wide">
         <tr><th>Kondisi</th><th>a_tersedia</th><th>Sebagian (0,55)</th><th>Penuh (1,00)</th></tr>
         <tr><td>Chipseal kering, 66,5 t</td><td>3,00 m/s²</td><td>1,65 m/s²</td><td>3,00 m/s²</td></tr>
@@ -757,7 +754,7 @@ reaksi ≈ 0,03 + 0,23 = 0,26 s … 0,10 + 0,23 = 0,33 s</pre>
         <tr><td>Kosong 26 t</td><td>4,60 m/s²</td><td>2,53 m/s²</td><td>4,60 m/s²</td></tr>
       </table>
       <p>Nilai <code>level</code> merupakan fraksi kapasitas yang tersedia pada saat itu, bukan
-        angka mutlak. Rem sebagian tidak dimaksudkan untuk menghentikan kendaraan, melainkan
+        angka mutlak. Soft brake tidak dimaksudkan untuk menghentikan kendaraan, melainkan
         untuk mengurangi energi kinetik dan menambah waktu pengambilan keputusan.</p>
 
       <h3>5. Jarak henti dan TTC minimum</h3>
@@ -872,8 +869,8 @@ TTC_min = latency + v / (2a)</pre>
       <table class="eq wide">
         <tr><th>Besaran</th><th>Kosong 26 t</th><th>Muat 66,5 t</th></tr>
         <tr><td>a_tersedia</td><td>4,60 m/s²</td><td><b>1,80 m/s²</b></td></tr>
-        <tr><td>Ambang rem sebagian (0,5 ×)</td><td>2,30 m/s²</td><td>0,90 m/s²</td></tr>
-        <tr><td>Ambang rem penuh (0,9 ×)</td><td>4,14 m/s²</td><td>1,62 m/s²</td></tr>
+        <tr><td>Ambang soft brake (0,5 ×)</td><td>2,30 m/s²</td><td>0,90 m/s²</td></tr>
+        <tr><td>Ambang full brake (0,9 ×)</td><td>4,14 m/s²</td><td>1,62 m/s²</td></tr>
       </table>
 
       <h4>Logic 1 — TTC relatif, kondisi bermuatan</h4>
@@ -882,14 +879,14 @@ TTC_min = latency + v / (2a)</pre>
       <table class="eq wide">
         <tr><th>Tahap</th><th>t</th><th>gap</th><th>TTC</th><th>a_req</th><th>Dasar pemicu</th></tr>
         <tr><td>Peringatan</td><td>0,01 s</td><td>44,4 m</td><td>6,39 s</td><td>0,54</td><td>TTC ≤ 6,64 s</td></tr>
-        <tr><td>Rem sebagian</td><td>1,50 s</td><td>34,0 m</td><td>4,94 s</td><td>0,69</td><td>TTC ≤ 4,98 s</td></tr>
+        <tr><td>Soft brake</td><td>1,50 s</td><td>34,0 m</td><td>4,94 s</td><td>0,69</td><td>TTC ≤ 4,98 s</td></tr>
         <tr><td>Selesai</td><td>11,21 s</td><td>8,6 m</td><td>—</td><td>0</td><td>kecepatan menyamai objek</td></tr>
       </table>
-      <p>Pada skenario ini rem sebagian saja sudah memadai; rem penuh tidak diperlukan.
-        Tingkat rem sebagian ditahan sampai kecepatan mendekat habis, agar rem tidak berkedip.</p>
+      <p>Pada skenario ini soft brake saja sudah memadai; full brake tidak diperlukan.
+        Tingkat soft brake ditahan sampai kecepatan mendekat habis, agar rem tidak berkedip.</p>
 
       <h4>Contoh satu langkah perhitungan</h4>
-      <p>Pada t = 1,50 s, saat rem sebagian dipicu, dengan massa 66,5 t:</p>
+      <p>Pada t = 1,50 s, saat soft brake dipicu, dengan massa 66,5 t:</p>
       <pre class="formula">gap     = 34,0 m
 v_ego   = 39,8 km/h = 11,06 m/s      v_lead = 15 km/h = 4,17 m/s
 closing = 11,06 − 4,17 = 6,89 m/s
@@ -917,7 +914,7 @@ a_net  = 0,99 + 0,07 = 1,06 m/s²
         <tr><td>Prediktif</td><td>26 t</td><td>4,60 m/s²</td><td>6,5 m</td><td>1,48 MJ</td></tr>
         <tr><td>Prediktif</td><td>66,5 t</td><td>0,99 m/s²</td><td>8,6 m</td><td>3,30 MJ</td></tr>
       </table>
-      <p>Perhatikan baris bermuatan pada logic TTC relatif: cukup rem sebagian (0,99 m/s²,
+      <p>Perhatikan baris bermuatan pada logic TTC relatif: cukup soft brake (0,99 m/s²,
         55 % dari 1,80) untuk menyelesaikan skenario, sehingga deselerasi puncaknya jauh di bawah
         kemampuan penuh. Logic prediktif memberi hasil yang sama karena kendaraan depan bergerak
         tetap, sehingga <code>a_lead</code> bernilai nol; keunggulannya muncul ketika kendaraan
@@ -937,7 +934,7 @@ a_net  = 0,99 + 0,07 = 1,06 m/s²
       <h4>Kemampuan pengereman</h4>
       <table class="eq wide">
         <tr><th>Kolom</th><th>Definisi</th><th>Cara mengukur</th></tr>
-        <tr><td>Rem maks kosong (m/s²)</td><td>perlambatan mantap unit kosong dengan rem servis saja, permukaan kering</td><td>akselerometer; rem penuh dari 40 km/h; ambil nilai datar tertinggi; ulangi tiga kali dan pakai yang terendah</td></tr>
+        <tr><td>Rem maks kosong (m/s²)</td><td>perlambatan mantap unit kosong dengan rem servis saja, permukaan kering</td><td>akselerometer; full brake dari 40 km/h; ambil nilai datar tertinggi; ulangi tiga kali dan pakai yang terendah</td></tr>
         <tr><td>Rem maks muat (m/s²)</td><td>sama, dengan vessel terisi penuh</td><td>protokol sama pada unit bermuatan</td></tr>
       </table>
       <p>Bila hanya tersedia jarak berhenti <code>d</code> dari kecepatan <code>v</code>:</p>
@@ -978,7 +975,7 @@ N₁, N₂ dalam Newton · L dan h dalam meter · m dalam kg · a dalam m/s²</p
       <p>Dua sesi sudah mengurangi sebagian besar ketidakpastian:</p>
       <table class="eq wide">
         <tr><th>Sesi</th><th>Kondisi</th><th>Yang dilakukan</th><th>Yang diperoleh</th></tr>
-        <tr><td>1</td><td>unit kosong 26 t</td><td>chipseal kering dan datar, panjang ≥ 200 m; tiga kali rem penuh dari 40 km/h; rekam tekanan pada satu di antaranya</td><td>rem maks kosong, bangun tekanan</td></tr>
+        <tr><td>1</td><td>unit kosong 26 t</td><td>chipseal kering dan datar, panjang ≥ 200 m; tiga kali full brake dari 40 km/h; rekam tekanan pada satu di antaranya</td><td>rem maks kosong, bangun tekanan</td></tr>
         <tr><td>2</td><td>unit bermuatan 66,5 t</td><td>lokasi dan prosedur sama</td><td>rem maks muat, verifikasi jarak henti</td></tr>
       </table>
       <p>Rasio nilai bermuatan terhadap nilai kosong menunjukkan sifat sistem rem: sekitar 0,39

@@ -204,7 +204,7 @@ export class Sim {
         stage = 'warn';
       }
 
-      // Penahan (hysteresis): sekali rem sebagian/penuh bekerja, tingkat itu ditahan
+      // Penahan (hysteresis): sekali soft brake / full brake bekerja, tingkat itu ditahan
       // sampai bahaya benar-benar mereda. Tanpa ini rem berkedip saat jarak menutup
       // perlahan: sebagian -> kecepatan turun -> TTC naik -> lepas -> sebagian lagi.
       // penahan dilepas hanya bila kendaraan sudah tidak lagi mendekat objek
