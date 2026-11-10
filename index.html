@@ -714,7 +714,69 @@ v′     = 10,680 − 0,681 × 0,005 = 10,677 m/s</pre>
         kendaraan depan bergerak dengan kecepatan tetap, sehingga <code>a_lead</code> bernilai
         nol. Keunggulan logic tersebut baru terlihat ketika kendaraan depan mengerem.</p>
 
-      <h3>8. Batasan model</h3>
+      <h3>8. Parameter yang harus diisi dan cara mengukurnya</h3>
+      <p>Panel <b>Spek teknis</b> memuat 13 kolom. Berikut arti setiap kolom, satuan yang
+        dipakai, dan cara memperoleh nilainya.</p>
+
+      <h4>Massa</h4>
+      <table class="eq wide">
+        <tr><th>Kolom</th><th>Definisi</th><th>Cara mengukur</th></tr>
+        <tr><td>Massa kosong (t)</td><td>berat unit tanpa muatan, termasuk bahan bakar dan perlengkapan tetap</td><td>jembatan timbang, per gandar bila tersedia. FAW JH6: 26 t</td></tr>
+        <tr><td>Massa + muatan (t)</td><td>berat total saat vessel penuh batubara</td><td>timbang unit bermuatan; 26 + 40,5 = 66,5 t</td></tr>
+      </table>
+
+      <h4>Kemampuan pengereman</h4>
+      <table class="eq wide">
+        <tr><th>Kolom</th><th>Definisi</th><th>Cara mengukur</th></tr>
+        <tr><td>Rem maks kosong (m/s²)</td><td>perlambatan mantap unit kosong dengan rem servis saja, permukaan kering</td><td>akselerometer; rem penuh dari 40 km/h; ambil nilai datar tertinggi; ulangi tiga kali dan pakai yang terendah</td></tr>
+        <tr><td>Rem maks muat (m/s²)</td><td>sama, dengan vessel terisi penuh</td><td>protokol sama pada unit bermuatan</td></tr>
+      </table>
+      <p>Bila hanya tersedia jarak berhenti <code>d</code> dari kecepatan <code>v</code>:</p>
+      <pre class="formula">a = v² / (2 · d)          v dalam m/s, d dalam meter
+
+contoh: 40 km/h (11,1 m/s) berhenti dalam 34 m -> 11,1² / (2 × 34) = 1,81 m/s²</pre>
+      <p>Nilai tersebut lebih rendah daripada nilai mantap karena mencakup fase rem mulai bekerja.
+        Catat sebagai batas bawah, bukan nilai sesungguhnya.</p>
+
+      <h4>Waktu</h4>
+      <table class="eq wide">
+        <tr><th>Kolom</th><th>Definisi</th><th>Cara mengukur</th></tr>
+        <tr><td>Latency sensor+baca (s)</td><td>umur data radar + tunggu siklus program + waktu hitung</td><td>nyalakan pin GPIO sebelum membaca radar, matikan setelah keputusan keluar; ukur lebar pulsa</td></tr>
+        <tr><td>Relay + solenoid valve (s)</td><td>jeda dari perintah listrik sampai katup terbuka</td><td>rekam pin perintah dan kanal tekanan bersamaan; ukur sampai tekanan mulai naik</td></tr>
+        <tr><td>Bangun tekanan rem (s)</td><td>waktu tekanan naik dari nol sampai penuh</td><td>dari kurva tekanan; bila hanya diketahui waktu ke 75 %, bagi dengan 0,75</td></tr>
+      </table>
+      <pre class="formula">bangun_tekanan = waktu_ke_75% / 0,75
+
+contoh: 75 % tercapai pada 0,60 s -> 0,60 / 0,75 = 0,80 s</pre>
+
+      <h4>Pendukung</h4>
+      <table class="eq wide">
+        <tr><th>Kolom</th><th>Definisi</th><th>Cara mengukur</th></tr>
+        <tr><td>Engine brake + retarder (m/s²)</td><td>perlambatan tambahan dari rem mesin dan retarder saja</td><td>lepas pedal gas, aktifkan retarder maksimum, ukur dengan akselerometer. Tipikal 0,5–1,5 m/s²</td></tr>
+        <tr><td>Retarder aktif di atas (km/h)</td><td>kecepatan minimum agar retarder menghasilkan perlambatan berarti</td><td>aktifkan pada berbagai kecepatan, catat saat efeknya hilang. Hidrolik 15–25 km/h</td></tr>
+        <tr><td>Pita fade retarder (km/h)</td><td>rentang kecepatan sampai perlambatan retarder mencapai penuh</td><td>dari data di atas; selisih kecepatan penuh terhadap ambang. Tipikal 10 km/h</td></tr>
+        <tr><td>Panjang kendaraan (m)</td><td>bemper depan sampai ujung belakang</td><td>meteran. FAW JH6 sekitar 10,4 m</td></tr>
+        <tr><td>Tinggi titik berat (m)</td><td>tinggi pusat massa dari jalan, kondisi bermuatan</td><td>timbang gandar depan saat diam (N₁) dan saat mengerem (N₂), lalu pakai rumus di bawah</td></tr>
+        <tr><td>Wheelbase efektif (m)</td><td>sumbu depan ke titik tengah kelompok roda belakang</td><td>meteran. FAW JH6 6x4 sekitar 4,2 m</td></tr>
+      </table>
+      <pre class="formula">h = (N₂ − N₁) · L / (m · a)
+
+N₁, N₂ dalam Newton · L dan h dalam meter · m dalam kg · a dalam m/s²</pre>
+      <p>Tinggi titik berat hanya memengaruhi indikator beban pindah ke depan, bukan jarak henti.
+        Bila sulit diukur, nilai perkiraan tidak mengubah hasil pengereman.</p>
+
+      <h4>Protokol pengukuran minimal</h4>
+      <p>Dua sesi sudah menutup sebagian besar ketidakpastian:</p>
+      <table class="eq wide">
+        <tr><th>Sesi</th><th>Kondisi</th><th>Yang dilakukan</th><th>Yang diperoleh</th></tr>
+        <tr><td>1</td><td>unit kosong 26 t</td><td>chipseal kering dan datar, panjang ≥ 200 m; tiga kali rem penuh dari 40 km/h; rekam tekanan pada satu di antaranya</td><td>rem maks kosong, bangun tekanan</td></tr>
+        <tr><td>2</td><td>unit bermuatan 66,5 t</td><td>lokasi dan prosedur sama</td><td>rem maks muat, verifikasi jarak henti</td></tr>
+      </table>
+      <p>Rasio nilai bermuatan terhadap nilai kosong menunjukkan sifat sistem rem: sekitar 0,39
+        bila gaya rem tetap, lebih besar bila terdapat <i>load sensing</i> yang menaikkan tekanan
+        saat bermuatan.</p>
+
+      <h3>9. Batasan model</h3>
       <ul>
         <li>Satu dimensi: tanpa manuver mengelak dan tanpa rotasi roda.</li>
         <li>Load transfer dan inersia rotasi tidak dimodelkan; faktor massa ekuivalen 1,04–1,06
