@@ -147,7 +147,7 @@ function loadSpec(id) {
   el.capFromForce.checked = !!currentSpec.aCapFromForce;
   el.capVerified.checked = !!currentSpec.aCapVerified;
   el.verifyChip.hidden = !!currentSpec.aCapVerified;
-  refreshCapNote();
+  if (el.capNote) refreshCapNote();
 }
 
 el.vehicle.addEventListener('change', () => {
@@ -194,12 +194,12 @@ function syncLabels() {
   el.headwayo.textContent = `${(+el.headway.value).toFixed(1)} s`;
   el.govDecelo.textContent = `${(+el.govDecel.value).toFixed(1)} m/s²`;
   el.leadDecelo.textContent = `${(+el.leadDecel.value).toFixed(1)} m/s²`;
-  refreshCapNote();
+  if (el.capNote) refreshCapNote();
   el.filterTauo.textContent = `${(+el.filterTau.value).toFixed(2)} s`;
 
   const v = currentVehicle();
   const m = v.massEmptyT + (v.massLoadedT - v.massEmptyT) * loadState;
-  el.massNote.textContent = `Massa efektif: ${m.toFixed(1)} t ` +
+  if (el.massNote) el.massNote.textContent = `Massa efektif: ${m.toFixed(1)} t ` +
     (loadState ? `(kosong ${v.massEmptyT} t + muatan ${(v.massLoadedT - v.massEmptyT).toFixed(1)} t)` : '(kosong)');
 
   // mana yang membatasi: gesekan (μ·g) atau kapasitas rem
@@ -266,7 +266,7 @@ el.capVerified.addEventListener('change', () => {
 });
 el.capFromForce.addEventListener('change', () => {
   currentSpec.aCapFromForce = el.capFromForce.checked;
-  refreshCapNote();
+  if (el.capNote) refreshCapNote();
   hardReset(false);
 });
 
