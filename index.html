@@ -559,8 +559,8 @@ demand ≥ 0,40 · a_tersedia → rem sebagian</pre>
         <text x="353" y="244" class="ds" text-anchor="middle">THW = gap ÷ kecepatan = 44 m ÷ 11,1 m/s = 4,0 detik</text>
 
         <rect x="250" y="256" width="420" height="34" rx="7" class="dbox" style="stroke:#f59e0b"/>
-        <text x="460" y="270" class="dt" text-anchor="middle" fill="#fbbf24">THW &lt; 4 detik → rem halus 1,2 – 2,4 m/s²</text>
-        <text x="460" y="284" class="ds" text-anchor="middle">THW ≥ 4 detik → tidak ada aksi</text>
+        <text x="460" y="270" class="dt" text-anchor="middle" fill="#fbbf24">THW &lt; 4 detik → comfort braking</text>
+        <text x="460" y="284" class="ds" text-anchor="middle">1,2 m/s² naik bertahap, dibatasi 80 % kapasitas · THW ≥ 4 detik → tidak ada aksi</text>
 
         <text x="16" y="268" class="ds">jaga</text>
         <text x="16" y="282" class="ds">jarak</text>
@@ -581,10 +581,37 @@ selama aktif:
         mengaktifkan. Histeresis 0,05 detik hanya dipakai saat melepas, agar rem tidak berkedip
         ketika nilai berada di sekitar batas.</p>
       <p>Batas pelambatan bertingkat: 1,2 m/s² (setara 0,12 g) pada pelanggaran kecil, naik
-        bertahap sampai 2,4 m/s² pada THW 2 detik. Nilai dasar 1,2 m/s² berada dalam rentang
-        pengereman servis kendaraan berat (0,10–0,15 g), sedangkan pengereman darurat berada
-        pada kisaran 0,30 g. Pelanggaran kecil dikoreksi dengan halus; pelanggaran besar tidak
-        dibiarkan menumpuk.</p>
+        bertahap sampai dua kali nilai dasar, tetapi <b>tidak pernah melebihi 80 % kapasitas
+        truk</b> — sisanya diserahkan kepada AEB. Pelanggaran kecil dikoreksi dengan halus,
+        pelanggaran besar tidak dibiarkan menumpuk.</p>
+
+      <h4>Batas ini berlaku untuk kosong dan muatan, tetapi efeknya berbeda</h4>
+      <p>Batas dinyatakan dalam m/s² (nilai mutlak), sedangkan <code>level</code> dihitung sebagai
+        fraksi kapasitas. Karena kapasitas berbeda, beban persentasenya pun berbeda:</p>
+      <table class="eq wide">
+        <tr><th>THW</th><th>Batas dasar (m/s²)</th><th>Level kosong 26 t<br>(a 4,60)</th><th>Level muat 66,5 t<br>(a 1,80)</th></tr>
+        <tr><td>4 detik</td><td>1,20</td><td>26 %</td><td><b>67 %</b></td></tr>
+        <tr><td>3 detik</td><td>1,80</td><td>39 %</td><td><b>80 %</b></td></tr>
+        <tr><td>2 detik</td><td>2,40</td><td>52 %</td><td><b>80 %</b> (dibatasi)</td></tr>
+      </table>
+      <p>Artinya pada unit kosong, penegakan aturan 4 detik dapat dilakukan dengan pengereman
+        ringan (26–52 % kapasitas). Pada unit bermuatan, batas 1,2 m/s² saja sudah 67 % kapasitas —
+        sehingga <b>penegakan aturan melalui pengereman pada truk bermuatan selalu mendekati
+        pengereman darurat</b>, bukan pengereman ringan. Hal ini bukan pilihan desain, melainkan
+        konsekuensi kapasitas rem yang kecil.</p>
+
+      <h4>Istilah untuk tingkat pengereman</h4>
+      <table class="eq wide">
+        <tr><th>Level</th><th>Istilah</th><th>Arti</th></tr>
+        <tr><td>0</td><td>no brake</td><td>tidak ada pengereman, hanya peringatan</td></tr>
+        <tr><td>0,1 – 0,5</td><td><b>comfort braking</b> / soft braking</td><td>pelambatan ringan, terasa seperti deselerasi biasa</td></tr>
+        <tr><td>0,55</td><td><b>partial brake</b></td><td>tahap pertama AEB, 55 % kapasitas</td></tr>
+        <tr><td>1,00</td><td><b>full brake</b> / emergency braking</td><td>seluruh kapasitas, dibatasi ABS dan gesekan</td></tr>
+      </table>
+      <p>Istilah <i>hard brake</i> memang dipakai untuk pengereman keras, tetapi kurang tepat
+        sebagai nama tingkat karena tidak menunjukkan besaran. Dalam dokumen ini, istilah yang
+        dipakai adalah <b>comfort braking</b> untuk tingkat ringan dan <b>full brake</b> untuk
+        tingkat penuh.</p>
       <p>Logic ini menjaga jarak, bukan mencegah tabrakan. Pada jarak yang sudah sangat dekat,
         waktu yang dibutuhkan untuk memulihkan jarak melebihi waktu yang tersedia, sehingga
         penghentian tetap menjadi tugas ambang AEB.</p>

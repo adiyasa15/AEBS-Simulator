@@ -276,7 +276,10 @@ export class Sim {
           // tetapi tetap di bawah kemampuan rem darurat.
           const t = Math.min(1, Math.max(0, (c.headway - (isFinite(thw) ? thw : c.headway)) / 2));
           const base = c.govDecel || 1.2;
-          const cap = base * (1 + t);                  // base .. 2 x base
+          // Batas pelambatan: bertingkat mengikuti besar pelanggaran, TETAPI tidak boleh
+          // melewati 80 % kapasitas truk — sisanya urusan AEB. Tanpa pembatasan ini,
+          // pada unit bermuatan (a_tersedia 1,80) batas 2,4 m/s² berarti rem penuh.
+          const cap = Math.min(base * (1 + t), 0.8 * p.aAvail);
           const lvl = Math.min(1, Math.max(0, need / p.aAvail), cap / p.aAvail);
           if (lvl > desired) {
             desired = lvl;
