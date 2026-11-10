@@ -23,6 +23,7 @@ const el = {
   dynTTC: $('#dynTTC'), dynNote: $('#dynNote'),
   capFromForce: $('#capFromForce'), capNote: $('#capNote'),
   capVerified: $('#capVerified'), verifyChip: $('#verifyChip'),
+  specBox: $('#specBox'),
   logic: $('#logic'),
   headway: $('#headway'), headwayo: $('#headwayo'),
   govDecel: $('#govDecel'), govDecelo: $('#govDecelo'),
@@ -146,6 +147,7 @@ function loadSpec(id) {
   el.capFromForce.checked = !!currentSpec.aCapFromForce;
   el.capVerified.checked = !!currentSpec.aCapVerified;
   el.verifyChip.hidden = !!currentSpec.aCapVerified;
+  el.specBox.classList.toggle('needs-verify', !currentSpec.aCapVerified);
   if (el.capNote) refreshCapNote();
 }
 
@@ -259,6 +261,7 @@ el.dynTTC.addEventListener('change', () => hardReset(false));
 el.capVerified.addEventListener('change', () => {
   currentSpec.aCapVerified = el.capVerified.checked;
   el.verifyChip.hidden = !!currentSpec.aCapVerified;
+  el.specBox.classList.toggle('needs-verify', !currentSpec.aCapVerified);
   hardReset(false);
 });
 el.capFromForce.addEventListener('change', () => {

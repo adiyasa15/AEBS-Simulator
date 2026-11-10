@@ -407,3 +407,18 @@ svg.diagram .darrow { stroke: #5b7793; stroke-width: 1.6; fill: none; }
   mix-blend-mode: normal;
 }
 .verifychip[hidden] { display: none; }
+
+/* ---------- indikator spek belum diverifikasi ---------- */
+@keyframes specBlink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.12; }
+}
+#specBox.needs-verify > summary {
+  color: #fbbf24;
+  font-weight: 700;
+  animation: specBlink 0.9s steps(1, end) infinite;
+}
+#specBox.needs-verify > summary::before { color: #fbbf24; }
+@media (prefers-reduced-motion: reduce) {
+  #specBox.needs-verify > summary { animation: none; color: #fbbf24; font-weight: 700; }
+}
