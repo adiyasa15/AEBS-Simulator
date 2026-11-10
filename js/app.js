@@ -70,19 +70,19 @@ el.vehicle.value = 'faw-jh6';
 let currentSpec = null;
 
 const SPEC_FIELDS = [
-  { k: 'massEmptyT', label: 'Massa kosong', unit: 't', step: 0.1 },
-  { k: 'massLoadedT', label: 'Massa + muatan', unit: 't', step: 0.1 },
-  { k: 'aCapEmpty', label: 'Rem maks kosong', unit: 'm/s²', step: 0.1 },
-  { k: 'aCapLoaded', label: 'Rem maks muat', unit: 'm/s²', step: 0.1 },
-  { k: 'brakeBuild', label: 'Bangun tekanan rem', unit: 's', step: 0.05 },
+  { k: 'massEmptyT', label: 'Mass empty', unit: 't', step: 0.1 },
+  { k: 'massLoadedT', label: 'Mass loaded', unit: 't', step: 0.1 },
+  { k: 'aCapEmpty', label: 'a_cap empty', unit: 'm/s²', step: 0.1 },
+  { k: 'aCapLoaded', label: 'a_cap loaded', unit: 'm/s²', step: 0.1 },
+  { k: 'brakeBuild', label: 'Brake build-up', unit: 's', step: 0.05 },
   { k: 'aRetardMax', label: 'Engine brake + retarder', unit: 'm/s²', step: 0.1 },
   { k: 'valveDelay', label: 'Relay + solenoid valve', unit: 's', step: 0.01 },
-  { k: 'retardOnKph', label: 'Retarder aktif di atas', unit: 'km/h', step: 1 },
-  { k: 'retardFadeKph', label: 'Pita fade retarder', unit: 'km/h', step: 1 },
-  { k: 'latency', label: 'Latency sensor+baca', unit: 's', step: 0.01 },
-  { k: 'length', label: 'Panjang kendaraan', unit: 'm', step: 0.1 },
-  { k: 'hCoG', label: 'Tinggi titik berat', unit: 'm', step: 0.05 },
-  { k: 'wheelbase', label: 'Wheelbase efektif', unit: 'm', step: 0.1 }
+  { k: 'retardOnKph', label: 'Retarder on above', unit: 'km/h', step: 1 },
+  { k: 'retardFadeKph', label: 'Retarder fade band', unit: 'km/h', step: 1 },
+  { k: 'latency', label: 'Latency (radar+compute)', unit: 's', step: 0.01 },
+  { k: 'length', label: 'Vehicle length', unit: 'm', step: 0.1 },
+  { k: 'hCoG', label: 'CoG height', unit: 'm', step: 0.05 },
+  { k: 'wheelbase', label: 'Effective wheelbase', unit: 'm', step: 0.1 }
 ];
 
 function currentVehicle() { return currentSpec; }
@@ -233,20 +233,20 @@ function hardReset(autoplay = false) {
   sim = new Sim(cfg);
   prevStage = null;
   running = autoplay;
-  el.playBtn.textContent = running ? '⏸ Jeda' : '▶ Jalankan';
+  el.playBtn.textContent = running ? '⏸ Pause' : '▶ Run';
   el.log.innerHTML = '';
   el.verdict.className = 'verdict';
   el.verdict.innerHTML = '';
   syncLabels();
   updateHUD(true);
-  if (autoplay) addLog('Simulasi dimulai', '');
+  if (autoplay) addLog('Simulation started', '');
 }
 
 el.playBtn.addEventListener('click', () => {
   if (sim.done) { hardReset(true); return; }
   running = !running;
-  el.playBtn.textContent = running ? '⏸ Jeda' : '▶ Jalankan';
-  if (running && sim.t === 0) addLog('Simulasi dimulai', '');
+  el.playBtn.textContent = running ? '⏸ Pause' : '▶ Run';
+  if (running && sim.t === 0) addLog('Simulation started', '');
 });
 
 el.resetBtn.addEventListener('click', () => hardReset(false));
@@ -271,12 +271,12 @@ el.capFromForce.addEventListener('change', () => {
 });
 
 const LEAD_MODES = {
-  brake2:  { decel: 2.0,  note: 'Mengerem wajar. Dari 40 km/h berhenti dalam ±5,5 detik / 86 m.' },
-  brake4:  { decel: 4.0,  note: 'Mengerem keras. Berhenti dalam ±2,8 detik / 74 m.' },
-  brake5:  { decel: 5.0,  note: 'Mengerem darurat. Berhenti dalam ±2,2 detik / 68 m.' },
-  coast:   { decel: 0.3,  note: 'Tenaga hilang, truk meluncur lambat. Berhenti butuh ±37 detik / 410 m.' },
-  blowout: { decel: 3.0,  note: 'Ban pecah: seretan naik, truk melambat keras dan arahnya tidak stabil.' },
-  custom:  { decel: null, note: 'Atur sendiri laju perlambatan truk depan (0,2-6 m/s²).' }
+  brake2:  { decel: 2.0,  note: 'Normal braking. From 40 km/h, stops in ±5.5 s / 86 m.' },
+  brake4:  { decel: 4.0,  note: 'Hard braking. Stops in ±2.8 s / 74 m.' },
+  brake5:  { decel: 5.0,  note: 'Emergency braking. Stops in ±2.2 s / 68 m.' },
+  coast:   { decel: 0.3,  note: 'Power loss, truck coasts. Takes ±37 s / 410 m to stop.' },
+  blowout: { decel: 3.0,  note: 'Tyre blowout: drag rises, truck decelerates hard and steering is unstable.' },
+  custom:  { decel: null, note: 'Set the lead deceleration manually (0.2-6 m/s²).' }
 };
 
 // Dropdown hanya memilih JENIS kejadian. Checkbox menentukan apakah kejadian itu
@@ -360,22 +360,22 @@ function updateHUD(force = false) {
       : `Ambang tetap: ${base[0]} / ${base[1]} / ${base[2]} s`;
   }
   if (el.logMeta) {
-    el.logMeta.textContent = `${sim.steps.toLocaleString('id-ID')} siklus · ${logCount} perubahan`;
+    el.logMeta.textContent = `${sim.steps.toLocaleString('en-US')} cycles · ${logCount} changes`;
   }
   el.hLoad.textContent = `+${sim.loadTransferT().toFixed(1)} t`;
 
   let stage = sim.stage;
   if (sim.done) stage = sim.outcome;
   const map = {
-    cruise: ['Jalan normal', 's-cruise'],
-    off: ['AEB nonaktif', 's-cruise'],
-    warn: ['PERINGATAN', 's-warn'],
-    partial: ['Rem sebagian', 's-partial'],
-    full: ['REM PENUH', 's-full'],
-    stopped: ['Berhenti aman', 's-stopped'],
+    cruise: ['Normal', 's-cruise'],
+    off: ['AEBS off', 's-cruise'],
+    warn: ['WARNING', 's-warn'],
+    partial: ['Partial brake', 's-partial'],
+    full: ['FULL BRAKE', 's-full'],
+    stopped: ['Stopped', 's-stopped'],
     settled: ['Selesai', 's-stopped'],
     timeout: ['Selesai', 's-stopped'],
-    collision: ['TABRAKAN', 's-collision']
+    collision: ['COLLISION', 's-collision']
   };
   const [label, cls] = map[stage] || ['—', 's-cruise'];
   el.hState.textContent = label;
@@ -384,19 +384,19 @@ function updateHUD(force = false) {
   // event log saat perubahan status
   const key = sim.done ? sim.outcome : sim.stage;
   if (key !== prevStage) {
-    if (key === 'warn') addLog('AEB: peringatan — pengemudi harus bereaksi', 'warn');
-    else if (key === 'partial') addLog('AEB: rem sebagian aktif', 'partial');
-    else if (key === 'full') addLog('AEB: REM PENUH', 'full');
-    else if (key === 'collision') addLog(`TABRAKAN pada ${(sim.impactV * 3.6).toFixed(1)} km/h`, 'bad');
-    else if (key === 'stopped') addLog(`Berhenti, sisa ${sim.gap().toFixed(1)} m`, 'ok');
-    else if (key === 'settled') addLog(`Kecepatan stabil ${(sim.vEgo * 3.6).toFixed(1)} km/h, gap ${sim.gap().toFixed(1)} m`, 'ok');
-    else if (key === 'timeout') addLog('Simulasi berakhir tanpa tabrakan', 'ok');
+    if (key === 'warn') addLog('AEBS: warning — driver must react', 'warn');
+    else if (key === 'partial') addLog('AEBS: partial brake', 'partial');
+    else if (key === 'full') addLog('AEBS: FULL BRAKE', 'full');
+    else if (key === 'collision') addLog(`COLLISION at ${(sim.impactV * 3.6).toFixed(1)} km/h`, 'bad');
+    else if (key === 'stopped') addLog(`Stopped, gap ${sim.gap().toFixed(1)} m`, 'ok');
+    else if (key === 'settled') addLog(`Settled at ${(sim.vEgo * 3.6).toFixed(1)} km/h, gap ${sim.gap().toFixed(1)} m`, 'ok');
+    else if (key === 'timeout') addLog('Ended without collision', 'ok');
     prevStage = key;
   }
 
   if (sim.done) {
     running = false;
-    el.playBtn.textContent = '▶ Ulangi';
+    el.playBtn.textContent = '▶ Replay';
     const v = sim.verdict();
     if (v && !el.verdict.classList.contains('show')) {
       el.verdict.className = `verdict show ${v.ok ? 'ok' : 'bad'}`;

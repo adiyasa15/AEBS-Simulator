@@ -386,30 +386,30 @@ export class Sim {
     if (this.outcome === 'timeout') {
       return {
         ok: true,
-        title: 'Simulasi berakhir — tidak ada tabrakan',
-        sub: `90 s berjalan. AEB sudah mengintervensi ${this.aebEvents} kali; bukan ACC, jadi pengemudi mengejar lagi setelah rem lepas.`
+        title: 'Simulation ended — no collision',
+        sub: `90 s elapsed. AEBS intervened ${this.aebEvents} times; this is not ACC, so the driver closes the gap again once braking releases.`
       };
     }
     if (this.outcome === 'settled') {
       return {
         ok: true,
         title: this.aebEvents
-          ? `Aman — kecepatan turun, sisa gap ${this.gap().toFixed(1)} m`
-          : `Jalan aman — tidak ada penutupan jarak`,
-        sub: `Kecepatan akhir ${(this.vEgo * 3.6).toFixed(1)} km/h · objek ${(this.vLead * 3.6).toFixed(1)} km/h · deselerasi puncak ${this.peakDecel.toFixed(1)} m/s² · energi rem ${(this.brakeEnergy / 1e6).toFixed(2)} MJ.`
+          ? `Clear — speed reduced, gap ${this.gap().toFixed(1)} m`
+          : `Clear — no closing`,
+        sub: `Final speed ${(this.vEgo * 3.6).toFixed(1)} km/h · lead ${(this.vLead * 3.6).toFixed(1)} km/h · peak decel ${this.peakDecel.toFixed(1)} m/s² · brake energy ${(this.brakeEnergy / 1e6).toFixed(2)} MJ.`
       };
     }
     if (this.outcome === 'collision') {
       return {
         ok: false,
-        title: `TABRAKAN — impact ${(this.impactV * 3.6).toFixed(1)} km/h`,
-        sub: `Kendaraan ${p.massT.toFixed(1)} t, kecepatan awal ${this.cfg.v0} km/h, gap awal ${this.cfg.gap0} m · energi terserap rem ${(this.brakeEnergy / 1e6).toFixed(2)} MJ.`
+        title: `COLLISION — impact ${(this.impactV * 3.6).toFixed(1)} km/h`,
+        sub: `Mass ${p.massT.toFixed(1)} t, initial speed ${this.cfg.v0} km/h, initial gap ${this.cfg.gap0} m · energy absorbed by brakes ${(this.brakeEnergy / 1e6).toFixed(2)} MJ.`
       };
     }
     return {
       ok: true,
-      title: `BERHENTI aman — sisa jarak ${this.gap().toFixed(1)} m`,
-      sub: `Deselerasi puncak ${this.peakDecel.toFixed(1)} m/s² · energi rem ${(this.brakeEnergy / 1e6).toFixed(2)} MJ · waktu ${this.t.toFixed(2)} s · massa ${p.massT.toFixed(1)} t.`
+      title: `STOPPED — gap ${this.gap().toFixed(1)} m`,
+      sub: `Peak decel ${this.peakDecel.toFixed(1)} m/s² · brake energy ${(this.brakeEnergy / 1e6).toFixed(2)} MJ · time ${this.t.toFixed(2)} s · mass ${p.massT.toFixed(1)} t.`
     };
   }
 }

@@ -142,7 +142,7 @@ export class Renderer {
       ctx.fillStyle = 'rgba(239,68,68,.85)';
       ctx.font = '600 11px Inter, system-ui, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('titik henti', px, sy(ROAD_HALF) - 7);
+      ctx.fillText('stopping point', px, sy(ROAD_HALF) - 7);
     }
 
     // ---- objek di depan ----
@@ -366,7 +366,7 @@ export function drawChart(canvas, sim) {
     ctx.fillStyle = 'rgba(127,148,170,.45)';
     ctx.font = '11px Inter, system-ui, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Tekan ▶ Jalankan untuk mulai merekam telemetri', W / 2, H / 2);
+    ctx.fillText('Press ▶ Run to start recording telemetry', W / 2, H / 2);
     return;
   }
 

@@ -23,52 +23,52 @@
     </header>
 
     <section class="group">
-      <label class="lbl" for="vehicle">Kendaraan</label>
+      <label class="lbl" for="vehicle">Vehicle</label>
       <select id="vehicle"></select>
 
       <div class="seg" id="loadSeg">
-        <button data-load="0">Kosong</button>
-        <button data-load="1" class="on">Muat batubara</button>
+        <button data-load="0">Empty</button>
+        <button data-load="1" class="on">Loaded (coal)</button>
       </div>
 
       <details id="specBox">
-        <summary>Spek teknis (bisa diubah)</summary>
+        <summary>Spec — editable</summary>
         <div class="spec-grid" id="specGrid"></div>
         <label class="switch">
           <input type="checkbox" id="capVerified" />
           <span class="slider"></span>
-          <span class="switch-label">a_cap sudah diverifikasi brake test</span>
+          <span class="switch-label">a_cap verified by brake test</span>
         </label>
         <label class="switch">
           <input type="checkbox" id="capFromForce" />
           <span class="slider"></span>
-          <span class="switch-label">Hitung a_cap dari gaya rem konstan</span>
+          <span class="switch-label">a_cap from constant brake force (F/m)</span>
         </label>
       </details>
     </section>
 
     <section class="group">
-      <label class="lbl" for="surface">Permukaan haul road</label>
+      <label class="lbl" for="surface">Surface</label>
       <select id="surface">
-        <option value="0.6" selected>Chipseal kering bersih (μ 0.60)</option>
-        <option value="0.65">Aspal beton kering (μ 0.65)</option>
-        <option value="0.45">Chipseal basah (μ 0.45)</option>
-        <option value="0.32">Chipseal berdebu batubara (μ 0.32)</option>
-        <option value="0.25">Berlumpur / slurry (μ 0.25)</option>
+        <option value="0.6" selected>Dry chipseal, clean (μ 0.60)</option>
+        <option value="0.65">Dry asphalt (μ 0.65)</option>
+        <option value="0.45">Wet chipseal (μ 0.45)</option>
+        <option value="0.32">Coal-dusted chipseal (μ 0.32)</option>
+        <option value="0.25">Muddy / slurry (μ 0.25)</option>
       </select>
     </section>
 
     <section class="group">
-      <div class="row"><label class="lbl" for="v0">Kecepatan awal</label><output id="v0o">45 km/h</output></div>
+      <div class="row"><label class="lbl" for="v0">Initial speed</label><output id="v0o">45 km/h</output></div>
       <input type="range" id="v0" min="0" max="70" step="1" value="45" />
 
-      <div class="row"><label class="lbl" for="gap0">Jarak ke objek</label><output id="gap0o">60 m</output></div>
+      <div class="row"><label class="lbl" for="gap0">Gap to object</label><output id="gap0o">60 m</output></div>
       <input type="range" id="gap0" min="5" max="200" step="1" value="60" />
 
-      <div class="row"><label class="lbl" for="vLead">Kecepatan objek</label><output id="vLeado">0 km/h</output></div>
+      <div class="row"><label class="lbl" for="vLead">Lead speed</label><output id="vLeado">0 km/h</output></div>
       <input type="range" id="vLead" min="0" max="50" step="1" value="0" />
 
-      <div class="row"><label class="lbl" for="grade">Turunan</label><output id="gradeo">0 %</output></div>
+      <div class="row"><label class="lbl" for="grade">Grade</label><output id="gradeo">0 %</output></div>
       <input type="range" id="grade" min="-8" max="10" step="0.5" value="0" />
     </section>
 
@@ -76,18 +76,18 @@
       <label class="switch">
         <input type="checkbox" id="aeb" checked />
         <span class="slider"></span>
-        <span class="switch-label">AEB aktif</span>
+        <span class="switch-label">AEBS active</span>
       </label>
 
       <details>
-        <summary>Ambang TTC (lanjutan)</summary>
-        <div class="row"><label class="lbl" for="warnTTC">Peringatan</label><output id="warnTTCo">2.6 s</output></div>
+        <summary>TTC thresholds (advanced)</summary>
+        <div class="row"><label class="lbl" for="warnTTC">Warning</label><output id="warnTTCo">2.6 s</output></div>
         <input type="range" id="warnTTC" min="1" max="5" step="0.1" value="2.6" />
 
-        <div class="row"><label class="lbl" for="partialTTC">Rem sebagian</label><output id="partialTTCo">1.8 s</output></div>
+        <div class="row"><label class="lbl" for="partialTTC">Partial brake</label><output id="partialTTCo">1.8 s</output></div>
         <input type="range" id="partialTTC" min="0.5" max="4" step="0.1" value="1.8" />
 
-        <div class="row"><label class="lbl" for="fullTTC">Rem penuh</label><output id="fullTTCo">0.9 s</output></div>
+        <div class="row"><label class="lbl" for="fullTTC">Full brake</label><output id="fullTTCo">0.9 s</output></div>
         <input type="range" id="fullTTC" min="0.2" max="3" step="0.1" value="0.9" />
 
         <div class="row"><label class="lbl" for="filterTau">Filter a_lead</label><output id="filterTauo">0.15 s</output></div>
@@ -96,65 +96,65 @@
         <label class="switch">
           <input type="checkbox" id="dynTTC" checked />
           <span class="slider"></span>
-          <span class="switch-label">Ambang TTC mengikuti kemampuan rem</span>
+          <span class="switch-label">TTC threshold follows brake capability</span>
         </label>
       </details>
     </section>
 
     <section class="group">
-      <label class="lbl" for="logic">Logic pemicu AEB</label>
+      <label class="lbl" for="logic">Trigger logic</label>
       <select id="logic">
-        <option value="rel" selected>TTC relatif (logic sekarang)</option>
-        <option value="headway">TTC relatif + jarak aman 4 s</option>
-        <option value="predictive">Prediktif — feed-forward rem truk depan</option>
+        <option value="rel" selected>TTC relative (installed logic)</option>
+        <option value="headway">TTC relative + 4 s headway</option>
+        <option value="predictive">Predictive — feed-forward lead braking</option>
       </select>
-      <div class="row"><label class="lbl" for="headway">Jarak aman</label><output id="headwayo">4.0 s</output></div>
+      <div class="row"><label class="lbl" for="headway">Headway</label><output id="headwayo">4.0 s</output></div>
       <input type="range" id="headway" min="1" max="8" step="0.5" value="4" />
 
-      <div class="row"><label class="lbl" for="govDecel">Batas pelambatan jarak aman</label><output id="govDecelo">1.2 m/s²</output></div>
+      <div class="row"><label class="lbl" for="govDecel">Headway decel cap</label><output id="govDecelo">1.2 m/s²</output></div>
       <input type="range" id="govDecel" min="0.3" max="5" step="0.1" value="1.2" />
 
-      <label class="lbl" for="leadMode">Kejadian pada truk depan</label>
+      <label class="lbl" for="leadMode">Lead event</label>
       <select id="leadMode">
-        <option value="brake2">Mengerem normal (2,0 m/s²)</option>
-        <option value="brake4" selected>Mengerem keras (4,0 m/s²)</option>
-        <option value="brake5">Mengerem darurat (5,0 m/s²)</option>
-        <option value="coast">Mogok / lepas tenaga (0,3 m/s²)</option>
-        <option value="blowout">Ban pecah (±3,0 m/s²)</option>
-        <option value="custom">Kustom — atur sendiri</option>
+        <option value="brake2">Braking, normal (2.0 m/s²)</option>
+        <option value="brake4" selected>Braking, hard (4.0 m/s²)</option>
+        <option value="brake5">Braking, emergency (5.0 m/s²)</option>
+        <option value="coast">Breakdown / power loss (0.3 m/s²)</option>
+        <option value="blowout">Tyre blowout (±3.0 m/s²)</option>
+        <option value="custom">Custom — set manually</option>
       </select>
 
       <div id="leadCustom" hidden>
-        <div class="row"><label class="lbl" for="leadDecel">Perlambatan truk depan</label><output id="leadDecelo">4.0 m/s²</output></div>
+        <div class="row"><label class="lbl" for="leadDecel">Lead deceleration</label><output id="leadDecelo">4.0 m/s²</output></div>
         <input type="range" id="leadDecel" min="0.2" max="6" step="0.1" value="4" />
       </div>
 
       <label class="switch">
         <input type="checkbox" id="leadBrake" />
         <span class="slider"></span>
-        <span class="switch-label">Kejadian ini benar-benar terjadi</span>
+        <span class="switch-label">Event actually occurs</span>
       </label>
     </section>
 
     <section class="group actions">
-      <button id="playBtn" class="primary">▶ Jalankan</button>
+      <button id="playBtn" class="primary">▶ Run</button>
       <button id="resetBtn">↺ Reset</button>
     </section>
 
     <section class="group actions">
-      <button id="methodBtn">📐 Metode perhitungan</button>
+      <button id="methodBtn">📐 Method</button>
     </section>
 
     <section class="group presets">
-      <p class="lbl">Skenario cepat</p>
+      <p class="lbl">Presets</p>
       <div class="chips">
-        <button data-scenario="stopped">Truk berhenti</button>
-        <button data-scenario="slow">Truk pelan 20</button>
-        <button data-scenario="sudden">Truk mendadak</button>
-        <button data-scenario="lowmu">Jalan berlumpur</button>
-        <button data-scenario="convoy">Konvoi rapat 15 m</button>
-        <button data-scenario="headway4">Konvoi 4 detik</button>
-        <button data-scenario="suddenStop">Truk berhenti mendadak</button>
+        <button data-scenario="stopped">Stopped truck</button>
+        <button data-scenario="slow">Slow lead 20</button>
+        <button data-scenario="sudden">Sudden braking</button>
+        <button data-scenario="lowmu">Muddy road</button>
+        <button data-scenario="convoy">Tight convoy 15 m</button>
+        <button data-scenario="headway4">Convoy 4 s</button>
+        <button data-scenario="suddenStop">Lead stops suddenly</button>
       </div>
     </section>
 
@@ -168,18 +168,18 @@
       <canvas id="view"></canvas>
 
       <div class="hud">
-        <div class="card"><span class="k">Kecepatan</span><b id="hSpeed">—</b></div>
+        <div class="card"><span class="k">Speed</span><b id="hSpeed">—</b></div>
         <div class="card"><span class="k">TTC</span><b id="hTtc">—</b></div>
         <div class="card"><span class="k">Gap</span><b id="hGap">—</b></div>
-        <div class="card"><span class="k">Deselerasi</span><b id="hDecel">—</b></div>
-        <div class="card"><span class="k">Rem</span><b id="hBrake">—</b></div>
-        <div class="card"><span class="k">Jarak henti</span><b id="hStop">—</b></div>
-        <div class="card"><span class="k">Energi rem</span><b id="hEnergy">—</b></div>
-        <div class="card"><span class="k">Beban ke depan</span><b id="hLoad">—</b></div>
-        <div class="card state" id="hStateCard"><span class="k">Status</span><b id="hState">—</b></div>
+        <div class="card"><span class="k">Decel</span><b id="hDecel">—</b></div>
+        <div class="card"><span class="k">Brake</span><b id="hBrake">—</b></div>
+        <div class="card"><span class="k">Stopping dist</span><b id="hStop">—</b></div>
+        <div class="card"><span class="k">Brake energy</span><b id="hEnergy">—</b></div>
+        <div class="card"><span class="k">Load transfer</span><b id="hLoad">—</b></div>
+        <div class="card state" id="hStateCard"><span class="k">State</span><b id="hState">—</b></div>
       </div>
 
-      <div class="verifychip" id="verifyChip">Parameter rem belum terverifikasi — angka bersifat indikatif</div>
+      <div class="verifychip" id="verifyChip">Brake parameters unverified — indicative values only</div>
       <div class="verdict" id="verdict"></div>
     </div>
 
@@ -187,7 +187,7 @@
 
     <div class="bottom">
       <div class="chartbox">
-        <div class="chart-head"><span>Telemetri</span><span class="legend"><i class="s"></i>kecepatan <i class="b"></i>rem</span></div>
+        <div class="chart-head"><span>Telemetry</span><span class="legend"><i class="s"></i>speed <i class="b"></i>brake</span></div>
         <canvas id="chart"></canvas>
       </div>
       <div class="logbox">
