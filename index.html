@@ -421,6 +421,120 @@ applied  naik linear sebesar dt / brakeBuild          (bawaan 0,85 s)</pre>
       <h3>4. Tiga logic pemicu</h3>
       <p>Seluruh logic menghasilkan satu keluaran yang sama, yaitu <code>level</code> antara 0
         dan 1 sebagai fraksi dari <code>a_tersedia</code>.</p>
+      <p>Diagram berikut memperlihatkan ketiga logic secara berdampingan: masukan yang dipakai,
+        perhitungan masing-masing, ambang yang berlaku, serta lantai keselamatan yang bekerja
+        pada ketiganya sebelum perintah diteruskan ke aktuator.</p>
+      <svg viewBox="0 0 720 640" class="diagram" role="img" aria-label="Cara kerja tiga logic pemicu">
+        <defs>
+          <marker id="ga" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#5b7793"/>
+          </marker>
+        </defs>
+
+        <!-- BAND 1: masukan -->
+        <text x="16" y="18" class="ds">MASUKAN</text>
+        <rect x="16" y="26" width="210" height="50" rx="8" class="dbox"/>
+        <text x="121" y="46" class="dt" text-anchor="middle">Radar 77 GHz</text>
+        <text x="121" y="62" class="ds" text-anchor="middle">gap · range-rate (Doppler)</text>
+
+        <rect x="255" y="26" width="210" height="50" rx="8" class="dbox"/>
+        <text x="360" y="46" class="dt" text-anchor="middle">Ego vehicle</text>
+        <text x="360" y="62" class="ds" text-anchor="middle">v · a_tersedia</text>
+
+        <rect x="494" y="26" width="210" height="50" rx="8" class="dbox"/>
+        <text x="599" y="46" class="dt" text-anchor="middle">Massa &amp; gesekan</text>
+        <text x="599" y="62" class="ds" text-anchor="middle">a_cap = F/m · μ·g</text>
+
+        <line x1="121" y1="76" x2="121" y2="104" class="darrow" marker-end="url(#ga)"/>
+        <line x1="360" y1="76" x2="360" y2="104" class="darrow" marker-end="url(#ga)"/>
+        <line x1="599" y1="76" x2="599" y2="104" class="darrow" marker-end="url(#ga)"/>
+
+        <!-- BAND 2: tiga logic -->
+        <text x="16" y="100" class="ds">PERHITUNGAN PER LOGIC</text>
+
+        <!-- Logic 1 -->
+        <text x="126" y="122" class="dt" text-anchor="middle" fill="#93c5fd">Logic 1 — TTC relatif</text>
+        <rect x="16" y="130" width="220" height="58" rx="8" class="dbox"/>
+        <text x="126" y="148" class="ds" text-anchor="middle">TTC = gap / closing</text>
+        <text x="126" y="163" class="ds" text-anchor="middle">a_req = closing² / 2·gap</text>
+        <text x="126" y="178" class="ds" text-anchor="middle">TTC_min = latency + v / 2a</text>
+
+        <line x1="126" y1="188" x2="126" y2="206" class="darrow" marker-end="url(#ga)"/>
+        <rect x="16" y="212" width="220" height="58" rx="8" class="dbox" style="stroke:#f59e0b"/>
+        <text x="126" y="230" class="ds" text-anchor="middle">bandingkan dengan ambang</text>
+        <text x="126" y="245" class="ds" text-anchor="middle">max(0,9 ; 1,1 · TTC_min) = penuh</text>
+        <text x="126" y="260" class="ds" text-anchor="middle">max(1,8 ; 1,5 · TTC_min) = sebagian</text>
+
+        <!-- Logic 2 -->
+        <text x="360" y="122" class="dt" text-anchor="middle" fill="#93c5fd">Logic 2 — jarak aman 4 s</text>
+        <rect x="250" y="130" width="220" height="58" rx="8" class="dbox"/>
+        <text x="360" y="148" class="ds" text-anchor="middle">THW = gap / v</text>
+        <text x="360" y="163" class="ds" text-anchor="middle">v_safe = gap / 4</text>
+        <text x="360" y="178" class="ds" text-anchor="middle">a_butuh = (v − v_safe) / 2</text>
+
+        <line x1="360" y1="188" x2="360" y2="206" class="darrow" marker-end="url(#ga)"/>
+        <rect x="250" y="212" width="220" height="58" rx="8" class="dbox" style="stroke:#f59e0b"/>
+        <text x="360" y="230" class="ds" text-anchor="middle">aktif bila THW &lt; 4 s</text>
+        <text x="360" y="245" class="ds" text-anchor="middle">batas = 1,2 → 2,4 m/s²</text>
+        <text x="360" y="260" class="ds" text-anchor="middle">bertingkat sesuai pelanggaran</text>
+
+        <!-- Logic 3 -->
+        <text x="594" y="122" class="dt" text-anchor="middle" fill="#fbbf24">Logic 3 — prediktif</text>
+        <rect x="484" y="130" width="220" height="58" rx="8" class="dbox"/>
+        <text x="594" y="148" class="ds" text-anchor="middle">a_lead = d(−range-rate)/dt</text>
+        <text x="594" y="163" class="ds" text-anchor="middle">leadDist = v_lead² / 2·a_lead</text>
+        <text x="594" y="178" class="ds" text-anchor="middle">budget = gap + leadDist − 3 m</text>
+
+        <line x1="594" y1="188" x2="594" y2="206" class="darrow" marker-end="url(#ga)"/>
+        <rect x="484" y="212" width="220" height="58" rx="8" class="dbox" style="stroke:#f59e0b"/>
+        <text x="594" y="230" class="ds" text-anchor="middle">demand = requiredDecel(v, budget)</text>
+        <text x="594" y="245" class="ds" text-anchor="middle">≥ 0,55 · a_tersedia = penuh</text>
+        <text x="594" y="260" class="ds" text-anchor="middle">≥ 0,25 · a_tersedia = sebagian</text>
+
+        <!-- BAND 3: lantai keselamatan -->
+        <line x1="126" y1="270" x2="126" y2="292" class="darrow" marker-end="url(#ga)"/>
+        <line x1="360" y1="270" x2="360" y2="292" class="darrow" marker-end="url(#ga)"/>
+        <line x1="594" y1="270" x2="594" y2="292" class="darrow" marker-end="url(#ga)"/>
+
+        <rect x="16" y="298" width="688" height="66" rx="8" class="dbox" style="stroke:#ef4444"/>
+        <text x="360" y="318" class="dt" text-anchor="middle" fill="#fca5a5">Lantai keselamatan — berlaku pada ketiga logic</text>
+        <text x="360" y="336" class="ds" text-anchor="middle">demand = requiredDecel(v, gap + leadDist − margin, latency, build)</text>
+        <text x="360" y="352" class="ds" text-anchor="middle">demand ≥ 0,85 · a_tersedia → rem penuh      demand ≥ 0,40 · a_tersedia → rem sebagian</text>
+
+        <!-- BAND 4: keluaran -->
+        <line x1="360" y1="364" x2="360" y2="386" class="darrow" marker-end="url(#ga)"/>
+        <text x="16" y="384" class="ds">KELUARAN</text>
+
+        <rect x="180" y="392" width="360" height="46" rx="8" class="dbox" style="stroke:#f59e0b"/>
+        <text x="360" y="411" class="dt" text-anchor="middle" fill="#fbbf24">level 0 … 1</text>
+        <text x="360" y="428" class="ds" text-anchor="middle">fraksi a_tersedia · hanya berubah bila selisih &gt; 0,05</text>
+
+        <line x1="360" y1="438" x2="360" y2="458" class="darrow" marker-end="url(#ga)"/>
+
+        <rect x="16" y="464" width="210" height="46" rx="8" class="dbox"/>
+        <text x="121" y="483" class="dt" text-anchor="middle">latency</text>
+        <text x="121" y="499" class="ds" text-anchor="middle">radar + prosesor + valve</text>
+
+        <rect x="255" y="464" width="210" height="46" rx="8" class="dbox"/>
+        <text x="360" y="483" class="dt" text-anchor="middle">build-up</text>
+        <text x="360" y="499" class="ds" text-anchor="middle">tekanan naik selama T</text>
+
+        <rect x="494" y="464" width="210" height="46" rx="8" class="dbox" style="stroke:#ef4444"/>
+        <text x="599" y="483" class="dt" text-anchor="middle" fill="#fca5a5">a_aktual</text>
+        <text x="599" y="499" class="ds" text-anchor="middle">≤ a_tersedia</text>
+        <line x1="226" y1="487" x2="253" y2="487" class="darrow" marker-end="url(#ga)"/>
+        <line x1="465" y1="487" x2="492" y2="487" class="darrow" marker-end="url(#ga)"/>
+
+        <line x1="599" y1="510" x2="599" y2="530" class="darrow" marker-end="url(#ga)"/>
+        <rect x="330" y="536" width="374" height="46" rx="8" class="dbox"/>
+        <text x="517" y="555" class="dt" text-anchor="middle">v′ = max(0, v − a_net·dt)</text>
+        <text x="517" y="571" class="ds" text-anchor="middle">s′ = s + ½(v + v′)·dt · siklus 5 ms</text>
+
+        <text x="16" y="556" class="ds">kotak kuning = titik keputusan</text>
+        <text x="16" y="572" class="ds">kotak merah = batas kemampuan</text>
+        <text x="16" y="588" class="ds">kotak abu = perhitungan</text>
+      </svg>
+
 
       <h4>4.1 Logic 1 — TTC relatif</h4>
       <pre class="formula">TTC   = gap / closing                (tak terhingga jika closing ≤ 0,05)
