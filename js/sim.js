@@ -67,6 +67,8 @@ export class Sim {
     this.aLeadEst = 0;        // estimasi perlambatan truk depan (di radar: turunan range-rate)
     this.leadMovingSeen = false;  // target pernah bergerak? (= kendaraan, bukan rambu/tanggul)
     this.govActive = false;       // status penjaga jarak (histeresis lepas)
+    this.brakeAppliedEver = false; // rem servis pernah benar-benar bekerja
+    this.holdLevel = 0;            // tingkat rem yang ditahan agar tidak berkedip
     this.steps = 0;               // jumlah siklus perhitungan yang sudah dijalankan
     this.brakeEnergy = 0;     // Joule — energi yang dibuang lewat rem servis
     this.peakDecel = 0;       // m/s²
@@ -202,6 +204,20 @@ export class Sim {
         stage = 'warn';
       }
 
+      // Penahan (hysteresis): sekali rem sebagian/penuh bekerja, tingkat itu ditahan
+      // sampai bahaya benar-benar mereda. Tanpa ini rem berkedip saat jarak menutup
+      // perlahan: sebagian -> kecepatan turun -> TTC naik -> lepas -> sebagian lagi.
+      // penahan dilepas hanya bila kendaraan sudah tidak lagi mendekat objek
+      const clearHold = this.closing() <= 0.3 && this.aReq < p.aAvail * 0.2;
+      if (this.holdLevel > 0) {
+        if (clearHold) {
+          this.holdLevel = 0;
+        } else if (desired < this.holdLevel) {
+          desired = this.holdLevel;
+          stage = this.holdLevel >= 1 ? 'full' : 'partial';
+        }
+      }
+
       // Lantai keselamatan untuk SELURUH logic: bila perlambatan yang dibutuhkan
       // sudah mendekati atau melewati kemampuan truk, rem langsung dinaikkan
       // tanpa menunggu ambang TTC. Berlaku juga saat objek diam atau sedang berhenti.
@@ -236,6 +252,8 @@ export class Sim {
         if (aFf >= p.aAvail * 0.55) { desired = 1; stage = 'full'; }
         else if (aFf >= p.aAvail * 0.25 && desired < 0.55) { desired = 0.55; stage = 'partial'; }
       }
+
+      if (desired >= 0.5) this.holdLevel = Math.max(this.holdLevel, desired);
 
       // jaring pengaman: sudah mepet, apa pun ambangnya
       if (gap < 4 && cl > 0.05) { desired = 1; stage = 'full'; }
@@ -293,25 +311,33 @@ export class Sim {
       this.applied = Math.max(this.cmdLevel, this.applied - rate * 2 * dt);
     }
 
-    // ---- pengemudi: jaga kecepatan target selama AEB tidak mengintervensi ----
+    // ---- pengemudi ----
+    // Perilaku: menjaga kecepatan awal dengan throttle. Engine brake + retarder hanya
+    // dipakai untuk menahan laju saat melebihi kecepatan awal (mis. turunan) — BUKAN
+    // untuk mengejar kecepatan objek di depan, karena itu tugas rem servis.
+    if (this.applied > 0.1) this.brakeAppliedEver = true;
+
     let aThrottle = 0;
     let aRetard = 0;
     if (this.applied < 0.02) {
-      // setelah AEB menyelamatkan sekali, pengemudi tidak lagi mengejar kecepatan awal
-      let target = this.aebEvents > 0 ? Math.min(c.v0, c.vLead) / 3.6 : c.v0 / 3.6;
+      const vTarget = c.v0 / 3.6;
+      let target = vTarget;
       if (c.logic === 'headway' && c.headway > 0) {
         target = Math.min(target, this.gap() / c.headway);
       }
+      // pengemudi hanya mengikuti kecepatan objek setelah rem servis benar-benar bekerja
+      if (this.brakeAppliedEver && this.vLead > 0.3) {
+        target = Math.min(target, this.vLead);
+      }
       const dv = target - this.vEgo;
       if (dv > 0.03) aThrottle = Math.min(0.8, dv * 0.6);
-      // engine brake + retarder: menahan laju di turunan, BUKAN rem darurat.
-      // Retarder hidrolik/elektrik butuh putaran minimum -> di bawah ambang tidak ada efek.
-      else if (dv < -0.05) {
+      // retarder hanya untuk menahan laju di atas kecepatan awal (turunan)
+      if (this.vEgo > vTarget + 0.05) {
         const vKph = this.vEgo * 3.6;
         const rOn = c.vehicle.retardOnKph ?? 15;
         const rFade = Math.max(1, c.vehicle.retardFadeKph ?? 10);
         const avail = Math.max(0, Math.min(1, (vKph - rOn) / rFade));
-        aRetard = Math.min((c.vehicle.aRetardMax ?? 1.0) * avail, -dv * 0.6);
+        aRetard = Math.min((c.vehicle.aRetardMax ?? 1.0) * avail, (this.vEgo - vTarget) * 0.6);
       }
     }
 

@@ -305,10 +305,19 @@ s′    = s + ½ (v + v′) · dt</pre>
       </svg>
 
 
-      <p>Massa tidak muncul pada <code>a = μ·g</code>, tetapi muncul pada
-        <code>a_cap = F_rem / m</code>. Karena itu truk 66,5 t dapat memiliki perlambatan yang
-        sama dengan truk 26 t apabila gaya pengeremannya memang mencukupi. Nilai <code>a_cap</code>
-        harus diperoleh dari uji pengereman unit, bukan diasumsikan.</p>
+      <p><b>Peran massa.</b> Perlambatan dibatasi oleh dua hal, dan keduanya berbeda sifat:</p>
+      <table class="eq wide">
+        <tr><th>Batas</th><th>Rumus</th><th>Pengaruh massa</th></tr>
+        <tr><td>Gesekan ban–jalan</td><td><code>μ · g</code></td><td>tidak bergantung massa</td></tr>
+        <tr><td>Kapasitas rem</td><td><code>F_rem / m</code></td><td><b>berbanding terbalik</b> dengan massa</td></tr>
+      </table>
+      <p>Dengan gaya rem tetap 119,6 kN, perlambatan menjadi 4,60 m/s² pada 26 t dan
+        <b>1,80 m/s² pada 66,5 t</b>. Massa naik 2,56 kali, perlambatan turun menjadi 39 %.
+        Perlambatan hanya bisa sama bila gaya rem naik sebanding massa — misalnya melalui
+        katup pengindra beban (<i>load sensing</i>).</p>
+      <p>Karena itu massa bukan faktor kecil: ia menentukan jarak henti, ambang TTC, dan
+        <code>required deceleration</code>. Nilai <code>a_cap</code> harus berasal dari uji
+        pengereman unit pada kondisi bermuatan, bukan diasumsikan.</p>
 
       <h3>2. Siklus perhitungan 200 Hz</h3>
       <p>Persamaan gerak hanya dapat dihitung apabila gaya dianggap tetap dalam selang waktu
@@ -835,49 +844,57 @@ TTC_min = latency + v / (2a)</pre>
       <h4>Kemampuan rem</h4>
       <table class="eq wide">
         <tr><th>Besaran</th><th>Kosong 26 t</th><th>Muat 66,5 t</th></tr>
-        <tr><td>a_tersedia</td><td>4,60 m/s²</td><td>3,00 m/s²</td></tr>
-        <tr><td>Ambang rem sebagian (0,5 ×)</td><td>2,30 m/s²</td><td>1,50 m/s²</td></tr>
-        <tr><td>Ambang rem penuh (0,9 ×)</td><td>4,14 m/s²</td><td>2,70 m/s²</td></tr>
+        <tr><td>a_tersedia</td><td>4,60 m/s²</td><td><b>1,80 m/s²</b></td></tr>
+        <tr><td>Ambang rem sebagian (0,5 ×)</td><td>2,30 m/s²</td><td>0,90 m/s²</td></tr>
+        <tr><td>Ambang rem penuh (0,9 ×)</td><td>4,14 m/s²</td><td>1,62 m/s²</td></tr>
       </table>
 
       <h4>Logic 1 — TTC relatif, kondisi bermuatan</h4>
+      <p>Ambang yang berlaku dihitung dari <code>TTC_min</code> = 0,23 + 11,11 / (2 × 1,80)
+        = <b>3,32 detik</b>, sehingga ambang peringatan 6,64 s, sebagian 4,98 s, penuh 3,65 s.</p>
       <table class="eq wide">
         <tr><th>Tahap</th><th>t</th><th>gap</th><th>TTC</th><th>a_req</th><th>Dasar pemicu</th></tr>
-        <tr><td>Peringatan</td><td>3,88 s</td><td>17,8 m</td><td>2,59 s</td><td>1,32</td><td>TTC ≤ 2,6 s</td></tr>
-        <tr><td>Rem sebagian</td><td>4,20 s</td><td>15,6 m</td><td>2,28 s</td><td>1,50</td><td>a_req ≥ 0,5 × 3,00</td></tr>
-        <tr><td>Rem penuh</td><td>6,32 s</td><td>4,0 m</td><td>1,07 s</td><td>1,75</td><td>jarak &lt; 4 m</td></tr>
+        <tr><td>Peringatan</td><td>0,01 s</td><td>44,4 m</td><td>6,39 s</td><td>0,54</td><td>TTC ≤ 6,64 s</td></tr>
+        <tr><td>Rem sebagian</td><td>1,50 s</td><td>34,0 m</td><td>4,94 s</td><td>0,69</td><td>TTC ≤ 4,98 s</td></tr>
+        <tr><td>Selesai</td><td>11,21 s</td><td>8,6 m</td><td>—</td><td>0</td><td>kecepatan menyamai objek</td></tr>
       </table>
-      <p>Pada skenario ini rem penuh tercapai melalui jaring pengaman jarak, bukan melalui ambang
-        TTC, karena pengereman sebagian sudah lebih dahulu mengurangi kecepatan mendekat.</p>
+      <p>Pada skenario ini rem sebagian saja sudah memadai; rem penuh tidak diperlukan.
+        Tingkat rem sebagian ditahan sampai kecepatan mendekat habis, agar rem tidak berkedip.</p>
 
       <h4>Contoh satu langkah perhitungan</h4>
-      <p>Pada t = 4,20 s dengan massa 66,5 t:</p>
-      <pre class="formula">closing = 11,001 − 4,167 = 6,835 m/s
-gap     = 61,97 − 46,43  = 15,54 m
+      <p>Pada t = 1,50 s, saat rem sebagian dipicu, dengan massa 66,5 t:</p>
+      <pre class="formula">gap     = 34,0 m
+v_ego   = 39,8 km/h = 11,06 m/s      v_lead = 15 km/h = 4,17 m/s
+closing = 11,06 − 4,17 = 6,89 m/s
 
-TTC   = 15,54 / 6,835    = 2,27 s
-a_req = 6,835² / (2 × 15,54) = 1,503 m/s²
+TTC   = 34,0 / 6,89 = 4,94 s
+TTC_min = 0,23 + 11,06 / (2 × 1,80) = 3,30 s
+ambang sebagian = 1,5 × 3,30 = 4,95 s
 
-a_req 1,503 ≥ 0,5 × 3,00 = 1,50  →  level 0,55
+TTC 4,94 ≤ 4,95  →  level 0,55
+a_diminta = 0,55 × 1,80 = 0,99 m/s²
 
-tunda 0,23 s kemudian applied naik 1/0,85 per detik; pada t = 4,60 s applied = 0,206
-a_fric = 0,206 × 3,00 = 0,618 m/s²
-a_net  = 0,618 + 0,063 = 0,681 m/s²
-v′     = 10,680 − 0,681 × 0,005 = 10,677 m/s</pre>
+perintah sampai ke aktuator 0,23 s kemudian (t = 1,73 s)
+applied naik 1/0,85 per detik -> mencapai 0,55 pada t ≈ 2,2 s
+a_fric = 0,55 × 1,80 = 0,99 m/s²
+a_net  = 0,99 + 0,07 = 1,06 m/s²
+Δv per langkah 5 ms = 0,0053 m/s</pre>
 
       <h4>Hasil ketiga logic</h4>
       <table class="eq wide">
         <tr><th>Logic</th><th>Massa</th><th>Deselerasi puncak</th><th>Jarak akhir</th><th>Energi rem</th></tr>
-        <tr><td>TTC relatif</td><td>26 t</td><td>4,60 m/s²</td><td>5,4 m</td><td>1,41 MJ</td></tr>
-        <tr><td>TTC relatif</td><td>66,5 t</td><td>3,00 m/s²</td><td>3,4 m</td><td>3,47 MJ</td></tr>
-        <tr><td>TTC + 4 detik</td><td>26 t</td><td>0,92 m/s²</td><td>16,1 m</td><td>1,10 MJ</td></tr>
-        <tr><td>TTC + 4 detik</td><td>66,5 t</td><td>1,06 m/s²</td><td>16,2 m</td><td>2,97 MJ</td></tr>
-        <tr><td>Prediktif</td><td>26 t</td><td>4,60 m/s²</td><td>5,4 m</td><td>1,41 MJ</td></tr>
-        <tr><td>Prediktif</td><td>66,5 t</td><td>3,00 m/s²</td><td>3,4 m</td><td>3,47 MJ</td></tr>
+        <tr><td>TTC relatif</td><td>26 t</td><td>4,60 m/s²</td><td>6,5 m</td><td>1,48 MJ</td></tr>
+        <tr><td>TTC relatif</td><td>66,5 t</td><td>0,99 m/s²</td><td>8,6 m</td><td>3,30 MJ</td></tr>
+        <tr><td>TTC + 4 detik</td><td>26 t</td><td>1,15 m/s²</td><td>16,4 m</td><td>1,31 MJ</td></tr>
+        <tr><td>TTC + 4 detik</td><td>66,5 t</td><td>1,10 m/s²</td><td>16,3 m</td><td>3,34 MJ</td></tr>
+        <tr><td>Prediktif</td><td>26 t</td><td>4,60 m/s²</td><td>6,5 m</td><td>1,48 MJ</td></tr>
+        <tr><td>Prediktif</td><td>66,5 t</td><td>0,99 m/s²</td><td>8,6 m</td><td>3,30 MJ</td></tr>
       </table>
-      <p>Logic prediktif memberi hasil yang sama dengan TTC relatif pada skenario ini karena
-        kendaraan depan bergerak dengan kecepatan tetap, sehingga <code>a_lead</code> bernilai
-        nol. Keunggulan logic tersebut baru terlihat ketika kendaraan depan mengerem.</p>
+      <p>Perhatikan baris bermuatan pada logic TTC relatif: cukup rem sebagian (0,99 m/s²,
+        55 % dari 1,80) untuk menyelesaikan skenario, sehingga deselerasi puncaknya jauh di bawah
+        kemampuan penuh. Logic prediktif memberi hasil yang sama karena kendaraan depan bergerak
+        tetap, sehingga <code>a_lead</code> bernilai nol; keunggulannya muncul ketika kendaraan
+        depan mengerem.</p>
 
       <h3>8. Parameter yang harus diisi dan cara mengukurnya</h3>
       <p>Panel <b>Spek teknis</b> memuat 13 kolom. Berikut arti setiap kolom, satuan yang
