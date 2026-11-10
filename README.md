@@ -11,6 +11,9 @@ python3 -m http.server 4317
 Cara deploy (Docker, nginx, LAN site, hosting statis, offline tablet): lihat
 [DEPLOY.md](DEPLOY.md).
 
+Definisi dan cara mengukur setiap kolom pada panel *Spek teknis*: lihat
+[PARAMETER-SPEK.md](PARAMETER-SPEK.md).
+
 Di dalam aplikasi, tombol **📐 Metode perhitungan** membuka 8 bagian dokumentasi:
 
 1. Dasar perhitungan (variabel, persamaan gerak, diagram gaya)
