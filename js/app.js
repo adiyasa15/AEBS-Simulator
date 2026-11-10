@@ -142,7 +142,7 @@ function fillSpec() {
 function loadSpec(id) {
   const v = VEHICLES.find((x) => x.id === id) || VEHICLES[0];
   currentSpec = { ...v };
-  el.vehNote.textContent = v.note;
+  if (el.vehNote) el.vehNote.textContent = v.note;
   if (el.specGrid.children.length) fillSpec();
   el.capFromForce.checked = !!currentSpec.aCapFromForce;
   el.capVerified.checked = !!currentSpec.aCapVerified;
@@ -206,7 +206,7 @@ function syncLabels() {
   const mu = parseFloat(el.surface.value);
   const aCap = v.aCapEmpty + (v.aCapLoaded - v.aCapEmpty) * loadState;
   const aMu = mu * 9.81;
-  el.muNote.textContent = aMu < aCap
+  if (el.muNote) el.muNote.textContent = aMu < aCap
     ? `μ·g = ${aMu.toFixed(1)} m/s² → yang membatasi GESEKAN (rem sanggup ${aCap.toFixed(1)})`
     : `μ·g = ${aMu.toFixed(1)} m/s² → yang membatasi REM (${aCap.toFixed(1)} m/s²)`;
 }
@@ -286,7 +286,7 @@ function applyLeadMode() {
   const m = LEAD_MODES[key] || LEAD_MODES.brake4;
   el.leadCustom.hidden = key !== 'custom';
   if (m.decel !== null) el.leadDecel.value = m.decel;
-  el.leadModeNote.textContent = el.leadBrake.checked
+  if (el.leadModeNote) el.leadModeNote.textContent = el.leadBrake.checked
     ? m.note
     : m.note + ' — saat ini NONAKTIF (centang untuk menjalankan).';
 }

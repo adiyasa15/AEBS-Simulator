@@ -25,7 +25,6 @@
     <section class="group">
       <label class="lbl" for="vehicle">Kendaraan</label>
       <select id="vehicle"></select>
-      <p class="hint" id="vehNote"></p>
 
       <div class="seg" id="loadSeg">
         <button data-load="0">Kosong</button>
@@ -47,7 +46,6 @@
           <span class="switch-label">Hitung a_cap dari gaya rem konstan</span>
         </label>
         <p class="hint" id="capNote">—</p>
-        <p class="hint">Nilai inilah yang digunakan simulasi. Mengganti kendaraan akan memuat ulang spesifikasi preset.</p>
       </details>
     </section>
 
@@ -60,7 +58,6 @@
         <option value="0.32">Chipseal berdebu batubara (μ 0.32)</option>
         <option value="0.25">Berlumpur / slurry (μ 0.25)</option>
       </select>
-      <p class="hint" id="muNote"></p>
     </section>
 
     <section class="group">
@@ -129,7 +126,6 @@
         <option value="blowout">Ban pecah (±3,0 m/s²)</option>
         <option value="custom">Kustom — atur sendiri</option>
       </select>
-      <p class="hint" id="leadModeNote">Truk depan melambat sesuai nilai di atas.</p>
 
       <div id="leadCustom" hidden>
         <div class="row"><label class="lbl" for="leadDecel">Perlambatan truk depan</label><output id="leadDecelo">4.0 m/s²</output></div>
