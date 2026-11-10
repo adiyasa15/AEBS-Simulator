@@ -417,7 +417,7 @@ Jarak relatif untuk menyalip ≈ 50 m (masuk + panjang truk depan + panjang send
 
 **P1 — perbaiki pemicu, bukan aturannya.**
 Tambahkan `a_req_ff` (bagian 3) sebagai pemicu utama; TTC relatif tetap sebagai lapisan
-sekunder. Satu perubahan ini menutup kasus datar ≥ 50 km/h dan seluruh kasus turunan.
+sekunder. Satu perubahan ini menangani kasus datar ≥ 50 km/h dan seluruh kasus turunan.
 
 **P2 — batas kecepatan per radius tikungan** (tabel 4.1). Ini bukan pilihan rekayasa,
 ini konsekuensi geometri: di R = 150 m, jarak deteksi 39 m sedangkan jarak henti 50 km/h

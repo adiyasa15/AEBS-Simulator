@@ -239,7 +239,7 @@ menyala, angka isian Anda akan ditimpa oleh hasil hitungan.
 
 ## Protokol pengukuran yang disarankan
 
-Cukup dua sesi untuk menutup sebagian besar ketidakpastian.
+Cukup dua sesi untuk mengurangi sebagian besar ketidakpastian.
 
 **Sesi 1 — unit kosong 26 t**
 

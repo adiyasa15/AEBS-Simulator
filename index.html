@@ -221,7 +221,7 @@
         <tr><td><code>v_ego</code></td><td>kecepatan <i>ego vehicle</i> (m/s)</td></tr>
         <tr><td><code>s_lead</code>, <code>v_lead</code></td><td>posisi buritan dan kecepatan objek di depan</td></tr>
         <tr><td><code>gap</code></td><td><code>s_lead − s_ego</code></td></tr>
-        <tr><td><code>closing</code></td><td><code>v_ego − v_lead</code> (positif berarti mendekat)</td></tr>
+        <tr><td><code>closing</code></td><td>kecepatan mendekat = <code>v_ego − v_lead</code>; positif berarti jarak menyusut</td></tr>
       </table>
       <p>Sebelum AEB bekerja, kecepatan dijaga tetap pada nilai awal dengan model pengemudi
         sederhana (throttle menyesuaikan agar kecepatan awal tercapai). Begitu AEB aktif,
@@ -458,7 +458,7 @@ applied  naik linear sebesar dt / brakeBuild          (bawaan 0,85 s)</pre>
         <line x1="466" y1="190" x2="466" y2="202" stroke="#7dd3fc" stroke-width="1.6"/>
         <text x="353" y="188" class="ds" text-anchor="middle" fill="#7dd3fc">gap 44 m</text>
 
-        <text x="353" y="244" class="ds" text-anchor="middle">closing = 40 − 38 = 2 km/h = 0,56 m/s</text>
+        <text x="353" y="244" class="ds" text-anchor="middle">closing (kecepatan mendekat) = 40 − 38 = 2 km/h</text>
 
         <rect x="250" y="256" width="420" height="34" rx="7" class="dbox" style="stroke:#f59e0b"/>
         <text x="460" y="270" class="dt" text-anchor="middle" fill="#fbbf24">TTC = 44 m ÷ 0,56 m/s = 80 detik</text>
@@ -505,7 +505,7 @@ demand ≥ 0,40 · a_tersedia → rem sebagian</pre>
         <tr><td>44 km/h</td><td>penuh 2,5 s · sebagian 3,5 s</td><td>penuh 1,7 s · sebagian 2,3 s</td></tr>
         <tr><td>70 km/h</td><td>penuh 3,8 s · sebagian 5,2 s</td><td>penuh 2,6 s · sebagian 3,5 s</td></tr>
       </table>
-      <p>Logic ini menilai bahaya dari kecepatan menutup jarak saat itu. Apabila dua kendaraan
+      <p>Logic ini menilai bahaya dari kecepatan mendekat (<i>closing</i>) saat itu. Apabila dua kendaraan
         bergerak dengan kecepatan hampir sama, nilai TTC menjadi sangat besar meskipun jaraknya
         pendek, sehingga pemicu baru bekerja setelah kendaraan depan mengerem.</p>
 
@@ -605,7 +605,7 @@ selama aktif:
         bukan pada seberapa sering memeriksa, melainkan pada besaran yang dinilai.</p>
       <table class="eq wide">
         <tr><th>Logic</th><th>Besaran yang dinilai</th><th>Kapan mulai bekerja</th></tr>
-        <tr><td>TTC relatif</td><td>jarak dan kecepatan menutup jarak</td><td>ketika TTC atau a_req melewati ambang</td></tr>
+        <tr><td>TTC relatif</td><td>jarak dan kecepatan mendekat</td><td>ketika TTC atau a_req melewati ambang</td></tr>
         <tr><td>Jarak aman 4 detik</td><td>jarak dibandingkan dengan 4 kali kecepatan</td><td>ketika THW turun di bawah 4 detik</td></tr>
         <tr><td>Prediktif</td><td>perlambatan kendaraan depan</td><td>ketika kebutuhan perlambatan melewati 25 % kapasitas</td></tr>
       </table>
@@ -845,7 +845,7 @@ TTC_min = latency + v / (2a)</pre>
         <tr><td>Rem penuh</td><td>6,32 s</td><td>4,0 m</td><td>1,07 s</td><td>1,75</td><td>jarak &lt; 4 m</td></tr>
       </table>
       <p>Pada skenario ini rem penuh tercapai melalui jaring pengaman jarak, bukan melalui ambang
-        TTC, karena pengereman sebagian sudah lebih dahulu mengurangi kecepatan menutup jarak.</p>
+        TTC, karena pengereman sebagian sudah lebih dahulu mengurangi kecepatan mendekat.</p>
 
       <h4>Contoh satu langkah perhitungan</h4>
       <p>Pada t = 4,20 s dengan massa 66,5 t:</p>
@@ -928,7 +928,7 @@ N₁, N₂ dalam Newton · L dan h dalam meter · m dalam kg · a dalam m/s²</p
         Bila sulit diukur, nilai perkiraan tidak mengubah hasil pengereman.</p>
 
       <h4>Protokol pengukuran minimal</h4>
-      <p>Dua sesi sudah menutup sebagian besar ketidakpastian:</p>
+      <p>Dua sesi sudah mengurangi sebagian besar ketidakpastian:</p>
       <table class="eq wide">
         <tr><th>Sesi</th><th>Kondisi</th><th>Yang dilakukan</th><th>Yang diperoleh</th></tr>
         <tr><td>1</td><td>unit kosong 26 t</td><td>chipseal kering dan datar, panjang ≥ 200 m; tiga kali rem penuh dari 40 km/h; rekam tekanan pada satu di antaranya</td><td>rem maks kosong, bangun tekanan</td></tr>
