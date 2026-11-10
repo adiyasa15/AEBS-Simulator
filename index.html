@@ -657,7 +657,7 @@ selama aktif:
 
         <rect x="16" y="256" width="688" height="34" rx="7" class="dbox" style="stroke:#f59e0b"/>
         <text x="360" y="270" class="dt" text-anchor="middle" fill="#fbbf24">reaksi 0,3 detik setelah lampu rem depan menyala</text>
-        <text x="360" y="284" class="ds" text-anchor="middle">bukan menunggu jarak menutup — karena yang dinilai adalah perlambatan objek</text>
+        <text x="360" y="284" class="ds" text-anchor="middle">= filter a_lead 0,15 s + latency sistem 0,23 s (bukan angka tetap)</text>
       </svg>
 
       <p>Logic ini tidak menilai bahaya dari jarak, melainkan dari <b>perlambatan kendaraan
@@ -672,8 +672,31 @@ a_ff ≥ 0,55 · a_tersedia → level 1,00
 a_ff ≥ 0,25 · a_tersedia → level 0,55</pre>
       <p><code>requiredDecel</code> mencari nilai percepatan terkecil sehingga jarak henti tidak
         melebihi <code>budget</code>. Karena hasilnya sudah memperhitungkan latency dan kenaikan
-        tekanan, logic ini mulai bekerja sekitar 0,30 detik setelah kendaraan depan mengerem,
-        jauh lebih awal daripada TTC relatif.</p>
+        tekanan, logic ini mulai bekerja jauh lebih awal daripada TTC relatif.</p>
+
+      <h4>Asal angka reaksi 0,30 detik</h4>
+      <p>Angka tersebut bukan parameter yang disetel, melainkan hasil penjumlahan dua tahap:</p>
+      <pre class="formula">reaksi = waktu sampai a_ff melewati ambang  +  latency sistem
+
+waktu ambang  ≈ 0,03–0,10 s   bergantung filterTau dan cepatnya perubahan a_lead
+latency sistem  = 0,23 s      sensorDelay 0,12 + processDelay 0,06 + valveDelay 0,05
+
+reaksi ≈ 0,03 + 0,23 = 0,26 s … 0,10 + 0,23 = 0,33 s</pre>
+      <p>Nilai yang diukur pada simulasi, untuk beberapa nilai filter:</p>
+      <table class="eq wide">
+        <tr><th>Filter a_lead</th><th>Perintah keluar</th><th>Rem mulai bekerja</th><th>Total reaksi</th></tr>
+        <tr><td>0,05 s</td><td>1,010 s</td><td>1,260 s</td><td>0,26 s</td></tr>
+        <tr><td>0,10 s</td><td>1,020 s</td><td>1,270 s</td><td>0,27 s</td></tr>
+        <tr><td><b>0,15 s (bawaan)</b></td><td>1,030 s</td><td>1,280 s</td><td><b>0,28 s</b></td></tr>
+        <tr><td>0,30 s</td><td>1,060 s</td><td>1,310 s</td><td>0,31 s</td></tr>
+        <tr><td>0,50 s</td><td>1,095 s</td><td>1,345 s</td><td>0,34 s</td></tr>
+      </table>
+      <p class="tl2note">Acuan: truk depan mulai mengerem pada t = 1,00 s. Kolom perintah keluar adalah
+        saat keputusan dibuat; kolom rem mulai bekerja adalah saat tekanan sudah cukup menghasilkan
+        perlambatan.</p>
+      <p>Dengan kata lain, 0,30 detik tersusun dari <b>waktu pengenalan perlambatan</b> (filter) dan
+        <b>waktu penundaan perangkat</b> (latency). Mempercepat salah satunya akan menurunkan angka
+        reaksi, tetapi filter yang terlalu cepat membuat sistem mudah memicu rem karena noise radar.</p>
 
       <h4>Radar dan objek statis</h4>
       <p>Radar 77 GHz mengukur jarak, <i>range-rate</i> melalui pergeseran Doppler, sudut azimuth,
