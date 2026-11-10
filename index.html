@@ -421,122 +421,54 @@ applied  naik linear sebesar dt / brakeBuild          (bawaan 0,85 s)</pre>
       <h3>4. Tiga logic pemicu</h3>
       <p>Seluruh logic menghasilkan satu keluaran yang sama, yaitu <code>level</code> antara 0
         dan 1 sebagai fraksi dari <code>a_tersedia</code>.</p>
-      <p>Diagram berikut memperlihatkan ketiga logic secara berdampingan: masukan yang dipakai,
-        perhitungan masing-masing, ambang yang berlaku, serta <i>safety override</i> yang bekerja
-        pada ketiganya sebelum perintah diteruskan ke aktuator.</p>
-      <svg viewBox="0 0 720 640" class="diagram" role="img" aria-label="Cara kerja tiga logic pemicu">
-        <defs>
-          <marker id="ga" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M0,0 L10,5 L0,10 z" fill="#5b7793"/>
-          </marker>
-        </defs>
-
-        <!-- BAND 1: masukan -->
-        <text x="16" y="18" class="ds">MASUKAN</text>
-        <rect x="16" y="26" width="210" height="50" rx="8" class="dbox"/>
-        <text x="121" y="46" class="dt" text-anchor="middle">Radar 77 GHz</text>
-        <text x="121" y="62" class="ds" text-anchor="middle">gap · range-rate (Doppler)</text>
-
-        <rect x="255" y="26" width="210" height="50" rx="8" class="dbox"/>
-        <text x="360" y="46" class="dt" text-anchor="middle">Ego vehicle</text>
-        <text x="360" y="62" class="ds" text-anchor="middle">v · a_tersedia</text>
-
-        <rect x="494" y="26" width="210" height="50" rx="8" class="dbox"/>
-        <text x="599" y="46" class="dt" text-anchor="middle">Massa &amp; gesekan</text>
-        <text x="599" y="62" class="ds" text-anchor="middle">a_cap = F/m · μ·g</text>
-
-        <line x1="121" y1="76" x2="121" y2="104" class="darrow" marker-end="url(#ga)"/>
-        <line x1="360" y1="76" x2="360" y2="104" class="darrow" marker-end="url(#ga)"/>
-        <line x1="599" y1="76" x2="599" y2="104" class="darrow" marker-end="url(#ga)"/>
-
-        <!-- BAND 2: tiga logic -->
-        <text x="16" y="100" class="ds">PERHITUNGAN PER LOGIC</text>
-
-        <!-- Logic 1 -->
-        <text x="126" y="122" class="dt" text-anchor="middle" fill="#93c5fd">Logic 1 — TTC relatif</text>
-        <rect x="16" y="130" width="220" height="58" rx="8" class="dbox"/>
-        <text x="126" y="148" class="ds" text-anchor="middle">TTC = gap / closing</text>
-        <text x="126" y="163" class="ds" text-anchor="middle">a_req = closing² / 2·gap</text>
-        <text x="126" y="178" class="ds" text-anchor="middle">TTC_min = latency + v / 2a</text>
-
-        <line x1="126" y1="188" x2="126" y2="206" class="darrow" marker-end="url(#ga)"/>
-        <rect x="16" y="212" width="220" height="58" rx="8" class="dbox" style="stroke:#f59e0b"/>
-        <text x="126" y="230" class="ds" text-anchor="middle">bandingkan dengan ambang</text>
-        <text x="126" y="245" class="ds" text-anchor="middle">max(0,9 ; 1,1 · TTC_min) = penuh</text>
-        <text x="126" y="260" class="ds" text-anchor="middle">max(1,8 ; 1,5 · TTC_min) = sebagian</text>
-
-        <!-- Logic 2 -->
-        <text x="360" y="122" class="dt" text-anchor="middle" fill="#93c5fd">Logic 2 — jarak aman 4 s</text>
-        <rect x="250" y="130" width="220" height="58" rx="8" class="dbox"/>
-        <text x="360" y="148" class="ds" text-anchor="middle">THW = gap / v</text>
-        <text x="360" y="163" class="ds" text-anchor="middle">v_safe = gap / 4</text>
-        <text x="360" y="178" class="ds" text-anchor="middle">a_butuh = (v − v_safe) / 2</text>
-
-        <line x1="360" y1="188" x2="360" y2="206" class="darrow" marker-end="url(#ga)"/>
-        <rect x="250" y="212" width="220" height="58" rx="8" class="dbox" style="stroke:#f59e0b"/>
-        <text x="360" y="230" class="ds" text-anchor="middle">aktif bila THW &lt; 4 s</text>
-        <text x="360" y="245" class="ds" text-anchor="middle">batas = 1,2 → 2,4 m/s²</text>
-        <text x="360" y="260" class="ds" text-anchor="middle">bertingkat sesuai pelanggaran</text>
-
-        <!-- Logic 3 -->
-        <text x="594" y="122" class="dt" text-anchor="middle" fill="#fbbf24">Logic 3 — prediktif</text>
-        <rect x="484" y="130" width="220" height="58" rx="8" class="dbox"/>
-        <text x="594" y="148" class="ds" text-anchor="middle">a_lead = d(−range-rate)/dt</text>
-        <text x="594" y="163" class="ds" text-anchor="middle">leadDist = v_lead² / 2·a_lead</text>
-        <text x="594" y="178" class="ds" text-anchor="middle">budget = gap + leadDist − 3 m</text>
-
-        <line x1="594" y1="188" x2="594" y2="206" class="darrow" marker-end="url(#ga)"/>
-        <rect x="484" y="212" width="220" height="58" rx="8" class="dbox" style="stroke:#f59e0b"/>
-        <text x="594" y="230" class="ds" text-anchor="middle">demand = requiredDecel(v, budget)</text>
-        <text x="594" y="245" class="ds" text-anchor="middle">≥ 0,55 · a_tersedia = penuh</text>
-        <text x="594" y="260" class="ds" text-anchor="middle">≥ 0,25 · a_tersedia = sebagian</text>
-
-        <!-- BAND 3: safety override -->
-        <line x1="126" y1="270" x2="126" y2="292" class="darrow" marker-end="url(#ga)"/>
-        <line x1="360" y1="270" x2="360" y2="292" class="darrow" marker-end="url(#ga)"/>
-        <line x1="594" y1="270" x2="594" y2="292" class="darrow" marker-end="url(#ga)"/>
-
-        <rect x="16" y="298" width="688" height="66" rx="8" class="dbox" style="stroke:#ef4444"/>
-        <text x="360" y="318" class="dt" text-anchor="middle" fill="#fca5a5">SAFETY OVERRIDE — berlaku pada ketiga logic</text>
-        <text x="360" y="336" class="ds" text-anchor="middle">demand = requiredDecel(v, gap + leadDist − margin, latency, build)</text>
-        <text x="360" y="352" class="ds" text-anchor="middle">demand ≥ 0,85 · a_tersedia → rem penuh      demand ≥ 0,40 · a_tersedia → rem sebagian</text>
-
-        <!-- BAND 4: keluaran -->
-        <line x1="360" y1="364" x2="360" y2="386" class="darrow" marker-end="url(#ga)"/>
-        <text x="16" y="384" class="ds">KELUARAN</text>
-
-        <rect x="180" y="392" width="360" height="46" rx="8" class="dbox" style="stroke:#f59e0b"/>
-        <text x="360" y="411" class="dt" text-anchor="middle" fill="#fbbf24">level 0 … 1</text>
-        <text x="360" y="428" class="ds" text-anchor="middle">fraksi a_tersedia · hanya berubah bila selisih &gt; 0,05</text>
-
-        <line x1="360" y1="438" x2="360" y2="458" class="darrow" marker-end="url(#ga)"/>
-
-        <rect x="16" y="464" width="210" height="46" rx="8" class="dbox"/>
-        <text x="121" y="483" class="dt" text-anchor="middle">latency</text>
-        <text x="121" y="499" class="ds" text-anchor="middle">radar + prosesor + valve</text>
-
-        <rect x="255" y="464" width="210" height="46" rx="8" class="dbox"/>
-        <text x="360" y="483" class="dt" text-anchor="middle">build-up</text>
-        <text x="360" y="499" class="ds" text-anchor="middle">tekanan naik selama T</text>
-
-        <rect x="494" y="464" width="210" height="46" rx="8" class="dbox" style="stroke:#ef4444"/>
-        <text x="599" y="483" class="dt" text-anchor="middle" fill="#fca5a5">a_aktual</text>
-        <text x="599" y="499" class="ds" text-anchor="middle">≤ a_tersedia</text>
-        <line x1="226" y1="487" x2="253" y2="487" class="darrow" marker-end="url(#ga)"/>
-        <line x1="465" y1="487" x2="492" y2="487" class="darrow" marker-end="url(#ga)"/>
-
-        <line x1="599" y1="510" x2="599" y2="530" class="darrow" marker-end="url(#ga)"/>
-        <rect x="330" y="536" width="374" height="46" rx="8" class="dbox"/>
-        <text x="517" y="555" class="dt" text-anchor="middle">v′ = max(0, v − a_net·dt)</text>
-        <text x="517" y="571" class="ds" text-anchor="middle">s′ = s + ½(v + v′)·dt · siklus 5 ms</text>
-
-        <text x="16" y="556" class="ds">kotak kuning = titik keputusan</text>
-        <text x="16" y="572" class="ds">kotak merah = batas kemampuan</text>
-        <text x="16" y="588" class="ds">kotak abu = perhitungan</text>
-      </svg>
+      <p>Setiap logic dijelaskan dengan gambar tersendiri, memperlihatkan apa yang diukur dan
+        kapan rem mulai bekerja.</p>
+      
 
 
       <h4>4.1 Logic 1 — TTC relatif</h4>
+      <svg viewBox="0 0 720 300" class="diagram" role="img" aria-label="Logic 1 TTC: dua truk berjarak 44 m dengan selisih kecepatan kecil">
+        <defs>
+          <marker id="aa1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#7dd3fc"/>
+          </marker>
+          <marker id="ra1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#f87171"/>
+          </marker>
+          <g id="trk">
+            <polygon points="0,44 6,14 150,14 156,44" fill="#22303f" stroke="#3b82f6" stroke-width="1.2"/>
+            <polygon points="8,16 148,16 142,6 14,6" fill="#2b3d52" stroke="#3b82f6" stroke-width="1"/>
+            <rect x="156" y="16" width="40" height="44" rx="5" fill="#1e4fa3" stroke="#60a5fa" stroke-width="1.2"/>
+            <rect x="162" y="22" width="28" height="16" rx="3" fill="#0f2b4d"/>
+            <circle cx="30" cy="60" r="11" fill="#0a0f14" stroke="#33475b"/>
+            <circle cx="80" cy="60" r="11" fill="#0a0f14" stroke="#33475b"/>
+            <circle cx="170" cy="60" r="11" fill="#0a0f14" stroke="#33475b"/>
+            <rect x="154" y="20" width="3" height="10" fill="#7f1d1d"/>
+          </g>
+        </defs>
+        <line x1="12" y1="222" x2="708" y2="222" stroke="#33475b" stroke-width="2"/>
+        <use href="#trk" x="80" y="148"/>
+        <use href="#trk" x="470" y="148"/>
+
+        <text x="175" y="140" class="ds" text-anchor="middle">ego · 40 km/h</text>
+        <text x="565" y="140" class="ds" text-anchor="middle">depan · 38 km/h</text>
+
+        <line x1="240" y1="196" x2="466" y2="196" stroke="#7dd3fc" stroke-width="1.6"/>
+        <line x1="240" y1="190" x2="240" y2="202" stroke="#7dd3fc" stroke-width="1.6"/>
+        <line x1="466" y1="190" x2="466" y2="202" stroke="#7dd3fc" stroke-width="1.6"/>
+        <text x="353" y="188" class="ds" text-anchor="middle" fill="#7dd3fc">gap 44 m</text>
+
+        <text x="353" y="244" class="ds" text-anchor="middle">closing = 40 − 38 = 2 km/h = 0,56 m/s</text>
+
+        <rect x="250" y="256" width="420" height="34" rx="7" class="dbox" style="stroke:#f59e0b"/>
+        <text x="460" y="270" class="dt" text-anchor="middle" fill="#fbbf24">TTC = 44 m ÷ 0,56 m/s = 80 detik</text>
+        <text x="460" y="284" class="ds" text-anchor="middle">80 detik dianggap "belum bahaya" → tidak ada reaksi</text>
+
+        <text x="16" y="268" class="ds">TTC =</text>
+        <text x="16" y="282" class="ds">gap ÷</text>
+        <text x="16" y="296" class="ds">closing</text>
+      </svg>
+
       <pre class="formula">TTC   = gap / closing                (tak terhingga jika closing ≤ 0,05)
 a_req = closing² / (2 · gap)
 
@@ -596,6 +528,54 @@ demand ≥ 0,40 · a_tersedia → rem sebagian</pre>
         objek yang diam. Kedua kebutuhan itu memang berbeda.</p>
 
       <h4>4.2 Logic 2 — TTC relatif + jarak aman 4 detik</h4>
+      <svg viewBox="0 0 720 300" class="diagram" role="img" aria-label="Logic 2 jarak aman: pengukuran 4 detik di antara dua truk">
+        <defs>
+          <marker id="aa2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#7dd3fc"/>
+          </marker>
+          <marker id="ra2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#f87171"/>
+          </marker>
+          <g id="trk">
+            <polygon points="0,44 6,14 150,14 156,44" fill="#22303f" stroke="#3b82f6" stroke-width="1.2"/>
+            <polygon points="8,16 148,16 142,6 14,6" fill="#2b3d52" stroke="#3b82f6" stroke-width="1"/>
+            <rect x="156" y="16" width="40" height="44" rx="5" fill="#1e4fa3" stroke="#60a5fa" stroke-width="1.2"/>
+            <rect x="162" y="22" width="28" height="16" rx="3" fill="#0f2b4d"/>
+            <circle cx="30" cy="60" r="11" fill="#0a0f14" stroke="#33475b"/>
+            <circle cx="80" cy="60" r="11" fill="#0a0f14" stroke="#33475b"/>
+            <circle cx="170" cy="60" r="11" fill="#0a0f14" stroke="#33475b"/>
+            <rect x="154" y="20" width="3" height="10" fill="#7f1d1d"/>
+          </g>
+        </defs>
+        <line x1="12" y1="222" x2="708" y2="222" stroke="#33475b" stroke-width="2"/>
+        <use href="#trk" x="80" y="148"/>
+        <use href="#trk" x="470" y="148"/>
+
+        <text x="175" y="140" class="ds" text-anchor="middle">ego · 40 km/h</text>
+        <text x="565" y="140" class="ds" text-anchor="middle">depan · 38 km/h</text>
+
+        <line x1="240" y1="196" x2="466" y2="196" stroke="#22c55e" stroke-width="1.6"/>
+        <line x1="240" y1="188" x2="240" y2="204" stroke="#22c55e" stroke-width="1.6"/>
+        <line x1="296" y1="192" x2="296" y2="200" stroke="#22c55e" stroke-width="1"/>
+        <line x1="353" y1="192" x2="353" y2="200" stroke="#22c55e" stroke-width="1"/>
+        <line x1="409" y1="192" x2="409" y2="200" stroke="#22c55e" stroke-width="1"/>
+        <line x1="466" y1="188" x2="466" y2="204" stroke="#22c55e" stroke-width="1.6"/>
+        <text x="268" y="184" class="ds" text-anchor="middle">1 s</text>
+        <text x="324" y="184" class="ds" text-anchor="middle">2 s</text>
+        <text x="381" y="184" class="ds" text-anchor="middle">3 s</text>
+        <text x="437" y="184" class="ds" text-anchor="middle">4 s</text>
+
+        <text x="353" y="244" class="ds" text-anchor="middle">THW = gap ÷ kecepatan = 44 m ÷ 11,1 m/s = 4,0 detik</text>
+
+        <rect x="250" y="256" width="420" height="34" rx="7" class="dbox" style="stroke:#f59e0b"/>
+        <text x="460" y="270" class="dt" text-anchor="middle" fill="#fbbf24">THW &lt; 4 detik → rem halus 1,2 – 2,4 m/s²</text>
+        <text x="460" y="284" class="ds" text-anchor="middle">THW ≥ 4 detik → tidak ada aksi</text>
+
+        <text x="16" y="268" class="ds">jaga</text>
+        <text x="16" y="282" class="ds">jarak</text>
+        <text x="16" y="296" class="ds">4 detik</text>
+      </svg>
+
       <pre class="formula">v_safe = gap / headway               (headway = jarak aman dalam detik, bawaan 4)
 THW    = gap / v
 
@@ -635,6 +615,51 @@ selama aktif:
         bukan saat mengaktifkan.</p>
 
       <h4>4.3 Logic 3 — prediktif</h4>
+      <svg viewBox="0 0 720 300" class="diagram" role="img" aria-label="Logic 3 prediktif: radar membaca perlambatan truk depan lalu memperkirakan titik berhentinya">
+        <defs>
+          <marker id="aa3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#7dd3fc"/>
+          </marker>
+          <marker id="ra3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#f87171"/>
+          </marker>
+          <g id="trk">
+            <polygon points="0,44 6,14 150,14 156,44" fill="#22303f" stroke="#3b82f6" stroke-width="1.2"/>
+            <polygon points="8,16 148,16 142,6 14,6" fill="#2b3d52" stroke="#3b82f6" stroke-width="1"/>
+            <rect x="156" y="16" width="40" height="44" rx="5" fill="#1e4fa3" stroke="#60a5fa" stroke-width="1.2"/>
+            <rect x="162" y="22" width="28" height="16" rx="3" fill="#0f2b4d"/>
+            <circle cx="30" cy="60" r="11" fill="#0a0f14" stroke="#33475b"/>
+            <circle cx="80" cy="60" r="11" fill="#0a0f14" stroke="#33475b"/>
+            <circle cx="170" cy="60" r="11" fill="#0a0f14" stroke="#33475b"/>
+            <rect x="154" y="20" width="3" height="10" fill="#7f1d1d"/>
+          </g>
+        </defs>
+        <line x1="12" y1="222" x2="708" y2="222" stroke="#33475b" stroke-width="2"/>
+        <use href="#trk" x="60" y="148"/>
+        <use href="#trk" x="480" y="148"/>
+
+        <text x="155" y="140" class="ds" text-anchor="middle">ego · 40 km/h</text>
+        <text x="575" y="140" class="ds" text-anchor="middle">depan · 38 km/h</text>
+
+        <path d="M228,178 L472,150 L472,206 L228,192 Z" fill="rgba(59,130,246,.10)" stroke="rgba(59,130,246,.35)" stroke-dasharray="4 4"/>
+
+        <circle cx="476" cy="186" r="7" fill="#ef4444" opacity="0.9"/>
+        <circle cx="476" cy="186" r="13" fill="none" stroke="#ef4444" stroke-opacity="0.45"/>
+        <line x1="500" y1="168" x2="560" y2="168" stroke="#f87171" stroke-width="2" marker-end="url(#ra3)"/>
+        <text x="566" y="164" class="ds" fill="#fca5a5">a_lead = 3 m/s²</text>
+        <text x="566" y="178" class="ds" fill="#fca5a5">(dibaca dari Doppler)</text>
+
+        <line x1="472" y1="212" x2="620" y2="212" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 4"/>
+        <text x="620" y="236" class="ds" text-anchor="end">depan berhenti di sini</text>
+
+        <line x1="228" y1="232" x2="420" y2="232" stroke="#22c55e" stroke-width="1.6" stroke-dasharray="5 4"/>
+        <text x="420" y="250" class="ds" fill="#86efac">ego berhenti sebelum objek</text>
+
+        <rect x="16" y="256" width="688" height="34" rx="7" class="dbox" style="stroke:#f59e0b"/>
+        <text x="360" y="270" class="dt" text-anchor="middle" fill="#fbbf24">reaksi 0,3 detik setelah lampu rem depan menyala</text>
+        <text x="360" y="284" class="ds" text-anchor="middle">bukan menunggu jarak menutup — karena yang dinilai adalah perlambatan objek</text>
+      </svg>
+
       <p>Logic ini tidak menilai bahaya dari jarak, melainkan dari <b>perlambatan kendaraan
         depan</b>. Nilainya diperoleh dari turunan <i>range-rate</i> yang dihaluskan dengan filter
         berkonstanta waktu 0,15 detik:</p>
