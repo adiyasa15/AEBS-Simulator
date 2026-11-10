@@ -17,7 +17,6 @@ const el = {
   vLead: $('#vLead'), vLeado: $('#vLeado'),
   grade: $('#grade'), gradeo: $('#gradeo'),
   aeb: $('#aeb'),
-  warnTTC: $('#warnTTC'), warnTTCo: $('#warnTTCo'),
   partialTTC: $('#partialTTC'), partialTTCo: $('#partialTTCo'),
   fullTTC: $('#fullTTC'), fullTTCo: $('#fullTTCo'),
   filterTau: $('#filterTau'), filterTauo: $('#filterTauo'),
@@ -167,7 +166,6 @@ function readCfg() {
     vLead: +el.vLead.value,
     grade: +el.grade.value,
     aebEnabled: el.aeb.checked,
-    warnTTC: +el.warnTTC.value,
     partialTTC: +el.partialTTC.value,
     fullTTC: +el.fullTTC.value,
     filterTau: +el.filterTau.value,
@@ -188,7 +186,6 @@ function syncLabels() {
   el.gap0o.textContent = `${el.gap0.value} m`;
   el.vLeado.textContent = `${el.vLead.value} km/h`;
   el.gradeo.textContent = `${el.grade.value} %`;
-  el.warnTTCo.textContent = `${(+el.warnTTC.value).toFixed(1)} s`;
   el.partialTTCo.textContent = `${(+el.partialTTC.value).toFixed(1)} s`;
   el.fullTTCo.textContent = `${(+el.fullTTC.value).toFixed(1)} s`;
   el.headwayo.textContent = `${(+el.headway.value).toFixed(1)} s`;
@@ -252,7 +249,7 @@ el.playBtn.addEventListener('click', () => {
 el.resetBtn.addEventListener('click', () => hardReset(false));
 
 // slider & select
-['v0', 'gap0', 'vLead', 'grade', 'warnTTC', 'partialTTC', 'fullTTC', 'surface', 'headway', 'govDecel', 'filterTau', 'logic'].forEach((k) => {
+['v0', 'gap0', 'vLead', 'grade', 'partialTTC', 'fullTTC', 'surface', 'headway', 'govDecel', 'filterTau', 'logic'].forEach((k) => {
   el[k].addEventListener('input', () => { syncLabels(); hardReset(false); });
 });
 el.aeb.addEventListener('change', () => hardReset(false));
@@ -352,8 +349,8 @@ function updateHUD(force = false) {
   if (el.dynNote) {
     const a = Math.max(0.3, sim.params.aAvail);
     const tMin = sim.params.latency + sim.vEgo / (2 * a);
-    const base = [sim.cfg.warnTTC, sim.cfg.partialTTC, sim.cfg.fullTTC];
-    const k = [2.0, 1.5, 1.1];
+    const base = [sim.cfg.partialTTC, sim.cfg.fullTTC];
+    const k = [1.5, 1.1];
     const thr = base.map((b, i) => (el.dynTTC.checked ? Math.max(b, k[i] * tMin) : b));
     el.dynNote.textContent = el.dynTTC.checked
       ? `Berlaku: peringatan ${thr[0].toFixed(1)} s · sebagian ${thr[1].toFixed(1)} s · penuh ${thr[2].toFixed(1)} s (TTC min ${tMin.toFixed(2)} s)`
@@ -369,7 +366,6 @@ function updateHUD(force = false) {
   const map = {
     cruise: ['Normal', 's-cruise'],
     off: ['AEBS off', 's-cruise'],
-    warn: ['WARNING', 's-warn'],
     partial: ['Soft brake', 's-partial'],
     full: ['FULL BRAKE', 's-full'],
     stopped: ['Stopped', 's-stopped'],
@@ -384,8 +380,7 @@ function updateHUD(force = false) {
   // event log saat perubahan status
   const key = sim.done ? sim.outcome : sim.stage;
   if (key !== prevStage) {
-    if (key === 'warn') addLog('AEBS: warning — driver must react', 'warn');
-    else if (key === 'partial') addLog('AEBS: soft brake', 'partial');
+    if (key === 'partial') addLog('AEBS: soft brake', 'partial');
     else if (key === 'full') addLog('AEBS: FULL BRAKE', 'full');
     else if (key === 'collision') addLog(`COLLISION at ${(sim.impactV * 3.6).toFixed(1)} km/h`, 'bad');
     else if (key === 'stopped') addLog(`Stopped, gap ${sim.gap().toFixed(1)} m`, 'ok');

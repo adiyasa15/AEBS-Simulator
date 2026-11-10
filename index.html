@@ -81,9 +81,6 @@
 
       <details>
         <summary>TTC thresholds (advanced)</summary>
-        <div class="row"><label class="lbl" for="warnTTC">Warning</label><output id="warnTTCo">2.6 s</output></div>
-        <input type="range" id="warnTTC" min="1" max="5" step="0.1" value="2.6" />
-
         <div class="row"><label class="lbl" for="partialTTC">Soft brake</label><output id="partialTTCo">1.8 s</output></div>
         <input type="range" id="partialTTC" min="0.5" max="4" step="0.1" value="1.8" />
 
@@ -249,7 +246,7 @@ a_net = a_fric + a_regen + a_resist + a_retard − a_grade − a_throttle
 v′    = max(0, v − a_net · dt)
 s′    = s + ½ (v + v′) · dt</pre>
 
-      <svg viewBox="0 0 720 320" class="diagram" role="img" aria-label="Diagram gaya pada truk di tanjakan">
+      <svg viewBox="0 0 720 345" class="diagram" role="img" aria-label="Diagram gaya pada truk di tanjakan">
         <defs>
           <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" fill="#6f8aa6"/>
@@ -280,7 +277,7 @@ s′    = s + ½ (v + v′) · dt</pre>
         <circle cx="360" cy="209" r="4" fill="#e2e8f0"/>
 
         <line x1="120" y1="252" x2="196" y2="256" stroke="#6f8aa6" stroke-width="2" marker-end="url(#ah)"/>
-        <text x="120" y="243" class="dlabel">v = 11,1 m/s</text>
+        <text x="120" y="243" class="dlabel">arah gerak (v)</text>
 
         <line x1="360" y1="209" x2="452" y2="215" stroke="#38bdf8" stroke-width="3" marker-end="url(#ahb)"/>
         <text x="392" y="170" class="dlabel" fill="#7dd3fc">g · sin θ</text>
@@ -301,7 +298,11 @@ s′    = s + ½ (v + v′) · dt</pre>
         <line x1="628" y1="246" x2="588" y2="243" stroke="#94a3b8" stroke-width="2" marker-end="url(#ah)"/>
         <text x="556" y="228" class="dsmall">gelinding + aero</text>
 
-        <text x="20" y="312" class="dlabel">a_net = F_rem/m + F_ret/m + F_gelinding/m − g·sin θ − a_throttle</text>
+        <line x1="300" y1="276" x2="392" y2="280" stroke="#22c55e" stroke-width="3" marker-end="url(#ahg)"/>
+        <text x="300" y="296" class="dlabel" fill="#86efac">F_gas (a_throttle)</text>
+        <text x="300" y="308" class="dsmall" fill="#86efac">hanya bekerja saat AEB tidak aktif</text>
+
+        <text x="20" y="336" class="dlabel">a_net = F_rem/m + F_ret/m + F_gelinding/m − g·sin θ − a_throttle</text>
       </svg>
 
 
@@ -483,14 +484,12 @@ a_req = closing² / (2 · gap)
 
 TTC_min = latency + v / (2 · a_tersedia)
 
-ambang_penuh   = max(0,9 ; 1,1 · TTC_min)
-ambang_sebagian= max(1,8 ; 1,5 · TTC_min)
-ambang_peringatan = max(2,6 ; 2,0 · TTC_min)
+ambang_full = max(0,9 ; 1,1 · TTC_min)
+ambang_soft = max(1,8 ; 1,5 · TTC_min)
 
-TTC ≤ ambang_penuh     atau a_req ≥ 0,9 · a_tersedia  → level 1,00
-TTC ≤ ambang_sebagian  atau a_req ≥ 0,5 · a_tersedia  → level 0,55
-TTC ≤ ambang_peringatan                              → peringatan
-gap &lt; 4 m                                            → level 1,00</pre>
+TTC ≤ ambang_full  atau a_req ≥ 0,9 · a_tersedia  → full brake (level 1,00)
+TTC ≤ ambang_soft  atau a_req ≥ 0,5 · a_tersedia  → soft brake (level 0,55)
+gap &lt; 4 m                                         → full brake</pre>
       <h4>Safety override untuk seluruh logic</h4>
       <p>Selain ambang di atas, setiap siklus juga menghitung <b>perlambatan yang dibutuhkan</b>
         untuk berhenti sebelum objek di depan, termasuk sisa jarak berhenti objek tersebut:</p>
@@ -875,10 +874,9 @@ TTC_min = latency + v / (2a)</pre>
 
       <h4>Logic 1 — TTC relatif, kondisi bermuatan</h4>
       <p>Ambang yang berlaku dihitung dari <code>TTC_min</code> = 0,23 + 11,11 / (2 × 1,80)
-        = <b>3,32 detik</b>, sehingga ambang peringatan 6,64 s, sebagian 4,98 s, penuh 3,65 s.</p>
+        = <b>3,32 detik</b>, sehingga ambang soft brake 4,98 s dan full brake 3,65 s.</p>
       <table class="eq wide">
         <tr><th>Tahap</th><th>t</th><th>gap</th><th>TTC</th><th>a_req</th><th>Dasar pemicu</th></tr>
-        <tr><td>Peringatan</td><td>0,01 s</td><td>44,4 m</td><td>6,39 s</td><td>0,54</td><td>TTC ≤ 6,64 s</td></tr>
         <tr><td>Soft brake</td><td>1,50 s</td><td>34,0 m</td><td>4,94 s</td><td>0,69</td><td>TTC ≤ 4,98 s</td></tr>
         <tr><td>Selesai</td><td>11,21 s</td><td>8,6 m</td><td>—</td><td>0</td><td>kecepatan menyamai objek</td></tr>
       </table>

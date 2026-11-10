@@ -194,14 +194,11 @@ export class Sim {
       const useDyn = c.dynamicTTC !== false;
       const thrFull = useDyn ? Math.max(c.fullTTC, 1.1 * ttcMin) : c.fullTTC;
       const thrPart = useDyn ? Math.max(c.partialTTC, 1.5 * ttcMin) : c.partialTTC;
-      const thrWarn = useDyn ? Math.max(c.warnTTC, 2.0 * ttcMin) : c.warnTTC;
 
       if (ttc <= thrFull || (cl > 0.05 && this.aReq >= p.aAvail * 0.9)) {
         desired = 1; stage = 'full';
       } else if (ttc <= thrPart || (cl > 0.05 && this.aReq >= p.aAvail * 0.5)) {
         desired = 0.55; stage = 'partial';
-      } else if (ttc <= thrWarn) {
-        stage = 'warn';
       }
 
       // Penahan (hysteresis): sekali soft brake / full brake bekerja, tingkat itu ditahan
