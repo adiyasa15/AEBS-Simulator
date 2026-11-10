@@ -509,24 +509,6 @@ demand ≥ 0,40 · a_tersedia → rem sebagian</pre>
         bergerak dengan kecepatan hampir sama, nilai TTC menjadi sangat besar meskipun jaraknya
         pendek, sehingga pemicu baru bekerja setelah kendaraan depan mengerem.</p>
 
-      <h4>Hubungan dengan aturan jarak aman 4 detik</h4>
-      <p>Aturan 4 detik dan ambang <code>a_req</code> merupakan dua kriteria yang berbeda dan
-        tidak selalu berimpit. Aturan 4 detik menetapkan jarak berdasarkan waktu, sedangkan
-        <code>a_req</code> menetapkan kebutuhan perlambatan untuk berhenti tepat pada objek.
-        Keduanya berimpit hanya pada satu kecepatan, yaitu saat <code>v = 4 × a_tersedia</code>
-        atau sekitar <b>43 km/h</b> untuk a_tersedia 3,0 m/s².</p>
-      <table class="eq wide">
-        <tr><th>Kecepatan</th><th>Jarak 4 detik</th><th>Jarak saat a_req = 0,5·a_tersedia</th><th>Kriteria yang bekerja lebih dahulu</th></tr>
-        <tr><td>40 km/h</td><td>44 m</td><td>41 m</td><td>jarak 4 detik</td></tr>
-        <tr><td>50 km/h</td><td>56 m</td><td>64 m</td><td>a_req</td></tr>
-        <tr><td>70 km/h</td><td>78 m</td><td>126 m</td><td>a_req</td></tr>
-      </table>
-      <p>Pada kecepatan di atas 43 km/h, <code>a_req</code> mencapai 50 % kapasitas sebelum jarak
-        menyusut sampai 4 detik, sehingga rem sebagian sudah bekerja meskipun jarak masih di atas
-        4 detik. Hal ini bukan kesalahan perhitungan: 4 detik menjamin waktu reaksi terhadap
-        kendaraan yang bergerak, sedangkan <code>a_req</code> mengukur kemampuan berhenti terhadap
-        objek yang diam. Kedua kebutuhan itu memang berbeda.</p>
-
       <h4>4.2 Logic 2 — TTC relatif + jarak aman 4 detik</h4>
       <svg viewBox="0 0 720 300" class="diagram" role="img" aria-label="Logic 2 jarak aman: pengukuran 4 detik di antara dua truk">
         <defs>
@@ -597,6 +579,27 @@ selama aktif:
       <p>Logic ini menjaga jarak, bukan mencegah tabrakan. Pada jarak yang sudah sangat dekat,
         waktu yang dibutuhkan untuk memulihkan jarak melebihi waktu yang tersedia, sehingga
         penghentian tetap menjadi tugas ambang AEB.</p>
+
+      <h4>Mengapa rem aktif walau jarak masih di atas 4 detik</h4>
+      <p>Kriteria jarak 4 detik dan ambang <code>a_req</code> merupakan dua hal berbeda.
+        Aturan 4 detik menetapkan jarak berdasarkan waktu, sedangkan <code>a_req</code>
+        menetapkan kebutuhan perlambatan untuk berhenti tepat pada objek. Keduanya berimpit
+        hanya pada satu kecepatan, yaitu <code>v = 4 × a_tersedia</code> — sekitar
+        <b>26 km/h</b> untuk a_tersedia 1,80 m/s².</p>
+      <table class="eq wide">
+        <tr><th>Kecepatan<br>(objek diam)</th><th>Jarak 4 detik</th><th>Jarak saat<br>a_req = 0,5·a_tersedia</th><th>Kriteria yang<br>lebih dahulu</th></tr>
+        <tr><td>30 km/h</td><td>33 m</td><td>39 m</td><td>a_req</td></tr>
+        <tr><td>40 km/h</td><td>44 m</td><td>69 m</td><td>a_req</td></tr>
+        <tr><td>50 km/h</td><td>56 m</td><td>107 m</td><td>a_req</td></tr>
+        <tr><td>70 km/h</td><td>78 m</td><td>210 m</td><td>a_req</td></tr>
+      </table>
+      <p>Di atas 26 km/h, <code>a_req</code> sudah mencapai 50 % kapasitas sebelum jarak
+        menyusut sampai 4 detik. Karena itu rem sebagian bekerja meskipun jarak masih di atas
+        4 detik — dan hal ini bukan kesalahan perhitungan.</p>
+      <p>Kedua kriteria mengukur hal yang berbeda: 4 detik menjamin waktu reaksi terhadap
+        kendaraan yang <b>bergerak</b>, sedangkan <code>a_req</code> mengukur kemampuan berhenti
+        terhadap objek yang <b>diam</b>. Pada objek bergerak yang tidak mengerem, closing mendekati
+        nol sehingga a_req juga mendekati nol dan hanya aturan 4 detik yang bekerja.</p>
 
       <h4>Frekuensi pemeriksaan</h4>
       <p>Ketiga logic diperiksa pada siklus yang sama, yaitu setiap 5 milidetik di dalam
