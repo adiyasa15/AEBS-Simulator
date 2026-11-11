@@ -591,3 +591,36 @@ bergerak maju saat melambat sehingga memberi tambahan ruang.
 **Kesimpulan:** aturan 4 detik memadai untuk objek bergerak, tetapi **tidak memadai untuk objek
 diam pada kecepatan di atas ±45 km/h** bagi unit bermuatan dengan `a_cap` 1,80 m/s².
 Kebutuhan jarak naik menjadi sekitar 5,7 detik pada 70 km/h.
+
+## Lampiran F — Perbandingan tiga logic: keselamatan dan keausan
+
+DT bermuatan 66,5 t, 45 km/h, jarak awal 60 m, a_cap 1,80 m/s².
+
+### Keselamatan
+
+| Kejadian | Waktu mulai mengerem (rel / +4 s / prediktif) | Hasil |
+|---|---|---|
+| Depan mogok 0,3 m/s² | 15,90 s / **9,28 s** / 11,50 s | ketiganya berhenti, sisa 3,1–5,1 m |
+| Depan mengerem 4,0 m/s² | 1,30 s / 1,30 s / **1,27 s** | ketiganya berhenti, sisa 10,4–28,6 m |
+| Objek diam | 0,25 s / 0,25 s / 0,25 s | ketiganya berhenti, sisa 10,1 m |
+
+### Keausan
+
+| Kejadian | Deselerasi puncak (rel / +4 s / prediktif) | Energi rem |
+|---|---|---|
+| Depan mogok | 1,80 / 1,71 / **0,99** m/s² | 4,73 / 4,32 / 4,57 MJ |
+| Depan mengerem keras | 1,80 / 1,80 / 1,80 | 4,89 / 4,89 / 4,96 MJ |
+| Objek diam | 1,80 / 1,80 / 1,80 | 5,00 MJ |
+
+### Aktivasi tanpa bahaya (konvoi tetap 40/38 km/h, 30 detik)
+
+| Jarak ikut | TTC relatif | TTC + 4 detik | Prediktif |
+|---|---|---|---|
+| 6 detik | 0 | 0 | 0 |
+| 4,5 detik | 0 | 0 | 0 |
+| 4,0 detik | 0 | 0 | 0 |
+| 3,5 detik | 0 | **1 aktivasi, 0,77 MJ** | 0 |
+
+Kesimpulan: hanya logic berbasis 4 detik yang memicu pengereman tanpa bahaya nyata. Pada konvoi
+yang terus berjalan di bawah 4 detik, perkiraan energi tambahan mencapai ±69 MJ per perjalanan
+30 km (setara ±17 pengereman penuh), tanpa kesempatan mendingin.
