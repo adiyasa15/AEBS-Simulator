@@ -853,7 +853,14 @@ level   = min( max(a_butuh / a_tersedia , 0,55) , batas / a_tersedia )</pre>
         <tr><td>Depan tetap, jarak 3,5 detik</td><td>mulai 0,25 s</td><td>mulai 0,25 s</td></tr>
         <tr><td>Depan mogok 0,3 m/s²</td><td>mulai 9,28 s, sisa 3,4 m</td><td>mulai 9,23 s, sisa 2,8 m</td></tr>
         <tr><td><b>Objek diam, jarak tepat 4 detik</b></td><td>berhenti, sisa 0,1 m</td><td><b>tabrakan 21,7 km/h</b></td></tr>
+        <tr><td><b>Objek diam, jarak 8 detik</b></td><td>rem 0,25 s, berhenti sisa 21,9 m</td><td>rem 3,50 s, <b>tabrakan 37,7 km/h</b></td></tr>
+        <tr><td><b>Depan mengerem 5 m/s², jarak 80 m</b></td><td>rem 1,29 s, berhenti sisa 22,9 m</td><td>rem 3,63 s, <b>tabrakan 36,9 km/h</b></td></tr>
+        <tr><td>Depan 30 km/h, jarak 8 detik</td><td>rem 6,81 s</td><td>rem 6,81 s (sama)</td></tr>
       </table>
+      <p><b>Kapan keduanya berbeda?</b> Saat kecepatan objek berbeda dari kita. Bila kecepatan
+        hampir sama, TTC menjadi tak terhingga sehingga logic 2 berperilaku sama dengan logic 4.
+        Begitu objek jauh lebih lambat atau sedang mengerem keras, TTC dan <code>a_req</code>
+        pada logic 2 bereaksi lebih dulu, sedangkan logic 4 tetap menunggu batas 4 detik.</p>
       <p class="warn">Keterbatasan yang harus dipahami: terhadap <b>objek yang sudah diam</b>,
         aturan 4 detik saja tidak cukup. Jarak 4 detik tidak memberi ruang untuk berhenti dari
         45 km/h pada unit 66,5 t — logic ini baru bereaksi setelah THW turun di bawah 4 detik,
