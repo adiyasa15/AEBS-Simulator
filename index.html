@@ -617,6 +617,21 @@ selama aktif:
         pengereman darurat</b>, bukan pengereman ringan. Hal ini bukan pilihan desain, melainkan
         konsekuensi kapasitas rem yang kecil.</p>
 
+      <h4>Aktivasi pada batas 4 detik</h4>
+      <p>Logic 2 memakai aturan yang sama dengan logic 4 untuk bagian jaraknya: penjaga aktif
+        <b>tepat pada THW = 4 detik</b> (inklusif), langsung dengan minimal soft brake, lalu naik
+        bila pelanggaran bertambah. Ambang TTC dan <i>safety override</i> tetap berjalan sebagai
+        lapisan tambahan.</p>
+      <table class="eq wide">
+        <tr><th>Jarak (objek sekecepatan)</th><th>Logic 2</th><th>Logic 4</th></tr>
+        <tr><td>4,5 detik</td><td>tidak mengerem</td><td>tidak mengerem</td></tr>
+        <tr><td><b>4,0 detik</b></td><td><b>soft brake, 0,25 s</b></td><td><b>soft brake, 0,25 s</b></td></tr>
+        <tr><td>3,9 detik</td><td>soft brake, 0,25 s</td><td>soft brake, 0,25 s</td></tr>
+      </table>
+      <p>Perbedaannya bukan pada kapan mulai, melainkan pada apa yang terjadi setelahnya:
+        logic 2 masih memiliki TTC relatif dan <i>safety override</i> yang dapat menaikkan ke
+        full brake, sedangkan logic 4 berhenti pada 80 % kapasitas.</p>
+
       <h4>Istilah tingkat pengereman</h4>
       <p>Sistem AEBS yang terpasang memakai dua istilah saja:</p>
       <table class="eq wide">
@@ -777,6 +792,50 @@ reaksi ≈ 0,03 + 0,23 = 0,26 s … 0,10 + 0,23 = 0,33 s</pre>
       <h4>4.5 Logic 4 — jarak 4 detik murni</h4>
       <p>Logic ini hanya mengukur <b>jarak dan kecepatan sendiri</b>. Kecepatan relatif terhadap
         objek tidak dipakai sama sekali, sehingga TTC tidak dihitung.</p>
+      <svg viewBox="0 0 720 300" class="diagram" role="img" aria-label="Logic 4 jarak 4 detik murni: jarak aman dihitung dari kecepatan sendiri">
+        <defs>
+          <g id="trk4">
+            <polygon points="0,44 6,14 150,14 156,44" fill="#22303f" stroke="#3b82f6" stroke-width="1.2"/>
+            <polygon points="8,16 148,16 142,6 14,6" fill="#2b3d52" stroke="#3b82f6" stroke-width="1"/>
+            <rect x="156" y="16" width="40" height="44" rx="5" fill="#1e4fa3" stroke="#60a5fa" stroke-width="1.2"/>
+            <rect x="162" y="22" width="28" height="16" rx="3" fill="#0f2b4d"/>
+            <circle cx="30" cy="60" r="11" fill="#0a0f14" stroke="#33475b"/>
+            <circle cx="80" cy="60" r="11" fill="#0a0f14" stroke="#33475b"/>
+            <circle cx="170" cy="60" r="11" fill="#0a0f14" stroke="#33475b"/>
+            <rect x="154" y="20" width="3" height="10" fill="#7f1d1d"/>
+          </g>
+        </defs>
+        <line x1="12" y1="222" x2="708" y2="222" stroke="#33475b" stroke-width="2"/>
+
+        <use href="#trk4" x="80" y="148"/>
+        <use href="#trk4" x="470" y="148"/>
+
+        <text x="175" y="140" class="ds" text-anchor="middle">ego · 60 km/h</text>
+        <text x="565" y="140" class="ds" text-anchor="middle">depan · 30 km/h</text>
+
+        <line x1="240" y1="196" x2="466" y2="196" stroke="#22c55e" stroke-width="1.6"/>
+        <line x1="240" y1="188" x2="240" y2="204" stroke="#22c55e" stroke-width="1.6"/>
+        <line x1="296" y1="192" x2="296" y2="200" stroke="#22c55e" stroke-width="1"/>
+        <line x1="353" y1="192" x2="353" y2="200" stroke="#22c55e" stroke-width="1"/>
+        <line x1="409" y1="192" x2="409" y2="200" stroke="#22c55e" stroke-width="1"/>
+        <line x1="466" y1="188" x2="466" y2="204" stroke="#22c55e" stroke-width="1.6"/>
+        <text x="268" y="184" class="ds" text-anchor="middle">1 s</text>
+        <text x="324" y="184" class="ds" text-anchor="middle">2 s</text>
+        <text x="381" y="184" class="ds" text-anchor="middle">3 s</text>
+        <text x="437" y="184" class="ds" text-anchor="middle">4 s</text>
+
+        <text x="353" y="244" class="ds" text-anchor="middle">jarak aman = 4 × kecepatan kita = 4 × 16,7 m/s = 66,7 m</text>
+
+        <rect x="250" y="256" width="420" height="34" rx="7" class="dbox" style="stroke:#f59e0b"/>
+        <text x="460" y="270" class="dt" text-anchor="middle" fill="#fbbf24">tepat 4 detik → soft brake</text>
+        <text x="460" y="284" class="ds" text-anchor="middle">kecepatan objek tidak dipakai sama sekali</text>
+
+        <text x="16" y="268" class="ds">hanya</text>
+        <text x="16" y="282" class="ds">jarak dan</text>
+        <text x="16" y="296" class="ds">kecepatan</text>
+      </svg>
+
+
       <pre class="formula">THW    = gap / v_ego                  (hanya jarak dan kecepatan sendiri)
 v_safe = gap / 4
 aktif TEPAT pada THW = 4 detik; lepas bila THW &gt; 4,05 detik
