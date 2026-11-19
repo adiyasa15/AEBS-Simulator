@@ -748,9 +748,12 @@ selama aktif:
         sedangkan pada titik itu jarak henti sudah lebih panjang daripada jarak yang tersisa.</p>
       <table class="eq wide">
         <tr><th>Kondisi (66,5 t, 60 km/h)</th><th>Logic 2</th><th>Logic 4</th></tr>
-        <tr><td>Objek diam, jarak 8 detik (120 m)</td><td>rem 0,25 s, berhenti sisa 21,9 m</td><td>rem 3,50 s, <b>tabrakan 37,7 km/h</b></td></tr>
-        <tr><td>Objek diam, jarak tepat 4 detik (67 m)</td><td>berhenti sisa 0,1 m</td><td><b>tabrakan 21,7 km/h</b></td></tr>
+        <tr><td>Objek diam, jarak 8 detik (120 m)</td><td>rem 0,28 s, berhenti sisa 21,9 m</td><td>rem 3,53 s, <b>tabrakan 29,3 km/h</b></td></tr>
+        <tr><td>Objek diam, jarak tepat 4 detik (67 m)</td><td><b>tabrakan 29,2 km/h</b></td><td><b>tabrakan 29,7 km/h</b></td></tr>
       </table>
+      <p>Baris kedua menegaskan batas aturannya, bukan perbedaan kedua logic: pada 60 km/h
+        kendaraan baru berhenti setelah menempuh <b>98,1 m</b> (terukur dari baris pertama: 120 m
+        dikurangi sisa 21,9 m), sehingga 67 m tidak cukup untuk pilihan mana pun.</p>
       <p>Perbedaan keduanya terletak pada isi masing-masing pilihan: logic 2 memuat TTC dan
         <i>safety override</i> yang dapat menaikkan ke full brake, sedangkan logic 4 hanya memuat
         penjaga jarak dua tingkat. Saat kecepatan objek hampir sama, keduanya berperilaku identik
@@ -968,7 +971,83 @@ tekanan mulai naik 0,23 s kemudian, penuh pada 0,85 s</pre>
       <p>Rasio nilai bermuatan terhadap kosong menunjukkan sifat sistem rem: sekitar 0,39 bila
         gaya rem tetap, lebih besar bila terdapat katup pengindra beban.</p>
 
-      <h3>14. Batasan model</h3>
+      <h3>14. Perbandingan empat logic</h3>
+      <p>Perbandingan ini memakai unit bermuatan 66,5 t, jalan datar, μ 0,60. Lima keadaan diuji
+        pada keempat pilihan, masing-masing dijalankan dengan rangkaian aktuator yang sama
+        (latency 0,23 s, build 0,85 s):</p>
+      <table class="eq wide">
+        <tr><th>Keadaan</th><th>Kondisi</th></tr>
+        <tr><td>1 — objek diam 4 detik</td><td>60 km/h, objek diam, jarak 67 m</td></tr>
+        <tr><td>2 — objek diam 8 detik</td><td>60 km/h, objek diam, jarak 120 m</td></tr>
+        <tr><td>3 — depan mengerem keras</td><td>45 km/h, jarak 60 m, objek mengerem 5 m/s²</td></tr>
+        <tr><td>4 — depan mogok</td><td>45 km/h, jarak 60 m, objek mengerem 0,3 m/s²</td></tr>
+        <tr><td>5 — konvoi melambat</td><td>40 km/h, jarak 6 detik, objek 38 km/h mengerem 3 m/s²</td></tr>
+      </table>
+      <p>Nilai keselamatan dihitung dari sisa jarak saat berhenti: tabrakan bernilai 0, berhenti
+        dengan sisa 5 m atau lebih bernilai 100. Nilai keausan dihitung dari dua hal yang bisa
+        diukur: rata-rata puncak perlambatan dibanding kapasitas rem, dan energi rem pada konvoi
+        tetap 40/38 km/h selama 30 detik pada jarak 3,5 detik.</p>
+
+      <table class="eq wide">
+        <tr>
+          <th style="width:15%">Logic</th>
+          <th style="width:37%">Keselamatan pengemudi</th>
+          <th style="width:33%">Keausan sistem pengereman</th>
+          <th style="width:15%">Skor<br>70 : 30</th>
+        </tr>
+        <tr>
+          <td><b>1 — TTC relatif</b></td>
+          <td>Berhenti pada keadaan 2, 3, dan 5. Pada keadaan 4 hanya sisa <b>2,2 m</b> dan rem
+            menyala-mati 6 kali. Keadaan 1 tetap tabrakan 29,2 km/h karena aturan 4 detik sendiri
+            tidak cukup pada 60 km/h.</td>
+          <td>Selalu bekerja di kapasitas penuh (puncak 91 % rata-rata), tetapi jarang: tidak ada
+            aktivasi tanpa bahaya. Yang cepat habis: <b>kampas dan drum</b>, karena setiap kejadian
+            adalah pengereman keras. Perawatan: periksa ketebalan kampas setelah kejadian keras;
+            tidak menambah siklus katup.</td>
+          <td><b>61,7</b><br><span class="ds">peringkat 2</span></td>
+        </tr>
+        <tr>
+          <td><b>2 — TTC + jarak aman</b></td>
+          <td>Berhenti pada keadaan 2, 3, dan 5. Keadaan 4 sisa <b>3,4 m</b> — lebih baik daripada
+            logic 1. Keadaan 1 tabrakan 29,2 km/h.</td>
+          <td>Penjaga jarak menyala pada konvoi normal: <b>1 aktivasi dan 1,17 MJ</b> dalam 30 detik
+            pada jarak 3,5 detik. Puncak tetap 91 %. Yang cepat habis: <b>katup solenoid dan seal</b>
+            karena siklus sering, ditambah kampas akibat pengereman berulang di bawah 4 detik.
+            Perawatan: interval katup dan kebocoran udara lebih pendek.</td>
+          <td><b>53,5</b><br><span class="ds">peringkat 3</span></td>
+        </tr>
+        <tr>
+          <td><b>3 — prediktif</b></td>
+          <td>Berhenti pada keadaan 2, 3, 4, dan 5 dengan sisa terbesar: <b>25,8 m</b> saat objek
+            mengerem keras, <b>5,1 m</b> saat objek mogok. Keadaan 1 tabrakan 29,2 km/h.</td>
+          <td>Puncak rata-rata <b>82 %</b> — paling rendah — dan tidak ada aktivasi tanpa bahaya.
+            Pengereman dibagi lebih awal dan lebih ringan. Yang cepat habis: <b>kampas</b> secara
+            merata, tanpa lonjakan panas. Perawatan: interval normal, tanpa penggantian katup
+            karena siklus.</td>
+          <td><b>71,2</b><br><span class="ds">peringkat 1</span></td>
+        </tr>
+        <tr>
+          <td><b>4 — jarak 4 detik murni</b></td>
+          <td>Tabrakan pada keadaan 1, 2, dan 3 (7 km/h pada keadaan 3). Berhenti hanya pada
+            keadaan 4 dan 5 dengan sisa <b>3,0 m</b> dan <b>1,8 m</b>. Tidak mengenali bahaya yang
+            mendekat cepat.</td>
+          <td>Paling merusak: puncak <b>100 %</b> setiap kali bekerja, ditambah 1 aktivasi dan
+            1,17 MJ tanpa bahaya dalam 30 detik. Yang cepat habis: <b>kampas, drum, dan katup</b>
+            sekaligus; panas menumpuk karena rem bekerja tepat pada batas. Perawatan paling sering
+            dari keempat pilihan.</td>
+          <td><b>13,8</b><br><span class="ds">peringkat 4</span></td>
+        </tr>
+      </table>
+
+      <p>Dengan bobot 70 % keselamatan dan 30 % keausan, urutannya: prediktif 71,2 · TTC relatif
+        61,7 · TTC + jarak aman 53,5 · jarak 4 detik murni 13,8.</p>
+      <p>Dua hal yang perlu dibaca hati-hati. Pertama, keadaan 1 (objek diam pada tepat 4 detik,
+        60 km/h) membuat ketiga pilihan pertama gagal dengan cara yang sama; itu batas aturan jarak,
+        bukan perbedaan mutu logic. Kedua, nilai keausan tidak mengukur umur kampas dalam jam,
+        hanya membandingkan beban panas dan frekuensi siklus antar pilihan. Angka absolutnya baru
+        sah setelah <code>a_brake</code> dan waktu aktuator berasal dari uji pengereman unit.</p>
+
+      <h3>15. Batasan model</h3>
       <ul>
         <li>Satu dimensi: tanpa manuver mengelak dan tanpa rotasi roda.</li>
         <li>Load transfer dan inersia rotasi tidak dimodelkan.</li>
