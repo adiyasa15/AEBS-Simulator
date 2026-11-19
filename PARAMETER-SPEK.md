@@ -74,7 +74,7 @@ Kalau hanya punya angka ini, catat sebagai batas bawah, bukan nilai sesungguhnya
 **Mengapa penting:** inilah angka yang menentukan seluruh hasil simulasi. Selisih 3,0 vs 1,8
 m/s² mengubah jarak henti 40 km/h dari 27,8 m menjadi 39,7 m.
 
-**Bila belum diukur:** biarkan saklar *"Hitung a_cap dari gaya rem konstan"* menyala. Simulator
+**Bila belum diukur:** biarkan saklar *"Hitung a_brake dari gaya rem konstan"* menyala. Simulator
 akan menurunkan nilai ini dari massa dan nilai kosong — cara yang konservatif, tetapi tetap
 asumsi.
 
@@ -207,7 +207,7 @@ FAW JH6 6x4 sekitar 4,2 m.
 
 ---
 
-## Saklar 1 — "a_cap sudah diverifikasi brake test"
+## Saklar 1 — "a_brake sudah diverifikasi brake test"
 
 **Fungsi:** menyatakan bahwa angka *Rem maks kosong* dan *Rem maks muat* berasal dari
 pengukuran, bukan asumsi.
@@ -221,13 +221,13 @@ menandainya.
 
 ---
 
-## Saklar 2 — "Hitung a_cap dari gaya rem konstan"
+## Saklar 2 — "Hitung a_brake dari gaya rem konstan"
 
 **Fungsi:** menurunkan kemampuan rem dari massa, dengan asumsi gaya rem tidak berubah:
 
 ```
-gaya_rem  = a_cap_kosong × massa_kosong
-a_cap(m)  = gaya_rem / m
+gaya_rem  = a_brake_kosong × massa_kosong
+a_brake(m)  = gaya_rem / m
 ```
 
 **Kapan dinyalakan:** selama belum ada brake test unit bermuatan. Ini asumsi konservatif.

@@ -72,8 +72,8 @@ let currentSpec = null;
 const SPEC_FIELDS = [
   { k: 'massEmptyT', label: 'Mass empty', unit: 't', step: 0.1 },
   { k: 'massLoadedT', label: 'Mass loaded', unit: 't', step: 0.1 },
-  { k: 'aCapEmpty', label: 'a_cap empty', unit: 'm/s²', step: 0.1 },
-  { k: 'aCapLoaded', label: 'a_cap loaded', unit: 'm/s²', step: 0.1 },
+  { k: 'aCapEmpty', label: 'a_brake empty', unit: 'm/s²', step: 0.1 },
+  { k: 'aCapLoaded', label: 'a_brake loaded', unit: 'm/s²', step: 0.1 },
   { k: 'brakeBuild', label: 'Brake build-up', unit: 's', step: 0.05 },
   { k: 'aRetardMax', label: 'Engine brake + retarder', unit: 'm/s²', step: 0.1 },
   { k: 'valveDelay', label: 'Relay + solenoid valve', unit: 's', step: 0.01 },
@@ -125,7 +125,7 @@ function refreshCapNote() {
   } else {
     aCap = v.aCapEmpty + (v.aCapLoaded - v.aCapEmpty) * load;
   }
-  el.capNote.textContent = `a_cap berlaku: ${aCap.toFixed(2)} m/s² untuk ${m.toFixed(1)} t`
+  el.capNote.textContent = `a_brake berlaku: ${aCap.toFixed(2)} m/s² untuk ${m.toFixed(1)} t`
     + (el.capFromForce.checked ? ' (diturunkan dari gaya rem konstan)' : ' (nilai isian)');
 }
 

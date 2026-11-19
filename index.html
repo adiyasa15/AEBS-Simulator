@@ -37,12 +37,12 @@
         <label class="switch">
           <input type="checkbox" id="capVerified" />
           <span class="slider"></span>
-          <span class="switch-label">a_cap verified by brake test</span>
+          <span class="switch-label">a_brake verified by brake test</span>
         </label>
         <label class="switch">
           <input type="checkbox" id="capFromForce" />
           <span class="slider"></span>
-          <span class="switch-label">a_cap from constant brake force (F/m)</span>
+          <span class="switch-label">a_brake from constant brake force (F/m)</span>
         </label>
       </details>
     </section>
@@ -218,7 +218,7 @@
         <tr><th>Simbol</th><th>Arti</th><th>Satuan</th></tr>
         <tr><td><code>a</code></td><td><b>percepatan</b> (negatif = melambat)</td><td>m/s²</td></tr>
         <tr><td><code>a_tersedia</code></td><td>perlambatan maksimum yang dapat dihasilkan saat itu</td><td>m/s²</td></tr>
-        <tr><td><code>a_cap</code></td><td>kemampuan rem dari hasil bagi gaya rem dengan massa</td><td>m/s²</td></tr>
+        <tr><td><code>a_brake</code></td><td>kemampuan rem dari hasil bagi gaya rem dengan massa</td><td>m/s²</td></tr>
         <tr><td><code>a_req</code>, <code>a_ff</code></td><td>perlambatan yang dibutuhkan (TTC relatif, prediktif)</td><td>m/s²</td></tr>
         <tr><td><code>a_lead</code></td><td>perlambatan objek di depan</td><td>m/s²</td></tr>
         <tr><td><code>m</code></td><td><b>massa</b> kendaraan</td><td>kg (atau t)</td></tr>
@@ -253,7 +253,7 @@
       <pre class="formula">p = m · v          dp/dt = ΣF          a = ΣF / m</pre>
       <p>Suku gaya yang dijumlahkan setiap langkah, dinyatakan dalam m/s²:</p>
       <pre class="formula">a_fric     = applied × a_tersedia
-a_tersedia = min( μ · g , a_cap(massa) )
+a_tersedia = min( μ · g , a_brake(massa) )
 a_regen    = regen × min(1, applied × 2,2)          # hanya pada EV
 a_resist   = 0,045 + 0,00016 · v²                   # gelinding dan aerodinamika
 a_grade    = g × kemiringan / 100                   # turunan menambah laju
@@ -334,7 +334,7 @@ s′    = s + ½ (v + v′) · dt</pre>
         Perlambatan hanya bisa sama bila gaya rem naik sebanding massa — misalnya melalui
         katup pengindra beban (<i>load sensing</i>).</p>
       <p>Karena itu massa bukan faktor kecil: ia menentukan jarak henti, ambang TTC, dan
-        <code>required deceleration</code>. Nilai <code>a_cap</code> harus berasal dari uji
+        <code>required deceleration</code>. Nilai <code>a_brake</code> harus berasal dari uji
         pengereman unit pada kondisi bermuatan, bukan diasumsikan.</p>
 
       <h3>2. Siklus perhitungan 200 Hz</h3>
@@ -942,15 +942,15 @@ a_net  = 0,99 + 0,07 = 1,06 m/s²
       <h4>Massa</h4>
       <table class="eq wide">
         <tr><th>Kolom</th><th>Definisi</th><th>Cara mengukur</th></tr>
-        <tr><td>Massa kosong (t)</td><td>berat unit tanpa muatan, termasuk bahan bakar dan perlengkapan tetap</td><td>jembatan timbang, per gandar bila tersedia. FAW JH6: 26 t</td></tr>
-        <tr><td>Massa + muatan (t)</td><td>berat total saat vessel penuh batubara</td><td>timbang unit bermuatan; 26 + 40,5 = 66,5 t</td></tr>
+        <tr><td><b>m_empty</b> (t) — massa kosong</td><td>berat unit tanpa muatan, termasuk bahan bakar dan perlengkapan tetap</td><td>jembatan timbang, per gandar bila tersedia. FAW JH6: 26 t</td></tr>
+        <tr><td><b>m_loaded</b> (t) — massa dengan muatan</td><td>berat total saat vessel penuh batubara</td><td>timbang unit bermuatan; 26 + 40,5 = 66,5 t</td></tr>
       </table>
 
       <h4>Kemampuan pengereman</h4>
       <table class="eq wide">
         <tr><th>Kolom</th><th>Definisi</th><th>Cara mengukur</th></tr>
-        <tr><td>Rem maks kosong (m/s²)</td><td>perlambatan mantap unit kosong dengan rem servis saja, permukaan kering</td><td>akselerometer; full brake dari 40 km/h; ambil nilai datar tertinggi; ulangi tiga kali dan pakai yang terendah</td></tr>
-        <tr><td>Rem maks muat (m/s²)</td><td>sama, dengan vessel terisi penuh</td><td>protokol sama pada unit bermuatan</td></tr>
+        <tr><td><b>a_brake_empty</b> (m/s²) — perlambatan rem maksimum, unit kosong</td><td>perlambatan mantap unit kosong dengan rem servis saja, permukaan kering</td><td>akselerometer; full brake dari 40 km/h; ambil nilai datar tertinggi; ulangi tiga kali dan pakai yang terendah</td></tr>
+        <tr><td><b>a_brake_loaded</b> (m/s²) — perlambatan rem maksimum, unit bermuatan</td><td>sama, dengan vessel terisi penuh</td><td>protokol sama pada unit bermuatan</td></tr>
       </table>
       <p>Bila hanya tersedia jarak berhenti <code>d</code> dari kecepatan <code>v</code>:</p>
       <pre class="formula">a = v² / (2 · d)          v dalam m/s, d dalam meter
@@ -962,9 +962,9 @@ contoh: 40 km/h (11,1 m/s) berhenti dalam 34 m -> 11,1² / (2 × 34) = 1,81 m/s�
       <h4>Waktu</h4>
       <table class="eq wide">
         <tr><th>Kolom</th><th>Definisi</th><th>Cara mengukur</th></tr>
-        <tr><td>Latency sensor+baca (s)</td><td>umur data radar + tunggu siklus program + waktu hitung</td><td>nyalakan pin GPIO sebelum membaca radar, matikan setelah keputusan keluar; ukur lebar pulsa</td></tr>
-        <tr><td>Relay + solenoid valve (s)</td><td>jeda dari perintah listrik sampai katup terbuka</td><td>rekam pin perintah dan kanal tekanan bersamaan; ukur sampai tekanan mulai naik</td></tr>
-        <tr><td>Bangun tekanan rem (s)</td><td>waktu tekanan naik dari nol sampai penuh</td><td>dari kurva tekanan; bila hanya diketahui waktu ke 75 %, bagi dengan 0,75</td></tr>
+        <tr><td><b>t_latency</b> (s) — latency radar + hitung</td><td>umur data radar + tunggu siklus program + waktu hitung</td><td>nyalakan pin GPIO sebelum membaca radar, matikan setelah keputusan keluar; ukur lebar pulsa</td></tr>
+        <tr><td><b>t_valve</b> (s) — jeda relai + solenoid</td><td>jeda dari perintah listrik sampai katup terbuka</td><td>rekam pin perintah dan kanal tekanan bersamaan; ukur sampai tekanan mulai naik</td></tr>
+        <tr><td><b>T_build</b> (s) — waktu bangun tekanan rem</td><td>waktu tekanan naik dari nol sampai penuh</td><td>dari kurva tekanan; bila hanya diketahui waktu ke 75 %, bagi dengan 0,75</td></tr>
       </table>
       <pre class="formula">bangun_tekanan = waktu_ke_75% / 0,75
 
@@ -973,12 +973,12 @@ contoh: 75 % tercapai pada 0,60 s -> 0,60 / 0,75 = 0,80 s</pre>
       <h4>Pendukung</h4>
       <table class="eq wide">
         <tr><th>Kolom</th><th>Definisi</th><th>Cara mengukur</th></tr>
-        <tr><td>Engine brake + retarder (m/s²)</td><td>perlambatan tambahan dari rem mesin dan retarder saja</td><td>lepas pedal gas, aktifkan retarder maksimum, ukur dengan akselerometer. Tipikal 0,5–1,5 m/s²</td></tr>
-        <tr><td>Retarder aktif di atas (km/h)</td><td>kecepatan minimum agar retarder menghasilkan perlambatan berarti</td><td>aktifkan pada berbagai kecepatan, catat saat efeknya hilang. Hidrolik 15–25 km/h</td></tr>
-        <tr><td>Pita fade retarder (km/h)</td><td>rentang kecepatan sampai perlambatan retarder mencapai penuh</td><td>dari data di atas; selisih kecepatan penuh terhadap ambang. Tipikal 10 km/h</td></tr>
-        <tr><td>Panjang kendaraan (m)</td><td>bemper depan sampai ujung belakang</td><td>meteran. FAW JH6 sekitar 10,4 m</td></tr>
-        <tr><td>Tinggi titik berat / <i>CoG height</i> (m)</td><td>tinggi pusat massa kendaraan diukur dari permukaan jalan, dalam kondisi bermuatan. Titik tempat seluruh massa dianggap terpusat.</td><td>timbang gandar depan saat diam (N₁) dan saat mengerem (N₂), lalu pakai rumus di bawah. Bila tidak dapat diukur, pakai 1,9 m untuk DT rigid bermuatan.</td></tr>
-        <tr><td>Wheelbase efektif (m)</td><td>jarak mendatar dari pusat roda sumbu depan ke titik tengah kelompok roda belakang. Untuk 6x4: bukan ke axle pertama belakang, tetapi ke tengah antara dua axle belakang.</td><td>meteran, roda lurus. FAW JH6 6x4 sekitar 4,2 m. Hanya memengaruhi indikator beban pindah ke depan, bukan jarak henti.</td></tr>
+        <tr><td><b>a_retard</b> (m/s²) — rem mesin + retarder</td><td>perlambatan tambahan dari rem mesin dan retarder saja</td><td>lepas pedal gas, aktifkan retarder maksimum, ukur dengan akselerometer. Tipikal 0,5–1,5 m/s²</td></tr>
+        <tr><td><b>v_retard_on</b> (km/h) — ambang aktif retarder</td><td>kecepatan minimum agar retarder menghasilkan perlambatan berarti</td><td>aktifkan pada berbagai kecepatan, catat saat efeknya hilang. Hidrolik 15–25 km/h</td></tr>
+        <tr><td><b>v_retard_fade</b> (km/h) — pita fade retarder</td><td>rentang kecepatan sampai perlambatan retarder mencapai penuh</td><td>dari data di atas; selisih kecepatan penuh terhadap ambang. Tipikal 10 km/h</td></tr>
+        <tr><td><b>L_veh</b> (m) — panjang kendaraan</td><td>bemper depan sampai ujung belakang</td><td>meteran. FAW JH6 sekitar 10,4 m</td></tr>
+        <tr><td><b>h_cog</b> (m) — tinggi titik berat</td><td>tinggi pusat massa kendaraan diukur dari permukaan jalan, dalam kondisi bermuatan. Titik tempat seluruh massa dianggap terpusat.</td><td>timbang gandar depan saat diam (N₁) dan saat mengerem (N₂), lalu pakai rumus di bawah. Bila tidak dapat diukur, pakai 1,9 m untuk DT rigid bermuatan.</td></tr>
+        <tr><td><b>L_wb</b> (m) — wheelbase efektif</td><td>jarak mendatar dari pusat roda sumbu depan ke titik tengah kelompok roda belakang. Untuk 6x4: bukan ke axle pertama belakang, tetapi ke tengah antara dua axle belakang.</td><td>meteran, roda lurus. FAW JH6 6x4 sekitar 4,2 m. Hanya memengaruhi indikator beban pindah ke depan, bukan jarak henti.</td></tr>
       </table>
       <pre class="formula">h = (N₂ − N₁) · L / (m · a)
 
@@ -989,8 +989,8 @@ N₁, N₂ dalam Newton · L dan h dalam meter · m dalam kg · a dalam m/s²</p
       <h4>Parameter mana yang memengaruhi hasil apa</h4>
       <table class="eq wide">
         <tr><th>Parameter</th><th>Memengaruhi</th><th>Tidak memengaruhi</th></tr>
-        <tr><td>massa kosong / muatan</td><td><code>a_cap</code>, ambang TTC, jarak henti, energi rem, beban axle</td><td>—</td></tr>
-        <tr><td><code>a_cap</code> kosong / muat</td><td>seluruh angka absolut: jarak henti, ambang pemicu, kecepatan aman</td><td>—</td></tr>
+        <tr><td>massa kosong / muatan</td><td><code>a_brake</code>, ambang TTC, jarak henti, energi rem, beban axle</td><td>—</td></tr>
+        <tr><td><code>a_brake</code> kosong / muat</td><td>seluruh angka absolut: jarak henti, ambang pemicu, kecepatan aman</td><td>—</td></tr>
         <tr><td>latency, relay+solenoid, bangun tekanan</td><td>waktu reaksi, <code>TTC_min</code>, jarak henti</td><td>keputusan saat objek sudah diam</td></tr>
         <tr><td>retarder (tiga nilai)</td><td>kemampuan menahan laju di turunan</td><td>jarak henti rem servis</td></tr>
         <tr><td>panjang kendaraan</td><td>gambar di layar, posisi bemper</td><td>jarak henti</td></tr>
@@ -1014,10 +1014,10 @@ N₁, N₂ dalam Newton · L dan h dalam meter · m dalam kg · a dalam m/s²</p
         <li>Load transfer dan inersia rotasi tidak dimodelkan; faktor massa ekuivalen 1,04–1,06
           belum diterapkan.</li>
         <li>ABS tidak dimodelkan; perlambatan dianggap tercapai tanpa siklus penguncian.</li>
-        <li>Penurunan performa rem akibat panas (<i>fade</i>) tidak dimodelkan; <code>a_cap</code>
+        <li>Penurunan performa rem akibat panas (<i>fade</i>) tidak dimodelkan; <code>a_brake</code>
           dianggap tetap.</li>
         <li>Koefisien gesek dianggap seragam sepanjang lintasan.</li>
-        <li><i>Latency</i>, <code>brakeBuild</code>, dan <code>a_cap</code> masih berupa asumsi
+        <li><i>Latency</i>, <code>brakeBuild</code>, dan <code>a_brake</code> masih berupa asumsi
           sampai tersedia hasil pengukuran unit.</li>
         <li>Kecepatan dihitung dari perpindahan, bukan dari putaran roda. Apabila kecepatan
           diturunkan dari sensor putaran roda, kondisi roda terkunci perlu ditangani terpisah.</li>

@@ -18,10 +18,10 @@ untuk rentang lengkap dan kapan μ benar-benar membatasi.
 > ## ⚠️ PERINGATAN METODOLOGIS
 >
 > Seluruh angka pada dokumen ini dihitung dengan **parameter asumsi**, terutama kemampuan
-> pengereman `a_cap` = 3,0 m/s² untuk unit bermuatan 66,5 t. Nilai tersebut **belum berasal
+> pengereman `a_brake` = 3,0 m/s² untuk unit bermuatan 66,5 t. Nilai tersebut **belum berasal
 > dari brake test**.
 >
-> Apabila gaya rem dianggap konstan, `a_cap` unit bermuatan turun menjadi
+> Apabila gaya rem dianggap konstan, `a_brake` unit bermuatan turun menjadi
 > **1,80 m/s²** (F = 4,6 × 26 = 119,6 kN). Akibatnya jarak henti dari 40 km/h berubah dari
 > **27,8 m menjadi 39,7 m** — selisih 12 m, atau 43 %.
 >
@@ -31,7 +31,7 @@ untuk rentang lengkap dan kapan μ benar-benar membatasi.
 >
 > **Kesimpulan yang TIDAK boleh dipakai sebelum ada brake test**: batas kecepatan aman,
 > kecukupan aturan 4 detik pada kecepatan tertentu, dan batas kecepatan per radius tikungan.
-> Angka-angka itu berbanding terbalik dengan `a_cap` dan akan berubah.
+> Angka-angka itu berbanding terbalik dengan `a_brake` dan akan berubah.
 >
 > Dokumen ini adalah alat bantu analisis, bukan safety case yang tervalidasi.
 
@@ -564,9 +564,9 @@ AEBS. Apabila berada tepat di belakang truk bermuatan pada jarak 4 detik, simula
 tabrakan pada 39,6 km/h. Risiko ini terbatas pada posisi tersebut, tetapi tetap perlu
 diperhitungkan pada segmen menanjak ketika kendaraan pendukung bergerak lebih lambat.
 
-## Lampiran E — Kecukupan aturan 4 detik pada unit bermuatan (a_cap 1,80 m/s²)
+## Lampiran E — Kecukupan aturan 4 detik pada unit bermuatan (a_brake 1,80 m/s²)
 
-Dihitung ulang setelah `a_cap` unit bermuatan diturunkan dari gaya rem konstan
+Dihitung ulang setelah `a_brake` unit bermuatan diturunkan dari gaya rem konstan
 (F = 4,6 × 26 = 119,6 kN → 1,80 m/s² pada 66,5 t).
 
 ### Objek diam di lajur (truk parkir, mogok permanen, material jatuh)
@@ -589,12 +589,12 @@ Dengan 4 detik, seluruh kecepatan 30–70 km/h berhasil berhenti (sisa 3,0–3,7
 bergerak maju saat melambat sehingga memberi tambahan ruang.
 
 **Kesimpulan:** aturan 4 detik memadai untuk objek bergerak, tetapi **tidak memadai untuk objek
-diam pada kecepatan di atas ±45 km/h** bagi unit bermuatan dengan `a_cap` 1,80 m/s².
+diam pada kecepatan di atas ±45 km/h** bagi unit bermuatan dengan `a_brake` 1,80 m/s².
 Kebutuhan jarak naik menjadi sekitar 5,7 detik pada 70 km/h.
 
 ## Lampiran F — Perbandingan tiga logic: keselamatan dan keausan
 
-DT bermuatan 66,5 t, 45 km/h, jarak awal 60 m, a_cap 1,80 m/s².
+DT bermuatan 66,5 t, 45 km/h, jarak awal 60 m, a_brake 1,80 m/s².
 
 ### Keselamatan
 
