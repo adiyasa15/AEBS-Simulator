@@ -25,7 +25,7 @@ const el = {
   capVerified: $('#capVerified'), verifyChip: $('#verifyChip'),
   specBox: $('#specBox'),
   logic: $('#logic'),
-  headway: $('#headway'), headwayo: $('#headwayo'),
+  headway: $('#headway'), headwayo: $('#headwayo'), headwayBox: $('#headwayBox'),
   leadBrake: $('#leadBrake'), leadDecel: $('#leadDecel'), leadDecelo: $('#leadDecelo'),
   leadMode: $('#leadMode'), leadModeNote: $('#leadModeNote'), leadCustom: $('#leadCustom'),
   playBtn: $('#playBtn'),
@@ -183,8 +183,13 @@ function readCfg() {
 /* ---------- UI sync ---------- */
 // Jarak aman mengikuti aturan: gap = headway × kecepatan.
 // Dipakai saat pengguna mengubah headway atau kecepatan awal.
+function usesHeadway() {
+  return el.logic && (el.logic.value === 'headway' || el.logic.value === 'pure4s');
+}
+
 function syncGapToHeadway() {
   if (!el.gap0 || !el.headway || !el.v0) return;
+  if (!usesHeadway()) return;              // logic 1 & 3 tidak memakai headway
   const v = +el.v0.value;                  // km/h
   const hw = +el.headway.value;            // detik
   const target = Math.round(hw * v / 3.6); // meter
@@ -309,7 +314,15 @@ el.leadMode.addEventListener('change', () => {
   syncLabels();
   hardReset(false);
 });
-el.logic.addEventListener('change', () => { syncLabels(); hardReset(false); });
+function updateHeadwayVisibility() {
+  if (el.headwayBox) el.headwayBox.hidden = !usesHeadway();
+}
+
+el.logic.addEventListener('change', () => {
+  updateHeadwayVisibility();
+  syncLabels();
+  hardReset(false);
+});
 
 el.loadSeg.addEventListener('click', (e) => {
   const b = e.target.closest('button');
@@ -423,6 +436,7 @@ function boot() {
   renderer.resize();
   buildSpecGrid();
   loadSpec('faw-jh6');
+  updateHeadwayVisibility();
   syncGapToHeadway();
   hardReset(false);
 
