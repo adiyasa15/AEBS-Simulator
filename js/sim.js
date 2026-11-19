@@ -271,18 +271,13 @@ export class Sim {
         if (this.govActive) {
           const vSafe = gap / c.headway;               // batas kecepatan agar THW terjaga
           const need = (this.vEgo - vSafe) / 2.0;      // konvergen ~2 detik
-          // Batas pelambatan bertingkat: makin besar pelanggaran, makin tegas,
-          // tetapi tetap di bawah kemampuan rem darurat.
-          const t = Math.min(1, Math.max(0, (c.headway - (isFinite(thw) ? thw : c.headway)) / 2));
-          // Batas pelambatan penjaga jarak: tetap 80 % kapasitas truk, bukan parameter
-          // yang diatur pengguna. Sisanya (20 %) disediakan untuk AEB dan cadangan.
-          const cap = 0.8 * p.aAvail;
-          // pada batas 4 detik langsung bertindak: minimal soft brake (0,55),
-          // lalu naik sebanding bila pelanggaran bertambah
-          const lvl = Math.min(Math.max(Math.max(0, need / p.aAvail), 0.55), 1, cap / p.aAvail);
+          // Unit terpasang hanya punya dua tingkat: soft brake (0,55) dan full brake (1,00).
+          // Level kontinu tidak dipakai supaya perilaku simulasi sama dengan hardware.
+          const softDecel = 0.55 * p.aAvail;
+          const lvl = need >= softDecel ? 1.0 : 0.55;
           if (lvl > desired) {
             desired = lvl;
-            stage = 'partial';
+            stage = lvl >= 1 ? 'full' : 'partial';
           }
         }
       }
