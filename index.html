@@ -211,6 +211,23 @@
       <p>Gerak dihitung satu dimensi sepanjang sumbu jalan. Setiap 5 milidetik, seluruh gaya
         dijumlahkan, percepatan dihitung, lalu kecepatan dan posisi diperbarui.</p>
 
+      <h4>Notasi yang dipakai</h4>
+      <p>Supaya tidak tertukar: <b>a</b> selalu berarti percepatan/perlambatan (m/s²), dan
+        <b>m</b> selalu berarti massa (kg atau t). Tidak ada simbol yang dipakai untuk dua arti.</p>
+      <table class="eq wide">
+        <tr><th>Simbol</th><th>Arti</th><th>Satuan</th></tr>
+        <tr><td><code>a</code></td><td><b>percepatan</b> (negatif = melambat)</td><td>m/s²</td></tr>
+        <tr><td><code>a_tersedia</code></td><td>perlambatan maksimum yang dapat dihasilkan saat itu</td><td>m/s²</td></tr>
+        <tr><td><code>a_cap</code></td><td>kemampuan rem dari hasil bagi gaya rem dengan massa</td><td>m/s²</td></tr>
+        <tr><td><code>a_req</code>, <code>a_ff</code></td><td>perlambatan yang dibutuhkan (TTC relatif, prediktif)</td><td>m/s²</td></tr>
+        <tr><td><code>a_lead</code></td><td>perlambatan objek di depan</td><td>m/s²</td></tr>
+        <tr><td><code>m</code></td><td><b>massa</b> kendaraan</td><td>kg (atau t)</td></tr>
+        <tr><td><code>F</code></td><td>gaya</td><td>N</td></tr>
+        <tr><td><code>v</code>, <code>s</code></td><td>kecepatan, posisi</td><td>m/s, m</td></tr>
+        <tr><td><code>t</code>, <code>T</code></td><td><code>t</code> = waktu berjalan; <code>T</code> = waktu bangun tekanan rem</td><td>s</td></tr>
+        <tr><td><code>μ</code>, <code>g</code></td><td>koefisien gesek, gravitasi (9,81)</td><td>—, m/s²</td></tr>
+      </table>
+
       <h4>Variabel keadaan</h4>
       <table class="eq wide">
         <tr><th>Simbol</th><th>Arti</th></tr>
@@ -960,14 +977,25 @@ contoh: 75 % tercapai pada 0,60 s -> 0,60 / 0,75 = 0,80 s</pre>
         <tr><td>Retarder aktif di atas (km/h)</td><td>kecepatan minimum agar retarder menghasilkan perlambatan berarti</td><td>aktifkan pada berbagai kecepatan, catat saat efeknya hilang. Hidrolik 15–25 km/h</td></tr>
         <tr><td>Pita fade retarder (km/h)</td><td>rentang kecepatan sampai perlambatan retarder mencapai penuh</td><td>dari data di atas; selisih kecepatan penuh terhadap ambang. Tipikal 10 km/h</td></tr>
         <tr><td>Panjang kendaraan (m)</td><td>bemper depan sampai ujung belakang</td><td>meteran. FAW JH6 sekitar 10,4 m</td></tr>
-        <tr><td>Tinggi titik berat (m)</td><td>tinggi pusat massa dari jalan, kondisi bermuatan</td><td>timbang gandar depan saat diam (N₁) dan saat mengerem (N₂), lalu pakai rumus di bawah</td></tr>
-        <tr><td>Wheelbase efektif (m)</td><td>sumbu depan ke titik tengah kelompok roda belakang</td><td>meteran. FAW JH6 6x4 sekitar 4,2 m</td></tr>
+        <tr><td>Tinggi titik berat / <i>CoG height</i> (m)</td><td>tinggi pusat massa kendaraan diukur dari permukaan jalan, dalam kondisi bermuatan. Titik tempat seluruh massa dianggap terpusat.</td><td>timbang gandar depan saat diam (N₁) dan saat mengerem (N₂), lalu pakai rumus di bawah. Bila tidak dapat diukur, pakai 1,9 m untuk DT rigid bermuatan.</td></tr>
+        <tr><td>Wheelbase efektif (m)</td><td>jarak mendatar dari pusat roda sumbu depan ke titik tengah kelompok roda belakang. Untuk 6x4: bukan ke axle pertama belakang, tetapi ke tengah antara dua axle belakang.</td><td>meteran, roda lurus. FAW JH6 6x4 sekitar 4,2 m. Hanya memengaruhi indikator beban pindah ke depan, bukan jarak henti.</td></tr>
       </table>
       <pre class="formula">h = (N₂ − N₁) · L / (m · a)
 
 N₁, N₂ dalam Newton · L dan h dalam meter · m dalam kg · a dalam m/s²</pre>
       <p>Tinggi titik berat hanya memengaruhi indikator beban pindah ke depan, bukan jarak henti.
         Bila sulit diukur, nilai perkiraan tidak mengubah hasil pengereman.</p>
+
+      <h4>Parameter mana yang memengaruhi hasil apa</h4>
+      <table class="eq wide">
+        <tr><th>Parameter</th><th>Memengaruhi</th><th>Tidak memengaruhi</th></tr>
+        <tr><td>massa kosong / muatan</td><td><code>a_cap</code>, ambang TTC, jarak henti, energi rem, beban axle</td><td>—</td></tr>
+        <tr><td><code>a_cap</code> kosong / muat</td><td>seluruh angka absolut: jarak henti, ambang pemicu, kecepatan aman</td><td>—</td></tr>
+        <tr><td>latency, relay+solenoid, bangun tekanan</td><td>waktu reaksi, <code>TTC_min</code>, jarak henti</td><td>keputusan saat objek sudah diam</td></tr>
+        <tr><td>retarder (tiga nilai)</td><td>kemampuan menahan laju di turunan</td><td>jarak henti rem servis</td></tr>
+        <tr><td>panjang kendaraan</td><td>gambar di layar, posisi bemper</td><td>jarak henti</td></tr>
+        <tr><td>tinggi titik berat &amp; wheelbase</td><td>indikator beban pindah ke depan</td><td>jarak henti, ambang pemicu</td></tr>
+      </table>
 
       <h4>Protokol pengukuran minimal</h4>
       <p>Dua sesi sudah mengurangi sebagian besar ketidakpastian:</p>
