@@ -668,25 +668,33 @@ a_ff     = requiredDecel(11,1 ; 45,7 ; 0,23 ; 0,85) = 1,60 m/s²
         bahaya apa pun. Logic prediktif sudah memerintahkan full brake, karena truk depan
         melambat lebih cepat daripada ego.</p>
 
-      <h4>Yang tidak dipakai</h4>
-      <p>Logic ini tidak memakai lampu rem, kamera, maupun sensor cahaya. Radar hanya mengukur
-        jarak dan <i>range-rate</i>; perlambatan objek dihitung dari perubahan nilai itu. Alasannya
-        operasional: unit berjalan 24 jam dengan debu dan cahaya berubah, sedangkan radar tetap
-        bekerja pada kondisi tersebut.</p>
-
-      <h4>Batas: objek yang tidak pernah bergerak</h4>
-      <p>Radar tidak memberi identitas objek. Truk yang berhenti, pagar, rambu, dan tanggul
-        terlihat sama. Karena itu <i>feed-forward</i> hanya diaktifkan untuk target yang
-        <b>pernah bergerak</b> (<code>leadMovingSeen</code>): kecepatan objek melewati 1 m/s
-        sekali saja sudah cukup.</p>
-      <p>Untuk objek yang sejak awal diam, <code>a_lead</code> nol sehingga rumus berubah menjadi
-        kriteria jarak henti biasa. Bila tetap dipakai, pemicunya terjadi dari jarak sangat jauh:
-        pada 70 km/h, soft brake akan aktif ketika objek statis masih 432 m di depan (22 detik),
-        dan full brake pada 203 m (10 detik). Karena itu objek statis diserahkan ke TTC dan
-        <code>a_req</code>.</p>
-      <p>Satu kasus tetap perlu diketahui: bila objek berhenti <b>sebelum</b> radar pernah
-        melihatnya bergerak (misalnya truk sudah berhenti di tikungan), logic ini tidak
-        memberikan feed-forward. Deteksinya bergantung pada dua logic lain.</p>
+      <h4>Objek diam: kriteria TTC di dalam logic ini</h4>
+      <p>Logic ini <b>berdiri sendiri</b>. Di dalamnya terdapat dua bagian yang dijalankan setiap
+        siklus: <i>feed-forward</i> dari <code>a_lead</code>, dan kriteria TTC + <code>a_req</code>.
+        Bagian TTC tidak perlu diambil dari logic lain; ia bagian dari logic ini.</p>
+      <p><i>Feed-forward</i> hanya dipakai untuk objek yang <b>pernah bergerak</b>
+        (<code>leadMovingSeen</code>: kecepatan objek melewati 1 m/s sekali saja sudah cukup).
+        Alasannya, radar tidak memberi identitas objek: truk yang berhenti, rambu, pagar, dan
+        tanggul menghasilkan pantulan yang tidak bisa dibedakan. Objek diam ditangani kriteria
+        TTC + <code>a_req</code> yang juga ada di dalam logic ini.</p>
+      <table class="eq wide">
+        <tr><th>Objek diam, 60 km/h</th><th>Logic 3 — prediktif</th><th>Logic 1 — TTC relatif</th></tr>
+        <tr><td>jarak 67 m</td><td>tabrakan 29,2 km/h</td><td>tabrakan 29,2 km/h</td></tr>
+        <tr><td>jarak 120 m</td><td>berhenti sisa 21,9 m</td><td>berhenti sisa 21,9 m</td></tr>
+        <tr><td>jarak 170 m</td><td>berhenti sisa 31,5 m</td><td>berhenti sisa 31,5 m</td></tr>
+        <tr><td>jarak 250 m</td><td>berhenti sisa 67,1 m</td><td>berhenti sisa 67,1 m</td></tr>
+      </table>
+      <p>Hasilnya sama persis karena bagian TTC-nya sama. Artinya untuk objek yang sejak awal
+        diam, kemampuan logic 3 setara logic 1; keunggulannya hanya muncul ketika objek pernah
+        bergerak.</p>
+      <p>Kalau <i>feed-forward</i> dipaksa untuk objek diam, <code>a_lead</code> bernilai nol
+        sehingga rumusnya berubah menjadi kriteria jarak henti dan memicu dari tempat yang tidak
+        masuk akal: pada 70 km/h soft brake aktif saat objek masih 432 m di depan (22 detik), full
+        brake pada 203 m (10 detik). Karena itu bagian itu dibatasi.</p>
+      <p>Batas yang tetap ada: bila objek berhenti <b>sebelum</b> radar pernah melihatnya
+        bergerak (truk sudah berhenti di tikungan), <i>feed-forward</i> tidak bekerja dan logic ini
+        hanya sekuat kriteria TTC-nya — termasuk tidak dapat menghindari tabrakan pada 67 m di
+        60 km/h.</p>
 
       <h3>7. Logic 4 — jarak aman murni</h3>
       <p>Logic ini hanya memakai <b>jarak dan kecepatan sendiri</b>. Kecepatan objek di depan tidak
