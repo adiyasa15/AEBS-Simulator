@@ -104,6 +104,7 @@
         <option value="rel" selected>TTC relative (installed logic)</option>
         <option value="headway">TTC relative + 4 s headway</option>
         <option value="predictive">Predictive — feed-forward lead braking</option>
+        <option value="pure4s">4 s headway only — no relative speed</option>
       </select>
       <div class="row"><label class="lbl" for="headway">Headway</label><output id="headwayo">4.0 s</output></div>
       <input type="range" id="headway" min="1" max="8" step="0.5" value="4" />
@@ -772,6 +773,31 @@ reaksi ≈ 0,03 + 0,23 = 0,26 s … 0,10 + 0,23 = 0,33 s</pre>
       <p>Nilai <code>level</code> merupakan fraksi kapasitas yang tersedia pada saat itu, bukan
         angka mutlak. Soft brake tidak dimaksudkan untuk menghentikan kendaraan, melainkan
         untuk mengurangi energi kinetik dan menambah waktu pengambilan keputusan.</p>
+
+      <h4>4.5 Logic 4 — jarak 4 detik murni</h4>
+      <p>Logic ini hanya mengukur <b>jarak dan kecepatan sendiri</b>. Kecepatan relatif terhadap
+        objek tidak dipakai sama sekali, sehingga TTC tidak dihitung.</p>
+      <pre class="formula">THW    = gap / v_ego                  (hanya jarak dan kecepatan sendiri)
+v_safe = gap / 4
+aktif bila THW &lt; 4 detik; lepas bila THW &gt; 4,05 detik
+
+a_butuh = (v − v_safe) / 2
+t       = (4 − THW) / 2               (dibatasi 0 sampai 1)
+batas   = min(1,2 × (1 + t) , 0,8 × a_tersedia)
+level   = min(1, a_butuh / a_tersedia, batas / a_tersedia)</pre>
+      <table class="eq wide">
+        <tr><th>Kondisi (66,5 t, 45 km/h)</th><th>Logic 2 (TTC + 4 s)</th><th>Logic 4 (4 s murni)</th></tr>
+        <tr><td>Depan tetap, jarak 6 detik</td><td>tidak mengerem</td><td>tidak mengerem</td></tr>
+        <tr><td>Depan tetap, jarak 3,5 detik</td><td>mulai 0,25 s</td><td>mulai 0,25 s</td></tr>
+        <tr><td>Depan mogok 0,3 m/s²</td><td>mulai 9,28 s, sisa 3,4 m</td><td>mulai 9,23 s, sisa 2,8 m</td></tr>
+        <tr><td><b>Objek diam, jarak tepat 4 detik</b></td><td>berhenti, sisa 0,1 m</td><td><b>tabrakan 21,7 km/h</b></td></tr>
+      </table>
+      <p class="warn">Keterbatasan yang harus dipahami: terhadap <b>objek yang sudah diam</b>,
+        aturan 4 detik saja tidak cukup. Jarak 4 detik tidak memberi ruang untuk berhenti dari
+        45 km/h pada unit 66,5 t — logic ini baru bereaksi setelah THW turun di bawah 4 detik,
+        dan pada titik itu jarak henti sudah lebih panjang daripada jarak yang tersisa.</p>
+      <p>Penggunaan yang sesuai: menjaga jarak ikut pada konvoi yang bergerak, bukan sebagai
+        pengganti fungsi AEB.</p>
 
       <h3>5. Jarak henti dan TTC minimum</h3>
       <pre class="formula">d_henti = v·T − a·T²/6 + (v − a·T/2)² / (2a) + v·latency

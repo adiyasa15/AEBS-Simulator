@@ -190,14 +190,15 @@ export class Sim {
     if (c.aebEnabled) {
       // Ambang TTC tidak tetap: diturunkan dari kemampuan truk saat itu.
       // TTC_min = latency + v/(2a) adalah batas fisik; ambang di bawahnya tidak berguna.
+      const useTTC = c.logic !== 'pure4s';
       const ttcMin = p.latency + this.vEgo / (2 * Math.max(0.3, p.aAvail));
       const useDyn = c.dynamicTTC !== false;
       const thrFull = useDyn ? Math.max(c.fullTTC, 1.1 * ttcMin) : c.fullTTC;
       const thrPart = useDyn ? Math.max(c.partialTTC, 1.5 * ttcMin) : c.partialTTC;
 
-      if (ttc <= thrFull || (cl > 0.05 && this.aReq >= p.aAvail * 0.9)) {
+      if (useTTC && (ttc <= thrFull || (cl > 0.05 && this.aReq >= p.aAvail * 0.9))) {
         desired = 1; stage = 'full';
-      } else if (ttc <= thrPart || (cl > 0.05 && this.aReq >= p.aAvail * 0.5)) {
+      } else if (useTTC && (ttc <= thrPart || (cl > 0.05 && this.aReq >= p.aAvail * 0.5))) {
         desired = 0.55; stage = 'partial';
       }
 
@@ -218,7 +219,7 @@ export class Sim {
       // Lantai keselamatan untuk SELURUH logic: bila perlambatan yang dibutuhkan
       // sudah mendekati atau melewati kemampuan truk, rem langsung dinaikkan
       // tanpa menunggu ambang TTC. Berlaku juga saat objek diam atau sedang berhenti.
-      const dem = this.demandDecel();
+      const dem = useTTC ? this.demandDecel() : null;
       if (dem !== null && isFinite(dem)) {
         if (dem >= p.aAvail * 0.85) { desired = 1; stage = 'full'; }
         else if (dem >= p.aAvail * 0.40 && desired < 0.55) { desired = 0.55; stage = 'partial'; }
@@ -258,7 +259,7 @@ export class Sim {
       // ---- governor jarak aman (headway / THW) ----
       // TTC-relatif buta saat kecepatan hampir sama: itu justru kondisi normal di haul road.
       // Governor menahan kecepatan supaya THW tidak turun di bawah ambang.
-      if (c.logic === 'headway' && c.headway > 0) {
+      if ((c.logic === 'headway' || c.logic === 'pure4s') && c.headway > 0) {
         // Aturan jarak bersifat wajib: penjaga aktif tepat saat THW < headway,
         // tanpa ambang mati saat mengaktifkan. Histeresis hanya saat melepas
         // (0,05 detik) supaya pengereman tidak berkedip di sekitar batas.
