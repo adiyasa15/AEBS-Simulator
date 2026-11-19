@@ -26,7 +26,6 @@ const el = {
   specBox: $('#specBox'),
   logic: $('#logic'),
   headway: $('#headway'), headwayo: $('#headwayo'),
-  govDecel: $('#govDecel'), govDecelo: $('#govDecelo'),
   leadBrake: $('#leadBrake'), leadDecel: $('#leadDecel'), leadDecelo: $('#leadDecelo'),
   leadMode: $('#leadMode'), leadModeNote: $('#leadModeNote'), leadCustom: $('#leadCustom'),
   playBtn: $('#playBtn'),
@@ -175,7 +174,6 @@ function readCfg() {
     ,
     logic: el.logic.value,
     headway: +el.headway.value,
-    govDecel: +el.govDecel.value,
     leadBrake: el.leadBrake.checked,
     leadBrakeAt: 1,
     leadBrakeDecel: +el.leadDecel.value
@@ -191,7 +189,6 @@ function syncLabels() {
   el.partialTTCo.textContent = `${(+el.partialTTC.value).toFixed(1)} s`;
   el.fullTTCo.textContent = `${(+el.fullTTC.value).toFixed(1)} s`;
   el.headwayo.textContent = `${(+el.headway.value).toFixed(1)} s`;
-  el.govDecelo.textContent = `${(+el.govDecel.value).toFixed(1)} m/s²`;
   el.leadDecelo.textContent = `${(+el.leadDecel.value).toFixed(1)} m/s²`;
   if (el.capNote) refreshCapNote();
   el.filterTauo.textContent = `${(+el.filterTau.value).toFixed(2)} s`;
@@ -251,7 +248,7 @@ el.playBtn.addEventListener('click', () => {
 el.resetBtn.addEventListener('click', () => hardReset(false));
 
 // slider & select
-['v0', 'gap0', 'vLead', 'grade', 'partialTTC', 'fullTTC', 'surface', 'headway', 'govDecel', 'filterTau', 'logic'].forEach((k) => {
+['v0', 'gap0', 'vLead', 'grade', 'partialTTC', 'fullTTC', 'surface', 'headway', 'filterTau', 'logic'].forEach((k) => {
   el[k].addEventListener('input', () => { syncLabels(); hardReset(false); });
 });
 el.aeb.addEventListener('change', () => hardReset(false));

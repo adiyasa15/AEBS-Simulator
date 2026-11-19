@@ -109,9 +109,6 @@
       <div class="row"><label class="lbl" for="headway">Headway</label><output id="headwayo">4.0 s</output></div>
       <input type="range" id="headway" min="1" max="8" step="0.5" value="4" />
 
-      <div class="row"><label class="lbl" for="govDecel">Headway decel cap</label><output id="govDecelo">1.2 m/s²</output></div>
-      <input type="range" id="govDecel" min="0.3" max="5" step="0.1" value="1.2" />
-
       <label class="lbl" for="leadMode">Lead event</label>
       <select id="leadMode">
         <option value="brake2">Braking, normal (2.0 m/s²)</option>
@@ -592,7 +589,7 @@ penjaga aktif bila THW &lt; headway; lepas bila THW &gt; headway + 0,05
 selama aktif:
     a_butuh = (v − v_safe) / 2         (konvergen sekitar 2 detik)
     t       = (headway − THW) / 2      (dibatasi 0 sampai 1)
-    batas   = govDecel × (1 + t)       (bawaan: 1,2 naik sampai 2,4 m/s²)
+    batas   = 0,8 × a_tersedia          (tetap 80 % kapasitas)
     level   = min( 1 , a_butuh / a_tersedia , batas / a_tersedia )</pre>
       <p>Penjaga aktif tepat pada saat THW turun di bawah 4 detik, tanpa toleransi saat
         mengaktifkan. Histeresis 0,05 detik hanya dipakai saat melepas, agar rem tidak berkedip
@@ -602,20 +599,17 @@ selama aktif:
         truk</b> — sisanya diserahkan kepada AEB. Pelanggaran kecil dikoreksi dengan halus,
         pelanggaran besar tidak dibiarkan menumpuk.</p>
 
-      <h4>Batas ini berlaku untuk kosong dan muatan, tetapi efeknya berbeda</h4>
-      <p>Batas dinyatakan dalam m/s² (nilai mutlak), sedangkan <code>level</code> dihitung sebagai
-        fraksi kapasitas. Karena kapasitas berbeda, beban persentasenya pun berbeda:</p>
+      <h4>Batas pelambatan: fraksi kapasitas, sama untuk kosong dan muatan</h4>
+      <p>Penjaga jarak memakai batas <b>80 % kapasitas</b>. Angkanya bukan parameter yang diatur
+        pengguna — ia tetap, dihitung dari <code>a_brake</code> truk saat itu.</p>
       <table class="eq wide">
-        <tr><th>THW</th><th>Batas dasar (m/s²)</th><th>Level kosong 26 t<br>(a 4,60)</th><th>Level muat 66,5 t<br>(a 1,80)</th></tr>
-        <tr><td>4 detik</td><td>1,20</td><td>26 %</td><td><b>67 %</b></td></tr>
-        <tr><td>3 detik</td><td>1,80</td><td>39 %</td><td><b>80 %</b></td></tr>
-        <tr><td>2 detik</td><td>2,40</td><td>52 %</td><td><b>80 %</b> (dibatasi)</td></tr>
+        <tr><th>Level</th><th>Kosong 26 t (a 4,60)</th><th>Muat 66,5 t (a 1,80)</th></tr>
+        <tr><td>soft brake (minimum)</td><td>55 % = 2,53 m/s²</td><td>55 % = 0,99 m/s²</td></tr>
+        <tr><td>batas maksimum</td><td>80 % = 3,68 m/s²</td><td>80 % = 1,44 m/s²</td></tr>
       </table>
-      <p>Artinya pada unit kosong, penegakan aturan 4 detik dapat dilakukan dengan pengereman
-        ringan (26–52 % kapasitas). Pada unit bermuatan, batas 1,2 m/s² saja sudah 67 % kapasitas —
-        sehingga <b>penegakan aturan melalui pengereman pada truk bermuatan selalu mendekati
-        pengereman darurat</b>, bukan pengereman ringan. Hal ini bukan pilihan desain, melainkan
-        konsekuensi kapasitas rem yang kecil.</p>
+      <p>Karena batasnya berupa fraksi, keduanya mendapat porsi yang sama — hanya nilai
+        absolutnya berbeda mengikuti kapasitas. Sisa 20 % sengaja tidak dipakai penjaga jarak,
+        agar tetap tersedia untuk AEB dan untuk cadangan ketika kondisi permukaan memburuk.</p>
 
       <h4>Aktivasi pada batas 4 detik</h4>
       <p>Logic 2 memakai aturan yang sama dengan logic 4 untuk bagian jaraknya: penjaga aktif

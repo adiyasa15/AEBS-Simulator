@@ -274,11 +274,9 @@ export class Sim {
           // Batas pelambatan bertingkat: makin besar pelanggaran, makin tegas,
           // tetapi tetap di bawah kemampuan rem darurat.
           const t = Math.min(1, Math.max(0, (c.headway - (isFinite(thw) ? thw : c.headway)) / 2));
-          const base = c.govDecel || 1.2;
-          // Batas pelambatan: bertingkat mengikuti besar pelanggaran, TETAPI tidak boleh
-          // melewati 80 % kapasitas truk — sisanya urusan AEB. Tanpa pembatasan ini,
-          // pada unit bermuatan (a_tersedia 1,80) batas 2,4 m/s² berarti rem penuh.
-          const cap = Math.min(base * (1 + t), 0.8 * p.aAvail);
+          // Batas pelambatan penjaga jarak: tetap 80 % kapasitas truk, bukan parameter
+          // yang diatur pengguna. Sisanya (20 %) disediakan untuk AEB dan cadangan.
+          const cap = 0.8 * p.aAvail;
           // pada batas 4 detik langsung bertindak: minimal soft brake (0,55),
           // lalu naik sebanding bila pelanggaran bertambah
           const lvl = Math.min(Math.max(Math.max(0, need / p.aAvail), 0.55), 1, cap / p.aAvail);
