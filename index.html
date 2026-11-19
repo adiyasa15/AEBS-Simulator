@@ -203,29 +203,29 @@
     </header>
     <div class="modal-content">
 
-      <p class="lead">Aplikasi ini tidak memutar animasi yang telah disiapkan. Setiap angka yang
-        ditampilkan dihitung ulang dengan rumus fisika setiap <b>5 milidetik</b>, atau 200 kali
-        per detik. Dokumen ini menjelaskan metode perhitungan tersebut.</p>
+      <p class="lead">Aplikasi ini menghitung ulang seluruh besaran setiap <b>5 milidetik</b>
+        (200 kali per detik). Dokumen ini menjelaskan urutannya: dari gaya, ke percepatan,
+        ke kecepatan dan posisi, lalu ke keputusan pengereman.</p>
 
       <h3>1. Dasar perhitungan</h3>
-      <p>Gerak dihitung satu dimensi sepanjang sumbu jalan. Setiap 5 milidetik, seluruh gaya
+      <p>Gerak dihitung satu dimensi sepanjang sumbu jalan. Setiap siklus, seluruh gaya
         dijumlahkan, percepatan dihitung, lalu kecepatan dan posisi diperbarui.</p>
 
-      <h4>Notasi yang dipakai</h4>
-      <p>Supaya tidak tertukar: <b>a</b> selalu berarti percepatan/perlambatan (m/s²), dan
-        <b>m</b> selalu berarti massa (kg atau t). Tidak ada simbol yang dipakai untuk dua arti.</p>
+      <h4>Notasi</h4>
+      <p><b>a</b> selalu berarti percepatan atau perlambatan (m/s²), dan <b>m</b> selalu berarti
+        massa (kg atau t). Tidak ada simbol yang dipakai untuk dua arti.</p>
       <table class="eq wide">
         <tr><th>Simbol</th><th>Arti</th><th>Satuan</th></tr>
-        <tr><td><code>a</code></td><td><b>percepatan</b> (negatif = melambat)</td><td>m/s²</td></tr>
+        <tr><td><code>a</code></td><td>percepatan; negatif berarti melambat</td><td>m/s²</td></tr>
         <tr><td><code>a_tersedia</code></td><td>perlambatan maksimum yang dapat dihasilkan saat itu</td><td>m/s²</td></tr>
-        <tr><td><code>a_brake</code></td><td>kemampuan rem dari hasil bagi gaya rem dengan massa</td><td>m/s²</td></tr>
-        <tr><td><code>a_req</code>, <code>a_ff</code></td><td>perlambatan yang dibutuhkan (TTC relatif, prediktif)</td><td>m/s²</td></tr>
+        <tr><td><code>a_brake</code></td><td>kemampuan rem, yaitu gaya rem dibagi massa</td><td>m/s²</td></tr>
+        <tr><td><code>a_req</code>, <code>a_ff</code></td><td>perlambatan yang dibutuhkan menurut logic 1 dan logic 3</td><td>m/s²</td></tr>
         <tr><td><code>a_lead</code></td><td>perlambatan objek di depan</td><td>m/s²</td></tr>
-        <tr><td><code>m</code></td><td><b>massa</b> kendaraan</td><td>kg (atau t)</td></tr>
+        <tr><td><code>m</code></td><td>massa kendaraan</td><td>kg / t</td></tr>
         <tr><td><code>F</code></td><td>gaya</td><td>N</td></tr>
         <tr><td><code>v</code>, <code>s</code></td><td>kecepatan, posisi</td><td>m/s, m</td></tr>
-        <tr><td><code>t</code>, <code>T</code></td><td><code>t</code> = waktu berjalan; <code>T</code> = waktu bangun tekanan rem</td><td>s</td></tr>
-        <tr><td><code>μ</code>, <code>g</code></td><td>koefisien gesek, gravitasi (9,81)</td><td>—, m/s²</td></tr>
+        <tr><td><code>t</code>, <code>T</code></td><td><code>t</code> waktu berjalan; <code>T</code> waktu bangun tekanan rem</td><td>s</td></tr>
+        <tr><td><code>μ</code>, <code>g</code></td><td>koefisien gesek, gravitasi 9,81</td><td>—, m/s²</td></tr>
       </table>
 
       <h4>Variabel keadaan</h4>
@@ -235,33 +235,24 @@
         <tr><td><code>v_ego</code></td><td>kecepatan <i>ego vehicle</i> (m/s)</td></tr>
         <tr><td><code>s_lead</code>, <code>v_lead</code></td><td>posisi buritan dan kecepatan objek di depan</td></tr>
         <tr><td><code>gap</code></td><td><code>s_lead − s_ego</code></td></tr>
-        <tr><td><code>closing</code></td><td>kecepatan mendekat = <code>v_ego − v_lead</code>; positif berarti jarak menyusut</td></tr>
+        <tr><td><code>closing</code></td><td>kecepatan mendekat, <code>v_ego − v_lead</code></td></tr>
       </table>
-      <p>Sebelum AEB bekerja, kecepatan dijaga tetap pada nilai awal dengan model pengemudi
-        sederhana (throttle menyesuaikan agar kecepatan awal tercapai). Begitu AEB aktif,
-        throttle dianggap tidak bekerja sehingga seluruh perlambatan berasal dari sistem rem.
-        Model ini dipakai agar skenario realistis; pada sistem nyata, penurunan torsi mesin
-        bukan bagian dari fungsi AEB.</p>
 
-      <p><i>Ego vehicle</i> adalah istilah baku untuk kendaraan yang diamati atau dikendalikan;
-        padanannya <i>host vehicle</i>. Istilah ini dipertahankan dalam bahasa Inggris karena
-        padanan Indonesianya belum baku.</p>
-
-      <h4>Percepatan dan persamaan gerak</h4>
-      <p>Percepatan bukan hasil akhir, melainkan satu langkah dalam siklus. Nilainya diperoleh
-        dari penjumlahan gaya dibagi massa, yang setara dengan perubahan momentum:</p>
+      <h4>Persamaan gerak</h4>
+      <p>Percepatan adalah satu langkah di dalam siklus, bukan hasil akhir. Nilainya diperoleh
+        dari jumlah gaya dibagi massa, yang setara dengan perubahan momentum:</p>
       <pre class="formula">p = m · v          dp/dt = ΣF          a = ΣF / m</pre>
-      <p>Suku gaya yang dijumlahkan setiap langkah, dinyatakan dalam m/s²:</p>
+      <p>Suku gaya yang dijumlahkan setiap langkah:</p>
       <pre class="formula">a_fric     = applied × a_tersedia
-a_tersedia = min( μ · g , a_brake(massa) )
-a_regen    = regen × min(1, applied × 2,2)          # hanya pada EV
-a_resist   = 0,045 + 0,00016 · v²                   # gelinding dan aerodinamika
-a_grade    = g × kemiringan / 100                   # turunan menambah laju
-a_retard   = a_retardMax × avail(v)                 # engine brake dan retarder
+a_tersedia = min( μ · g , a_brake )
+a_regen    = regen × min(1, applied × 2,2)      # hanya pada EV
+a_resist   = 0,045 + 0,00016 · v²               # gelinding dan aerodinamika
+a_grade    = g × kemiringan / 100
+a_retard   = a_retardMax × avail(v)
+a_net      = a_fric + a_regen + a_resist + a_retard − a_grade − a_throttle
 
-a_net = a_fric + a_regen + a_resist + a_retard − a_grade − a_throttle
-v′    = max(0, v − a_net · dt)
-s′    = s + ½ (v + v′) · dt</pre>
+v′ = max(0, v − a_net · dt)
+s′ = s + ½ (v + v′) · dt</pre>
 
       <svg viewBox="0 0 720 345" class="diagram" role="img" aria-label="Diagram gaya pada truk di tanjakan">
         <defs>
@@ -322,38 +313,33 @@ s′    = s + ½ (v + v′) · dt</pre>
         <text x="20" y="336" class="dlabel">a_net = F_rem/m + F_ret/m + F_gelinding/m − g·sin θ − a_throttle</text>
       </svg>
 
-
-      <p><b>Peran massa.</b> Perlambatan dibatasi oleh dua hal, dan keduanya berbeda sifat:</p>
+      <h4>Peran massa</h4>
+      <p>Perlambatan dibatasi dua hal yang berbeda sifatnya:</p>
       <table class="eq wide">
         <tr><th>Batas</th><th>Rumus</th><th>Pengaruh massa</th></tr>
         <tr><td>Gesekan ban–jalan</td><td><code>μ · g</code></td><td>tidak bergantung massa</td></tr>
-        <tr><td>Kapasitas rem</td><td><code>F_rem / m</code></td><td><b>berbanding terbalik</b> dengan massa</td></tr>
+        <tr><td>Kapasitas rem</td><td><code>F_rem / m</code></td><td>berbanding terbalik dengan massa</td></tr>
       </table>
       <p>Dengan gaya rem tetap 119,6 kN, perlambatan menjadi 4,60 m/s² pada 26 t dan
         <b>1,80 m/s² pada 66,5 t</b>. Massa naik 2,56 kali, perlambatan turun menjadi 39 %.
-        Perlambatan hanya bisa sama bila gaya rem naik sebanding massa — misalnya melalui
-        katup pengindra beban (<i>load sensing</i>).</p>
-      <p>Karena itu massa bukan faktor kecil: ia menentukan jarak henti, ambang TTC, dan
-        <code>required deceleration</code>. Nilai <code>a_brake</code> harus berasal dari uji
-        pengereman unit pada kondisi bermuatan, bukan diasumsikan.</p>
+        Perlambatan hanya bisa setara bila gaya rem naik sebanding massa, misalnya melalui
+        katup pengindra beban. Nilai <code>a_brake</code> karena itu harus berasal dari uji
+        pengereman unit, bukan diasumsikan.</p>
 
       <h3>2. Siklus perhitungan 200 Hz</h3>
-      <p>Persamaan gerak hanya dapat dihitung apabila gaya dianggap tetap dalam selang waktu
-        tertentu. Simulator memakai selang 5 milidetik, sehingga perhitungan berulang 200 kali
-        per detik. Semakin kecil selang, semakin kecil penyimpangan ketika gaya berubah cepat
-        (misalnya saat tekanan rem mulai naik).</p>
+      <p>Persamaan gerak hanya sah bila gaya dianggap tetap dalam satu selang waktu. Simulator
+        memakai selang 5 milidetik. Semakin kecil selang, semakin kecil penyimpangan ketika gaya
+        berubah cepat.</p>
       <table class="eq wide">
         <tr><th>Frekuensi</th><th>Selang</th><th>Jarak henti terhitung</th><th>Selisih</th></tr>
         <tr><td>200 Hz</td><td>5 ms</td><td>24,76 m</td><td>acuan</td></tr>
         <tr><td>20 Hz</td><td>50 ms</td><td>25,01 m</td><td>+1,0 %</td></tr>
-        <tr><td>10 Hz</td><td>100 ms</td><td>25,29 m</td><td>+2,1 %</td></tr>
         <tr><td>4 Hz</td><td>250 ms</td><td>26,19 m</td><td>+5,8 %</td></tr>
       </table>
-      <p>Apabila gaya benar-benar konstan, semua frekuensi memberi hasil yang sama. Selisih
-        muncul ketika gaya berubah di dalam satu langkah.</p>
-      <p>Frekuensi 200 Hz merupakan pilihan untuk ketelitian hitungan, bukan gambaran perangkat
-        keras. Radar mengirim data setiap 20–50 ms dan sistem AEB pada truk berjalan 20–50 Hz.
-        Seluruh penundaan nyata dimasukkan tersendiri sebagai parameter pada bagian 3.</p>
+      <p>Bila gaya benar-benar konstan, semua frekuensi memberi hasil sama. Selisih muncul
+        ketika gaya berubah di dalam satu langkah. Angka 200 Hz adalah pilihan ketelitian
+        hitungan, bukan gambaran perangkat keras: radar mengirim data setiap 20–50 ms dan sistem
+        pada truk berjalan 20–50 Hz.</p>
 
       <svg viewBox="0 0 720 210" class="diagram" role="img" aria-label="Lingkaran perhitungan tiap 5 milidetik">
         <defs>
@@ -406,12 +392,11 @@ s′    = s + ½ (v + v′) · dt</pre>
         <text x="19" y="196" class="ds">Kotak kuning = titik keputusan. Kotak merah = penundaan nyata yang tidak bisa dilewati.</text>
       </svg>
 
-
       <h3>3. Penundaan aktuator</h3>
-      <p>Perintah pengereman tidak bekerja seketika. Terdapat penundaan tetap sebelum perintah
-        mencapai aktuator, kemudian tekanan rem naik secara bertahap:</p>
+      <p>Perintah pengereman tidak bekerja seketika. Ada penundaan tetap, lalu tekanan naik
+        secara bertahap:</p>
       <pre class="formula">latency = sensorDelay + processDelay + valveDelay     (bawaan 0,23 s)
-applied  naik linear sebesar dt / brakeBuild          (bawaan 0,85 s)</pre>
+applied naik linear sebesar dt / brakeBuild           (bawaan 0,85 s)</pre>
 
       <svg viewBox="0 0 720 150" class="timeline" role="img" aria-label="Timeline respons rem">
         <rect x="50" y="42" width="45" height="68" fill="#1d4ed8" opacity="0.35"/>
@@ -431,29 +416,31 @@ applied  naik linear sebesar dt / brakeBuild          (bawaan 0,85 s)</pre>
         <text x="300" y="36" class="tl2">a penuh</text>
       </svg>
 
-
       <table class="eq wide">
-        <tr><th>Tahap</th><th>Perkiraan</th><th>Yang harus diukur</th></tr>
+        <tr><th>Tahap</th><th>Perkiraan</th><th>Cara memperoleh</th></tr>
         <tr><td><i>data age</i> radar</td><td>10–50 ms</td><td>selisih waktu antar-frame dengan waktu penggunaan</td></tr>
-        <tr><td><i>loop period</i> pengendali</td><td>5–20 ms</td><td>periode siklus program</td></tr>
-        <tr><td><i>compute time</i></td><td>&lt;1 ms</td><td>waktu hitung algoritme per siklus</td></tr>
-        <tr><td><i>output write</i> + katup</td><td>20–50 ms</td><td>sampai relai atau solenoid aktif</td></tr>
-        <tr><td>Kenaikan tekanan ke 75 %</td><td>200–600 ms</td><td>batas UN R13: 0,6 s</td></tr>
+        <tr><td><i>loop period</i></td><td>5–20 ms</td><td>periode siklus program</td></tr>
+        <tr><td><i>compute time</i></td><td>&lt;1 ms</td><td>waktu hitung per siklus</td></tr>
+        <tr><td>relai dan katup</td><td>20–50 ms</td><td>sampai solenoid aktif</td></tr>
+        <tr><td>tekanan ke 75 %</td><td>200–600 ms</td><td>batas UN R13: 0,6 s</td></tr>
       </table>
-      <p>Kedua nilai penundaan tersebut, yaitu <code>latency</code> dan <code>brakeBuild</code>,
-        digunakan pada rumus pemicu, bukan hanya pada model aktuator. Rumus sederhana
-        <code>v²/(2a)</code> tidak dipakai karena menghasilkan jarak yang terlalu pendek: pada
-        40 km/h dengan a = 3 m/s², hasilnya 23,1 m sedangkan jarak sesungguhnya 27,8 m.</p>
+      <p>Kedua nilai, <code>latency</code> dan <code>brakeBuild</code>, dipakai pada rumus pemicu,
+        bukan hanya pada model aktuator. Rumus sederhana <code>v²/(2a)</code> tidak dipakai karena
+        menghasilkan jarak terlalu pendek: pada 40 km/h dengan a = 3 m/s² hasilnya 23,1 m,
+        sedangkan jarak sesungguhnya 27,8 m.</p>
 
-      <h3>4. Tiga logic pemicu</h3>
-      <p>Seluruh logic menghasilkan satu keluaran yang sama, yaitu <code>level</code> antara 0
-        dan 1 sebagai fraksi dari <code>a_tersedia</code>.</p>
-      <p>Setiap logic dijelaskan dengan gambar tersendiri, memperlihatkan apa yang diukur dan
-        kapan rem mulai bekerja.</p>
-      
+      <h3>4. Logic 1 — TTC relatif</h3>
+      <p>Logic ini menilai bahaya dari kecepatan mendekat saat itu.</p>
+      <pre class="formula">TTC   = gap / closing               (tak terhingga bila closing ≤ 0,05)
+a_req = closing² / (2 · gap)
+TTC_min = latency + v / (2 · a_tersedia)
 
+ambang_full = max(0,9 ; 1,1 · TTC_min)
+ambang_soft = max(1,8 ; 1,5 · TTC_min)
 
-      <h4>4.1 Logic 1 — TTC relatif</h4>
+TTC ≤ ambang_full atau a_req ≥ 0,9 · a_tersedia  → full brake
+TTC ≤ ambang_soft atau a_req ≥ 0,5 · a_tersedia  → soft brake</pre>
+
       <svg viewBox="0 0 720 300" class="diagram" role="img" aria-label="Logic 1 TTC: dua truk berjarak 44 m dengan selisih kecepatan kecil">
         <defs>
           <marker id="aa1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -496,45 +483,31 @@ applied  naik linear sebesar dt / brakeBuild          (bawaan 0,85 s)</pre>
         <text x="16" y="296" class="ds">closing</text>
       </svg>
 
-      <pre class="formula">TTC   = gap / closing                (tak terhingga jika closing ≤ 0,05)
-a_req = closing² / (2 · gap)
-
-TTC_min = latency + v / (2 · a_tersedia)
-
-ambang_full = max(0,9 ; 1,1 · TTC_min)
-ambang_soft = max(1,8 ; 1,5 · TTC_min)
-
-TTC ≤ ambang_full  atau a_req ≥ 0,9 · a_tersedia  → full brake (level 1,00)
-TTC ≤ ambang_soft  atau a_req ≥ 0,5 · a_tersedia  → soft brake (level 0,55)
-gap &lt; 4 m                                         → full brake</pre>
-      <h4>Safety override untuk seluruh logic</h4>
-      <p>Selain ambang di atas, setiap siklus juga menghitung <b>perlambatan yang dibutuhkan</b>
-        untuk berhenti sebelum objek di depan, termasuk sisa jarak berhenti objek tersebut:</p>
-      <pre class="formula">leadDist = objek diam ? 0 : v_lead² / (2 · a_lead)      (bila objek sedang berhenti)
-budget   = gap + leadDist − margin
-demand   = requiredDecel(v, budget, latency, build)
-
-demand ≥ 0,85 · a_tersedia → full brake
-demand ≥ 0,40 · a_tersedia → soft brake</pre>
-      <p><i>Safety override</i> ini berlaku pada <b>ketiga logic</b> dan tidak menunggu ambang
-        TTC. Tujuannya satu: rem tidak boleh menunggu sampai <i>required deceleration</i> melampaui
-        kemampuan truk. Karena <code>a_tersedia</code> diturunkan dari massa, override ini bekerja
-        lebih awal pada unit bermuatan.</p>
-
-      <p>Ambang TTC tidak berupa konstanta. Nilainya naik mengikuti <code>TTC_min</code>, yaitu
-        waktu minimum yang dibutuhkan truk untuk berhenti pada kecepatan dan kemampuan rem saat
-        itu. Karena <code>a_tersedia</code> bergantung pada massa, unit bermuatan otomatis memakai
-        ambang yang lebih awal daripada unit kosong.</p>
+      <p>Ambangnya tidak tetap. Nilainya naik mengikuti <code>TTC_min</code>, yaitu waktu minimum
+        yang dibutuhkan truk untuk berhenti pada kecepatan dan kemampuan rem saat itu. Karena
+        <code>a_tersedia</code> membawa massa, unit bermuatan memakai ambang lebih awal.</p>
       <table class="eq wide">
-        <tr><th>Kecepatan</th><th>Muat 66,5 t (a 3,0)</th><th>Kosong 26 t (a 4,6)</th></tr>
-        <tr><td>44 km/h</td><td>penuh 2,5 s · sebagian 3,5 s</td><td>penuh 1,7 s · sebagian 2,3 s</td></tr>
-        <tr><td>70 km/h</td><td>penuh 3,8 s · sebagian 5,2 s</td><td>penuh 2,6 s · sebagian 3,5 s</td></tr>
+        <tr><th>Kecepatan</th><th>Muat 66,5 t (a 1,80)</th><th>Kosong 26 t (a 4,60)</th></tr>
+        <tr><td>44 km/h</td><td>full 2,5 s · soft 3,5 s</td><td>full 1,7 s · soft 2,3 s</td></tr>
+        <tr><td>70 km/h</td><td>full 3,8 s · soft 5,2 s</td><td>full 2,6 s · soft 3,5 s</td></tr>
       </table>
-      <p>Logic ini menilai bahaya dari kecepatan mendekat (<i>closing</i>) saat itu. Apabila dua kendaraan
-        bergerak dengan kecepatan hampir sama, nilai TTC menjadi sangat besar meskipun jaraknya
-        pendek, sehingga pemicu baru bekerja setelah kendaraan depan mengerem.</p>
+      <p>Kelemahan logic ini muncul saat dua kendaraan bergerak dengan kecepatan hampir sama:
+        <code>closing</code> mendekati nol sehingga TTC sangat besar, meskipun jaraknya pendek.
+        Pemicu baru bekerja setelah kendaraan depan mengerem dan kecepatan mendekat terbentuk.</p>
 
-      <h4>4.2 Logic 2 — TTC relatif + jarak aman 4 detik</h4>
+      <h3>5. Logic 2 — TTC relatif ditambah jarak aman</h3>
+      <p>Logic ini menjalankan dua kriteria sekaligus: TTC seperti logic 1, ditambah penjaga jarak
+        berbasis waktu.</p>
+      <pre class="formula">THW    = gap / v_ego
+v_safe = gap / headway              (headway bawaan 4 detik)
+
+penjaga aktif bila THW ≤ headway; lepas bila THW &gt; headway + 0,05
+
+selama aktif:
+    a_butuh = (v − v_safe) / 2
+    level   = 0,55 bila a_butuh &lt; 0,55 · a_tersedia
+              1,00 bila a_butuh ≥ 0,55 · a_tersedia</pre>
+
       <svg viewBox="0 0 720 300" class="diagram" role="img" aria-label="Logic 2 jarak aman: pengukuran 4 detik di antara dua truk">
         <defs>
           <marker id="aa2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -583,102 +556,31 @@ demand ≥ 0,40 · a_tersedia → soft brake</pre>
         <text x="16" y="296" class="ds">4 detik</text>
       </svg>
 
-      <pre class="formula">v_safe = gap / headway               (headway = jarak aman dalam detik, bawaan 4)
-THW    = gap / v
-
-penjaga aktif bila THW &lt; headway; lepas bila THW &gt; headway + 0,05
-
-selama aktif:
-    a_butuh = (v − v_safe) / 2         (konvergen sekitar 2 detik)
-    t       = (headway − THW) / 2      (dibatasi 0 sampai 1)
-    batas   = 0,8 × a_tersedia          (tetap 80 % kapasitas)
-    level   = min( 1 , a_butuh / a_tersedia , batas / a_tersedia )</pre>
-      <p>Penjaga aktif tepat pada saat THW turun di bawah 4 detik, tanpa toleransi saat
-        mengaktifkan. Histeresis 0,05 detik hanya dipakai saat melepas, agar rem tidak berkedip
-        ketika nilai berada di sekitar batas.</p>
-      <p>Batas pelambatan bertingkat: 1,2 m/s² (setara 0,12 g) pada pelanggaran kecil, naik
-        bertahap sampai dua kali nilai dasar, tetapi <b>tidak pernah melebihi 80 % kapasitas
-        truk</b> — sisanya diserahkan kepada AEB. Pelanggaran kecil dikoreksi dengan halus,
-        pelanggaran besar tidak dibiarkan menumpuk.</p>
-
-      <h4>Batas pelambatan: fraksi kapasitas, sama untuk kosong dan muatan</h4>
-      <p>Penjaga jarak memakai batas <b>80 % kapasitas</b>. Angkanya bukan parameter yang diatur
-        pengguna — ia tetap, dihitung dari <code>a_brake</code> truk saat itu.</p>
+      <p>Dua kriteria di atas tidak selalu berimpit. Jarak 4 detik menetapkan jarak berdasarkan
+        waktu; <code>a_req</code> menetapkan kebutuhan perlambatan untuk berhenti tepat pada objek.
+        Keduanya bertemu pada satu kecepatan, yaitu <code>v = 4 × a_tersedia</code> — sekitar
+        26 km/h untuk a_tersedia 1,80 m/s².</p>
       <table class="eq wide">
-        <tr><th>Level</th><th>Kosong 26 t (a 4,60)</th><th>Muat 66,5 t (a 1,80)</th></tr>
-        <tr><td>soft brake (minimum)</td><td>55 % = 2,53 m/s²</td><td>55 % = 0,99 m/s²</td></tr>
-        <tr><td>batas maksimum</td><td>80 % = 3,68 m/s²</td><td>80 % = 1,44 m/s²</td></tr>
-      </table>
-      <p>Karena batasnya berupa fraksi, keduanya mendapat porsi yang sama — hanya nilai
-        absolutnya berbeda mengikuti kapasitas. Sisa 20 % sengaja tidak dipakai penjaga jarak,
-        agar tetap tersedia untuk AEB dan untuk cadangan ketika kondisi permukaan memburuk.</p>
-
-      <h4>Aktivasi pada batas 4 detik</h4>
-      <p>Logic 2 memakai aturan yang sama dengan logic 4 untuk bagian jaraknya: penjaga aktif
-        <b>tepat pada THW = 4 detik</b> (inklusif), langsung dengan minimal soft brake, lalu naik
-        bila pelanggaran bertambah. Ambang TTC dan <i>safety override</i> tetap berjalan sebagai
-        lapisan tambahan.</p>
-      <table class="eq wide">
-        <tr><th>Jarak (objek sekecepatan)</th><th>Logic 2</th><th>Logic 4</th></tr>
-        <tr><td>4,5 detik</td><td>tidak mengerem</td><td>tidak mengerem</td></tr>
-        <tr><td><b>4,0 detik</b></td><td><b>soft brake, 0,25 s</b></td><td><b>soft brake, 0,25 s</b></td></tr>
-        <tr><td>3,9 detik</td><td>soft brake, 0,25 s</td><td>soft brake, 0,25 s</td></tr>
-      </table>
-      <p>Perbedaannya bukan pada kapan mulai, melainkan pada apa yang terjadi setelahnya:
-        logic 2 masih memiliki TTC relatif dan <i>safety override</i> yang dapat menaikkan ke
-        full brake, sedangkan logic 4 berhenti pada 80 % kapasitas.</p>
-
-      <h4>Istilah tingkat pengereman</h4>
-      <p>Sistem AEBS yang terpasang memakai dua istilah saja:</p>
-      <table class="eq wide">
-        <tr><th>Istilah</th><th>Level</th><th>Arti</th></tr>
-        <tr><td><b>soft brake</b></td><td>0,55</td><td>55 % kapasitas; tahap pertama, untuk mengurangi kecepatan dan memberi waktu</td></tr>
-        <tr><td><b>full brake</b></td><td>1,00</td><td>100 % kapasitas; tahap terakhir, dibatasi ABS dan gesekan</td></tr>
-      </table>
-      <p>Istilah lain seperti <i>partial brake</i>, <i>comfort braking</i>, atau <i>hard brake</i>
-        tidak dipakai agar tidak terjadi perbedaan penafsiran antara dokumen dan unit terpasang.</p>
-      <p>Logic ini menjaga jarak, bukan mencegah tabrakan. Pada jarak yang sudah sangat dekat,
-        waktu yang dibutuhkan untuk memulihkan jarak melebihi waktu yang tersedia, sehingga
-        penghentian tetap menjadi tugas ambang AEB.</p>
-
-      <h4>Mengapa rem aktif walau jarak masih di atas 4 detik</h4>
-      <p>Kriteria jarak 4 detik dan ambang <code>a_req</code> merupakan dua hal berbeda.
-        Aturan 4 detik menetapkan jarak berdasarkan waktu, sedangkan <code>a_req</code>
-        menetapkan kebutuhan perlambatan untuk berhenti tepat pada objek. Keduanya berimpit
-        hanya pada satu kecepatan, yaitu <code>v = 4 × a_tersedia</code> — sekitar
-        <b>26 km/h</b> untuk a_tersedia 1,80 m/s².</p>
-      <table class="eq wide">
-        <tr><th>Kecepatan<br>(objek diam)</th><th>Jarak 4 detik</th><th>Jarak saat<br>a_req = 0,5·a_tersedia</th><th>Kriteria yang<br>lebih dahulu</th></tr>
+        <tr><th>Kecepatan<br>(objek diam)</th><th>Jarak 4 detik</th><th>Jarak saat<br>a_req = 50 % kapasitas</th><th>Kriteria<br>lebih dulu</th></tr>
         <tr><td>30 km/h</td><td>33 m</td><td>39 m</td><td>a_req</td></tr>
-        <tr><td>40 km/h</td><td>44 m</td><td>69 m</td><td>a_req</td></tr>
         <tr><td>50 km/h</td><td>56 m</td><td>107 m</td><td>a_req</td></tr>
-        <tr><td>70 km/h</td><td>78 m</td><td>210 m</td><td>a_req</td></tr>
       </table>
-      <p>Di atas 26 km/h, <code>a_req</code> sudah mencapai 50 % kapasitas sebelum jarak
-        menyusut sampai 4 detik. Karena itu soft brake bekerja meskipun jarak masih di atas
-        4 detik — dan hal ini bukan kesalahan perhitungan.</p>
-      <p>Kedua kriteria mengukur hal yang berbeda: 4 detik menjamin waktu reaksi terhadap
-        kendaraan yang <b>bergerak</b>, sedangkan <code>a_req</code> mengukur kemampuan berhenti
-        terhadap objek yang <b>diam</b>. Pada objek bergerak yang tidak mengerem, closing mendekati
-        nol sehingga a_req juga mendekati nol dan hanya aturan 4 detik yang bekerja.</p>
+      <p>Di atas 26 km/h, <code>a_req</code> sudah mencapai 50 % kapasitas sebelum jarak menyusut
+        sampai 4 detik, sehingga rem bekerja meskipun jarak masih di atas 4 detik. Ini bukan
+        kesalahan hitung: 4 detik menjamin waktu reaksi terhadap kendaraan yang bergerak,
+        sedangkan <code>a_req</code> mengukur kemampuan berhenti terhadap objek yang diam.</p>
 
-      <h4>Frekuensi pemeriksaan</h4>
-      <p>Ketiga logic diperiksa pada siklus yang sama, yaitu setiap 5 milidetik di dalam
-        simulator, atau setiap <i>loop period</i> pengendali pada sistem nyata. Data radar juga
-        sama, berasal dari satu sumber dengan laju pembaruan yang sama. Perbedaan antar logic
-        bukan pada seberapa sering memeriksa, melainkan pada besaran yang dinilai.</p>
-      <table class="eq wide">
-        <tr><th>Logic</th><th>Besaran yang dinilai</th><th>Kapan mulai bekerja</th></tr>
-        <tr><td>TTC relatif</td><td>jarak dan kecepatan mendekat</td><td>ketika TTC atau a_req melewati ambang</td></tr>
-        <tr><td>Jarak aman 4 detik</td><td>jarak dibandingkan dengan 4 kali kecepatan</td><td>ketika THW turun di bawah 4 detik</td></tr>
-        <tr><td>Prediktif</td><td>perlambatan kendaraan depan</td><td>ketika kebutuhan perlambatan melewati 25 % kapasitas</td></tr>
-      </table>
-      <p>Logic jarak aman memeriksa setiap siklus, tetapi tidak melakukan apa pun selama THW
-        masih 4 detik atau lebih. Begitu THW turun di bawah 4 detik, penjaga aktif dan besarnya
-        pelambatan mengikuti selisih jarak. Histeresis 0,05 detik hanya berlaku saat melepas,
-        bukan saat mengaktifkan.</p>
+      <h3>6. Logic 3 — prediktif</h3>
+      <p>Logic ini menilai bahaya dari <b>perlambatan objek di depan</b>, bukan dari jarak.
+        Nilainya diperoleh dari turunan <i>range-rate</i> yang dihaluskan dengan filter 0,15 detik.</p>
+      <pre class="formula">a_lead   = filter_0,15s( d(−range_rate) / dt )
+leadDist = a_lead &gt; 0,1 ? v_lead² / (2 · a_lead) : (v_lead &lt; 0,3 ? 0 : tak terhingga)
+budget   = gap + leadDist − margin(3 m)
+a_ff     = requiredDecel(v, budget, latency, build)
 
-      <h4>4.3 Logic 3 — prediktif</h4>
+a_ff ≥ 0,55 · a_tersedia → full brake
+a_ff ≥ 0,25 · a_tersedia → soft brake</pre>
+
       <svg viewBox="0 0 720 300" class="diagram" role="img" aria-label="Logic 3 prediktif: radar membaca perlambatan truk depan lalu memperkirakan titik berhentinya">
         <defs>
           <marker id="aa3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -724,70 +626,47 @@ selama aktif:
         <text x="360" y="284" class="ds" text-anchor="middle">= filter a_lead 0,15 s + latency sistem 0,23 s (bukan angka tetap)</text>
       </svg>
 
-      <p>Logic ini tidak menilai bahaya dari jarak, melainkan dari <b>perlambatan kendaraan
-        depan</b>. Nilainya diperoleh dari turunan <i>range-rate</i> yang dihaluskan dengan filter
-        berkonstanta waktu 0,15 detik:</p>
-      <pre class="formula">a_lead   = filter_0,15s( d(−range_rate) / dt )
-leadDist = a_lead &gt; 0,1 ? v_lead² / (2 · a_lead) : (v_lead &lt; 0,3 ? 0 : tak terhingga)
-budget   = gap + leadDist − margin(3 m)
-a_ff     = requiredDecel(v, budget, latency, build)
-
-a_ff ≥ 0,55 · a_tersedia → level 1,00
-a_ff ≥ 0,25 · a_tersedia → level 0,55</pre>
-      <p><code>requiredDecel</code> mencari nilai percepatan terkecil sehingga jarak henti tidak
+      <p><code>requiredDecel</code> mencari percepatan terkecil sehingga jarak henti tidak
         melebihi <code>budget</code>. Karena hasilnya sudah memperhitungkan latency dan kenaikan
         tekanan, logic ini mulai bekerja jauh lebih awal daripada TTC relatif.</p>
 
       <h4>Asal angka reaksi 0,30 detik</h4>
-      <p>Angka tersebut bukan parameter yang disetel, melainkan hasil penjumlahan dua tahap:</p>
-      <pre class="formula">reaksi = waktu sampai a_ff melewati ambang  +  latency sistem
-
-waktu ambang  ≈ 0,03–0,10 s   bergantung filterTau dan cepatnya perubahan a_lead
-latency sistem  = 0,23 s      sensorDelay 0,12 + processDelay 0,06 + valveDelay 0,05
-
-reaksi ≈ 0,03 + 0,23 = 0,26 s … 0,10 + 0,23 = 0,33 s</pre>
-      <p>Nilai yang diukur pada simulasi, untuk beberapa nilai filter:</p>
+      <p>Angka itu bukan parameter yang disetel, melainkan penjumlahan dua tahap:</p>
+      <pre class="formula">reaksi = waktu sampai a_ff melewati ambang + latency sistem
+       = 0,03 … 0,10 s              + 0,23 s
+       = 0,26 … 0,33 s</pre>
       <table class="eq wide">
-        <tr><th>Filter a_lead</th><th>Perintah keluar</th><th>Rem mulai bekerja</th><th>Total reaksi</th></tr>
+        <tr><th>Filter a_lead</th><th>Perintah keluar</th><th>Rem bekerja</th><th>Total reaksi</th></tr>
         <tr><td>0,05 s</td><td>1,010 s</td><td>1,260 s</td><td>0,26 s</td></tr>
-        <tr><td>0,10 s</td><td>1,020 s</td><td>1,270 s</td><td>0,27 s</td></tr>
         <tr><td><b>0,15 s (bawaan)</b></td><td>1,030 s</td><td>1,280 s</td><td><b>0,28 s</b></td></tr>
-        <tr><td>0,30 s</td><td>1,060 s</td><td>1,310 s</td><td>0,31 s</td></tr>
         <tr><td>0,50 s</td><td>1,095 s</td><td>1,345 s</td><td>0,34 s</td></tr>
       </table>
-      <p class="tl2note">Acuan: truk depan mulai mengerem pada t = 1,00 s. Kolom perintah keluar adalah
-        saat keputusan dibuat; kolom rem mulai bekerja adalah saat tekanan sudah cukup menghasilkan
-        perlambatan.</p>
-      <p>Dengan kata lain, 0,30 detik tersusun dari <b>waktu pengenalan perlambatan</b> (filter) dan
-        <b>waktu penundaan perangkat</b> (latency). Mempercepat salah satunya akan menurunkan angka
-        reaksi, tetapi filter yang terlalu cepat membuat sistem mudah memicu rem karena noise radar.</p>
+      <p>Mempercepat filter menurunkan reaksi, tetapi membuat sistem lebih mudah terpicu oleh
+        noise radar. Mempercepat perangkat keras menurunkan reaksi tanpa risiko tersebut.</p>
 
       <h4>Radar dan objek statis</h4>
-      <p>Radar 77 GHz mengukur jarak, <i>range-rate</i> melalui pergeseran Doppler, sudut azimuth,
-        kekuatan gema (RCS), dan sebaran titik deteksi. Radar tidak memberikan identitas objek,
-        sehingga kendaraan yang berhenti, pagar, rambu, dan tanggul diperlakukan sama sebagai
-        objek statis.</p>
-      <p>Untuk objek statis, nilai <code>a_lead</code> sama dengan nol sehingga rumus pada logic
-        prediktif berubah fungsi menjadi kriteria jarak henti. Akibatnya pemicu terjadi dari
-        jarak yang sangat jauh: pada 70 km/h, soft brake akan aktif bila terdapat objek statis
-        dalam 268 meter. Karena itu, <i>feed-forward</i> hanya diterapkan pada target yang
-        pernah bergerak, sedangkan objek yang sejak awal diam ditangani oleh TTC dan
-        <code>a_req</code>.</p>
+      <p>Radar 77 GHz mengukur jarak, <i>range-rate</i> melalui Doppler, sudut azimuth, kekuatan
+        gema, dan sebaran titik deteksi. Radar tidak memberikan identitas objek, sehingga kendaraan
+        yang berhenti, pagar, rambu, dan tanggul diperlakukan sama sebagai objek statis.</p>
+      <p>Untuk objek statis, <code>a_lead</code> bernilai nol sehingga rumus berubah fungsi menjadi
+        kriteria jarak henti. Akibatnya pemicu terjadi dari jarak sangat jauh: pada 70 km/h, soft
+        brake aktif bila objek statis berada dalam 268 meter. Karena itu <i>feed-forward</i> hanya
+        diterapkan pada target yang pernah bergerak, sedangkan objek yang sejak awal diam ditangani
+        TTC dan <code>a_req</code>.</p>
 
-      <h4>4.4 Soft brake dan full brake</h4>
-      <table class="eq wide">
-        <tr><th>Kondisi</th><th>a_tersedia</th><th>Sebagian (0,55)</th><th>Penuh (1,00)</th></tr>
-        <tr><td>Chipseal kering, 66,5 t</td><td>3,00 m/s²</td><td>1,65 m/s²</td><td>3,00 m/s²</td></tr>
-        <tr><td>Berlumpur, 66,5 t</td><td>2,45 m/s²</td><td>1,35 m/s²</td><td>2,45 m/s²</td></tr>
-        <tr><td>Kosong 26 t</td><td>4,60 m/s²</td><td>2,53 m/s²</td><td>4,60 m/s²</td></tr>
-      </table>
-      <p>Nilai <code>level</code> merupakan fraksi kapasitas yang tersedia pada saat itu, bukan
-        angka mutlak. Soft brake tidak dimaksudkan untuk menghentikan kendaraan, melainkan
-        untuk mengurangi energi kinetik dan menambah waktu pengambilan keputusan.</p>
+      <h3>7. Logic 4 — jarak aman murni</h3>
+      <p>Logic ini hanya memakai <b>jarak dan kecepatan sendiri</b>. Kecepatan objek di depan tidak
+        dipakai, sehingga TTC tidak dihitung dan tidak ada <code>a_req</code>.</p>
+      <pre class="formula">THW    = gap / v_ego
+v_safe = gap / headway              (headway bawaan 4 detik)
 
-      <h4>4.5 Logic 4 — jarak 4 detik murni</h4>
-      <p>Logic ini hanya mengukur <b>jarak dan kecepatan sendiri</b>. Kecepatan relatif terhadap
-        objek tidak dipakai sama sekali, sehingga TTC tidak dihitung.</p>
+penjaga aktif bila THW ≤ headway; lepas bila THW &gt; headway + 0,05
+
+selama aktif:
+    a_butuh = (v − v_safe) / 2
+    level   = 0,55 bila a_butuh &lt; 0,55 · a_tersedia
+              1,00 bila a_butuh ≥ 0,55 · a_tersedia</pre>
+
       <svg viewBox="0 0 720 300" class="diagram" role="img" aria-label="Logic 4 jarak 4 detik murni: jarak aman dihitung dari kecepatan sendiri">
         <defs>
           <g id="trk4">
@@ -826,61 +705,62 @@ reaksi ≈ 0,03 + 0,23 = 0,26 s … 0,10 + 0,23 = 0,33 s</pre>
         <text x="460" y="270" class="dt" text-anchor="middle" fill="#fbbf24">tepat 4 detik → soft brake</text>
         <text x="460" y="284" class="ds" text-anchor="middle">kecepatan objek tidak dipakai sama sekali</text>
 
-        <text x="16" y="268" class="ds">hanya</text>
-        <text x="16" y="282" class="ds">jarak dan</text>
-        <text x="16" y="296" class="ds">kecepatan</text>
       </svg>
 
-
-      <pre class="formula">THW    = gap / v_ego                  (hanya jarak dan kecepatan sendiri)
-v_safe = gap / 4
-aktif TEPAT pada THW = 4 detik; lepas bila THW &gt; 4,05 detik
-
-a_butuh = (v − v_safe) / 2
-t       = (4 − THW) / 2               (dibatasi 0 sampai 1)
-batas   = min(1,2 × (1 + t) , 0,8 × a_tersedia)
-level   = min( max(a_butuh / a_tersedia , 0,55) , batas / a_tersedia )</pre>
-      <p>Pada batas 4 detik sistem <b>langsung bertindak</b>, minimal soft brake (0,55), lalu
-        naik bila pelanggaran bertambah — maksimum 80 % kapasitas.</p>
+      <p>Aturan ini mengikuti kecepatan: pada 40 km/h batasnya 44 m, pada 60 km/h 67 m, pada
+        70 km/h 78 m. Mengubah headway pada panel menggeser jarak aman secara otomatis.</p>
+      <p>Yang perlu dipahami: logic ini <b>tidak mengenali bahaya yang mendekat cepat</b>. Terhadap
+        objek diam pada jarak 8 detik (120 m), ia tetap diam sampai jarak menyusut ke batas,
+        sedangkan pada titik itu jarak henti sudah lebih panjang daripada jarak yang tersisa.</p>
       <table class="eq wide">
-        <tr><th>Kondisi (66,5 t, 45 km/h)</th><th>Logic 2 (TTC + 4 s)</th><th>Logic 4 (4 s murni)</th></tr>
-        <tr><td>Depan tetap, jarak 4,5 detik</td><td>tidak mengerem</td><td>tidak mengerem</td></tr>
-        <tr><td><b>Depan tetap, jarak tepat 4,0 detik</b></td><td>tidak mengerem</td><td><b>langsung soft brake</b></td></tr>
-        <tr><td>Depan tetap, jarak 3,5 detik</td><td>mulai 0,25 s</td><td>mulai 0,25 s</td></tr>
-        <tr><td>Depan mogok 0,3 m/s²</td><td>mulai 9,28 s, sisa 3,4 m</td><td>mulai 9,23 s, sisa 2,8 m</td></tr>
-        <tr><td><b>Objek diam, jarak tepat 4 detik</b></td><td>berhenti, sisa 0,1 m</td><td><b>tabrakan 21,7 km/h</b></td></tr>
-        <tr><td><b>Objek diam, jarak 8 detik</b></td><td>rem 0,25 s, berhenti sisa 21,9 m</td><td>rem 3,50 s, <b>tabrakan 37,7 km/h</b></td></tr>
-        <tr><td><b>Depan mengerem 5 m/s², jarak 80 m</b></td><td>rem 1,29 s, berhenti sisa 22,9 m</td><td>rem 3,63 s, <b>tabrakan 36,9 km/h</b></td></tr>
-        <tr><td>Depan 30 km/h, jarak 8 detik</td><td>rem 6,81 s</td><td>rem 6,81 s (sama)</td></tr>
+        <tr><th>Kondisi (66,5 t, 60 km/h)</th><th>Logic 2</th><th>Logic 4</th></tr>
+        <tr><td>Objek diam, jarak 8 detik (120 m)</td><td>rem 0,25 s, berhenti sisa 21,9 m</td><td>rem 3,50 s, <b>tabrakan 37,7 km/h</b></td></tr>
+        <tr><td>Objek diam, jarak tepat 4 detik (67 m)</td><td>berhenti sisa 0,1 m</td><td><b>tabrakan 21,7 km/h</b></td></tr>
       </table>
-      <p><b>Kapan keduanya berbeda?</b> Saat kecepatan objek berbeda dari kita. Bila kecepatan
-        hampir sama, TTC menjadi tak terhingga sehingga logic 2 berperilaku sama dengan logic 4.
-        Begitu objek jauh lebih lambat atau sedang mengerem keras, TTC dan <code>a_req</code>
-        pada logic 2 bereaksi lebih dulu, sedangkan logic 4 tetap menunggu batas 4 detik.</p>
-      <p class="warn">Keterbatasan yang harus dipahami: terhadap <b>objek yang sudah diam</b>,
-        aturan 4 detik saja tidak cukup. Jarak 4 detik tidak memberi ruang untuk berhenti dari
-        45 km/h pada unit 66,5 t — logic ini baru bereaksi setelah THW turun di bawah 4 detik,
-        dan pada titik itu jarak henti sudah lebih panjang daripada jarak yang tersisa.</p>
-      <p>Penggunaan yang sesuai: menjaga jarak ikut pada konvoi yang bergerak, bukan sebagai
-        pengganti fungsi AEB.</p>
+      <p>Perbedaan keduanya terletak pada lapisan kedua: logic 2 masih memakai TTC dan
+        <i>safety override</i> yang dapat menaikkan ke full brake, sedangkan logic 4 berhenti pada
+        dua tingkat penjaga jarak. Saat kecepatan objek hampir sama, keduanya berperilaku identik
+        karena TTC menjadi tak terhingga.</p>
+      <p>Karena itu logic 4 dipakai untuk menegakkan aturan jarak, bukan sebagai pengganti fungsi
+        AEB.</p>
 
-      <h3>5. Jarak henti dan TTC minimum</h3>
+      <h3>8. Safety override</h3>
+      <p>Pada logic 1, 2, dan 3 terdapat satu lapisan tambahan yang bekerja setiap siklus tanpa
+        menunggu ambang TTC:</p>
+      <pre class="formula">leadDist = objek diam ? 0 : v_lead² / (2 · a_lead)
+budget   = gap + leadDist − margin
+demand   = requiredDecel(v, budget, latency, build)
+
+demand ≥ 0,85 · a_tersedia → full brake
+demand ≥ 0,40 · a_tersedia → soft brake</pre>
+      <p>Tujuannya satu: rem tidak boleh menunggu sampai perlambatan yang dibutuhkan melampaui
+        kemampuan truk. Karena <code>a_tersedia</code> diturunkan dari massa, lapisan ini bekerja
+        lebih awal pada unit bermuatan. Logic 4 tidak memakai lapisan ini karena tujuannya memang
+        hanya menjaga jarak.</p>
+
+      <h3>9. Tingkat pengereman</h3>
+      <p>Sistem memakai dua tingkat, sesuai unit yang terpasang:</p>
+      <table class="eq wide">
+        <tr><th>Istilah</th><th>Level</th><th>Kosong 26 t</th><th>Muat 66,5 t</th></tr>
+        <tr><td><b>soft brake</b></td><td>0,55</td><td>2,53 m/s²</td><td>0,99 m/s²</td></tr>
+        <tr><td><b>full brake</b></td><td>1,00</td><td>4,60 m/s²</td><td>1,80 m/s²</td></tr>
+      </table>
+      <p>Level adalah fraksi kapasitas, bukan angka mutlak. Karena kapasitas berbeda, nilai
+        absolutnya berbeda meski persentasenya sama.</p>
+
+      <h3>10. Jarak henti dan TTC minimum</h3>
       <pre class="formula">d_henti = v·T − a·T²/6 + (v − a·T/2)² / (2a) + v·latency
-          dengan T = brakeBuild; mencakup latency, kenaikan tekanan, dan perlambatan penuh
-
 TTC_min = latency + v / (2a)</pre>
-      <p><code>TTC_min</code> adalah nilai TTC terkecil yang masih memungkinkan kendaraan
-        berhenti. Nilainya meningkat seiring kecepatan, sehingga ambang TTC berupa konstanta
-        tidak dapat berlaku untuk seluruh rentang kecepatan.</p>
+      <p><code>TTC_min</code> adalah TTC terkecil yang masih memungkinkan kendaraan berhenti.
+        Nilainya meningkat seiring kecepatan, sehingga ambang TTC berupa konstanta tidak dapat
+        berlaku untuk seluruh rentang kecepatan.</p>
       <table class="eq wide">
-        <tr><th>Perlambatan</th><th>20 km/h</th><th>40 km/h</th><th>60 km/h</th></tr>
-        <tr><td>3,0 m/s² (66,5 t)</td><td>1,9 s</td><td>2,9 s</td><td>3,8 s</td></tr>
-        <tr><td>1,8 m/s² (bila gaya rem terbatas)</td><td>2,5 s</td><td>4,1 s</td><td>5,6 s</td></tr>
+        <tr><th>Kondisi</th><th>20 km/h</th><th>40 km/h</th><th>60 km/h</th></tr>
+        <tr><td>Muat 66,5 t (a 1,80)</td><td>1,8 s</td><td>3,3 s</td><td>4,9 s</td></tr>
+        <tr><td>Kosong 26 t (a 4,60)</td><td>0,8 s</td><td>1,4 s</td><td>2,0 s</td></tr>
       </table>
 
-      <h3>6. Alur keputusan</h3>
-      <p>Diagram berikut merangkum urutan dari penerimaan data radar sampai perubahan kecepatan
-        kendaraan.</p>
+      <h3>11. Alur keputusan</h3>
 
       <svg viewBox="0 0 720 470" class="diagram" role="img" aria-label="Alur logic AEB dari radar ke perlambatan">
         <defs>
@@ -966,154 +846,104 @@ TTC_min = latency + v / (2a)</pre>
 
       </svg>
 
-
-      <h3>7. Contoh perhitungan</h3>
-      <p>Seluruh angka berikut diambil dari jejak perhitungan simulasi. Kondisi: jalan datar,
-        chipseal kering (μ 0,60), <i>ego vehicle</i> 40 km/h, kendaraan depan 15 km/h yang
-        bergerak tetap, jarak awal 4 detik atau 44,4 m.</p>
-
+      <h3>12. Contoh perhitungan</h3>
+      <p>Kondisi: jalan datar, chipseal kering (μ 0,60), <i>ego vehicle</i> 40 km/h, objek di depan
+        15 km/h yang bergerak tetap, jarak awal 44,4 m (4 detik).</p>
       <h4>Kemampuan rem</h4>
       <table class="eq wide">
         <tr><th>Besaran</th><th>Kosong 26 t</th><th>Muat 66,5 t</th></tr>
         <tr><td>a_tersedia</td><td>4,60 m/s²</td><td><b>1,80 m/s²</b></td></tr>
-        <tr><td>Ambang soft brake (0,5 ×)</td><td>2,30 m/s²</td><td>0,90 m/s²</td></tr>
-        <tr><td>Ambang full brake (0,9 ×)</td><td>4,14 m/s²</td><td>1,62 m/s²</td></tr>
+        <tr><td>ambang soft (0,55 ×)</td><td>2,53 m/s²</td><td>0,99 m/s²</td></tr>
       </table>
-
-      <h4>Logic 1 — TTC relatif, kondisi bermuatan</h4>
-      <p>Ambang yang berlaku dihitung dari <code>TTC_min</code> = 0,23 + 11,11 / (2 × 1,80)
-        = <b>3,32 detik</b>, sehingga ambang soft brake 4,98 s dan full brake 3,65 s.</p>
-      <table class="eq wide">
-        <tr><th>Tahap</th><th>t</th><th>gap</th><th>TTC</th><th>a_req</th><th>Dasar pemicu</th></tr>
-        <tr><td>Soft brake</td><td>1,50 s</td><td>34,0 m</td><td>4,94 s</td><td>0,69</td><td>TTC ≤ 4,98 s</td></tr>
-        <tr><td>Selesai</td><td>11,21 s</td><td>8,6 m</td><td>—</td><td>0</td><td>kecepatan menyamai objek</td></tr>
-      </table>
-      <p>Pada skenario ini soft brake saja sudah memadai; full brake tidak diperlukan.
-        Tingkat soft brake ditahan sampai kecepatan mendekat habis, agar rem tidak berkedip.</p>
-
-      <h4>Contoh satu langkah perhitungan</h4>
-      <p>Pada t = 1,50 s, saat soft brake dipicu, dengan massa 66,5 t:</p>
+      <h4>Satu langkah pada logic 1, kondisi bermuatan</h4>
       <pre class="formula">gap     = 34,0 m
-v_ego   = 39,8 km/h = 11,06 m/s      v_lead = 15 km/h = 4,17 m/s
-closing = 11,06 − 4,17 = 6,89 m/s
-
-TTC   = 34,0 / 6,89 = 4,94 s
+v_ego   = 11,06 m/s          v_lead = 4,17 m/s
+closing = 6,89 m/s
+TTC     = 4,94 s
 TTC_min = 0,23 + 11,06 / (2 × 1,80) = 3,30 s
-ambang sebagian = 1,5 × 3,30 = 4,95 s
+ambang soft = 1,5 × 3,30 = 4,95 s
 
-TTC 4,94 ≤ 4,95  →  level 0,55
+TTC 4,94 ≤ 4,95  →  soft brake (0,55)
 a_diminta = 0,55 × 1,80 = 0,99 m/s²
-
-perintah sampai ke aktuator 0,23 s kemudian (t = 1,73 s)
-applied naik 1/0,85 per detik -> mencapai 0,55 pada t ≈ 2,2 s
-a_fric = 0,55 × 1,80 = 0,99 m/s²
-a_net  = 0,99 + 0,07 = 1,06 m/s²
-Δv per langkah 5 ms = 0,0053 m/s</pre>
-
+tekanan mulai naik 0,23 s kemudian, penuh pada 0,85 s</pre>
       <h4>Hasil ketiga logic</h4>
       <table class="eq wide">
         <tr><th>Logic</th><th>Massa</th><th>Deselerasi puncak</th><th>Jarak akhir</th><th>Energi rem</th></tr>
         <tr><td>TTC relatif</td><td>26 t</td><td>4,60 m/s²</td><td>6,5 m</td><td>1,48 MJ</td></tr>
         <tr><td>TTC relatif</td><td>66,5 t</td><td>0,99 m/s²</td><td>8,6 m</td><td>3,30 MJ</td></tr>
-        <tr><td>TTC + 4 detik</td><td>26 t</td><td>1,15 m/s²</td><td>16,4 m</td><td>1,31 MJ</td></tr>
-        <tr><td>TTC + 4 detik</td><td>66,5 t</td><td>1,10 m/s²</td><td>16,3 m</td><td>3,34 MJ</td></tr>
+        <tr><td>TTC + jarak aman</td><td>26 t</td><td>1,15 m/s²</td><td>16,4 m</td><td>1,31 MJ</td></tr>
+        <tr><td>TTC + jarak aman</td><td>66,5 t</td><td>1,10 m/s²</td><td>16,3 m</td><td>3,34 MJ</td></tr>
         <tr><td>Prediktif</td><td>26 t</td><td>4,60 m/s²</td><td>6,5 m</td><td>1,48 MJ</td></tr>
         <tr><td>Prediktif</td><td>66,5 t</td><td>0,99 m/s²</td><td>8,6 m</td><td>3,30 MJ</td></tr>
       </table>
-      <p>Perhatikan baris bermuatan pada logic TTC relatif: cukup soft brake (0,99 m/s²,
-        55 % dari 1,80) untuk menyelesaikan skenario, sehingga deselerasi puncaknya jauh di bawah
-        kemampuan penuh. Logic prediktif memberi hasil yang sama karena kendaraan depan bergerak
-        tetap, sehingga <code>a_lead</code> bernilai nol; keunggulannya muncul ketika kendaraan
-        depan mengerem.</p>
+      <p>Logic prediktif memberi hasil sama dengan TTC relatif pada skenario ini karena objek
+        bergerak tetap, sehingga <code>a_lead</code> nol. Keunggulannya muncul ketika objek
+        mengerem atau berhenti.</p>
 
-      <h3>8. Parameter yang harus diisi dan cara mengukurnya</h3>
-      <p>Panel <b>Spek teknis</b> memuat 13 kolom. Berikut arti setiap kolom, satuan yang
-        dipakai, dan cara memperoleh nilainya.</p>
-
+      <h3>13. Parameter yang harus diisi</h3>
+      <p>Panel <b>Spec — editable</b> memuat 13 kolom. Setiap baris menyebut simbol, satuan, arti,
+        dan cara memperolehnya.</p>
       <h4>Massa</h4>
       <table class="eq wide">
-        <tr><th>Kolom</th><th>Definisi</th><th>Cara mengukur</th></tr>
-        <tr><td><b>m_empty</b> (t) — massa kosong</td><td>berat unit tanpa muatan, termasuk bahan bakar dan perlengkapan tetap</td><td>jembatan timbang, per gandar bila tersedia. FAW JH6: 26 t</td></tr>
-        <tr><td><b>m_loaded</b> (t) — massa dengan muatan</td><td>berat total saat vessel penuh batubara</td><td>timbang unit bermuatan; 26 + 40,5 = 66,5 t</td></tr>
+        <tr><th>Parameter</th><th>Definisi</th><th>Cara mengukur</th></tr>
+        <tr><td><b>m_empty</b> (t)</td><td>berat unit tanpa muatan, termasuk bahan bakar dan perlengkapan tetap</td><td>jembatan timbang. FAW JH6: 26 t</td></tr>
+        <tr><td><b>m_loaded</b> (t)</td><td>berat total saat vessel penuh batubara</td><td>timbang unit bermuatan; 26 + 40,5 = 66,5 t</td></tr>
       </table>
-
       <h4>Kemampuan pengereman</h4>
       <table class="eq wide">
-        <tr><th>Kolom</th><th>Definisi</th><th>Cara mengukur</th></tr>
-        <tr><td><b>a_brake_empty</b> (m/s²) — perlambatan rem maksimum, unit kosong</td><td>perlambatan mantap unit kosong dengan rem servis saja, permukaan kering</td><td>akselerometer; full brake dari 40 km/h; ambil nilai datar tertinggi; ulangi tiga kali dan pakai yang terendah</td></tr>
-        <tr><td><b>a_brake_loaded</b> (m/s²) — perlambatan rem maksimum, unit bermuatan</td><td>sama, dengan vessel terisi penuh</td><td>protokol sama pada unit bermuatan</td></tr>
+        <tr><th>Parameter</th><th>Definisi</th><th>Cara mengukur</th></tr>
+        <tr><td><b>a_brake_empty</b> (m/s²)</td><td>perlambatan mantap unit kosong, rem servis saja, permukaan kering</td><td>akselerometer; rem penuh dari 40 km/h; ambil nilai datar tertinggi; tiga kali, pakai yang terendah</td></tr>
+        <tr><td><b>a_brake_loaded</b> (m/s²)</td><td>sama, dengan vessel terisi penuh</td><td>protokol sama pada unit bermuatan</td></tr>
       </table>
       <p>Bila hanya tersedia jarak berhenti <code>d</code> dari kecepatan <code>v</code>:</p>
-      <pre class="formula">a = v² / (2 · d)          v dalam m/s, d dalam meter
-
-contoh: 40 km/h (11,1 m/s) berhenti dalam 34 m -> 11,1² / (2 × 34) = 1,81 m/s²</pre>
-      <p>Nilai tersebut lebih rendah daripada nilai mantap karena mencakup fase rem mulai bekerja.
-        Catat sebagai batas bawah, bukan nilai sesungguhnya.</p>
-
+      <pre class="formula">a = v² / (2 · d)          contoh: 40 km/h berhenti 34 m → 1,81 m/s²</pre>
+      <p>Angka itu lebih rendah daripada nilai mantap karena mencakup fase rem mulai bekerja.</p>
       <h4>Waktu</h4>
       <table class="eq wide">
-        <tr><th>Kolom</th><th>Definisi</th><th>Cara mengukur</th></tr>
-        <tr><td><b>t_latency</b> (s) — latency radar + hitung</td><td>umur data radar + tunggu siklus program + waktu hitung</td><td>nyalakan pin GPIO sebelum membaca radar, matikan setelah keputusan keluar; ukur lebar pulsa</td></tr>
-        <tr><td><b>t_valve</b> (s) — jeda relai + solenoid</td><td>jeda dari perintah listrik sampai katup terbuka</td><td>rekam pin perintah dan kanal tekanan bersamaan; ukur sampai tekanan mulai naik</td></tr>
-        <tr><td><b>T_build</b> (s) — waktu bangun tekanan rem</td><td>waktu tekanan naik dari nol sampai penuh</td><td>dari kurva tekanan; bila hanya diketahui waktu ke 75 %, bagi dengan 0,75</td></tr>
+        <tr><th>Parameter</th><th>Definisi</th><th>Cara mengukur</th></tr>
+        <tr><td><b>t_latency</b> (s)</td><td>umur data radar + tunggu siklus + waktu hitung</td><td>pin GPIO menyala sebelum membaca radar, mati setelah keputusan keluar; ukur lebar pulsa</td></tr>
+        <tr><td><b>t_valve</b> (s)</td><td>jeda perintah listrik sampai katup terbuka</td><td>rekam pin perintah dan tekanan bersamaan</td></tr>
+        <tr><td><b>T_build</b> (s)</td><td>tekanan naik dari nol sampai penuh</td><td>dari kurva tekanan; bila hanya waktu ke 75 %, bagi 0,75</td></tr>
       </table>
-      <pre class="formula">bangun_tekanan = waktu_ke_75% / 0,75
-
-contoh: 75 % tercapai pada 0,60 s -> 0,60 / 0,75 = 0,80 s</pre>
-
       <h4>Pendukung</h4>
       <table class="eq wide">
-        <tr><th>Kolom</th><th>Definisi</th><th>Cara mengukur</th></tr>
-        <tr><td><b>a_retard</b> (m/s²) — rem mesin + retarder</td><td>perlambatan tambahan dari rem mesin dan retarder saja</td><td>lepas pedal gas, aktifkan retarder maksimum, ukur dengan akselerometer. Tipikal 0,5–1,5 m/s²</td></tr>
-        <tr><td><b>v_retard_on</b> (km/h) — ambang aktif retarder</td><td>kecepatan minimum agar retarder menghasilkan perlambatan berarti</td><td>aktifkan pada berbagai kecepatan, catat saat efeknya hilang. Hidrolik 15–25 km/h</td></tr>
-        <tr><td><b>v_retard_fade</b> (km/h) — pita fade retarder</td><td>rentang kecepatan sampai perlambatan retarder mencapai penuh</td><td>dari data di atas; selisih kecepatan penuh terhadap ambang. Tipikal 10 km/h</td></tr>
-        <tr><td><b>L_veh</b> (m) — panjang kendaraan</td><td>bemper depan sampai ujung belakang</td><td>meteran. FAW JH6 sekitar 10,4 m</td></tr>
-        <tr><td><b>h_cog</b> (m) — tinggi titik berat</td><td>tinggi pusat massa kendaraan diukur dari permukaan jalan, dalam kondisi bermuatan. Titik tempat seluruh massa dianggap terpusat.</td><td>timbang gandar depan saat diam (N₁) dan saat mengerem (N₂), lalu pakai rumus di bawah. Bila tidak dapat diukur, pakai 1,9 m untuk DT rigid bermuatan.</td></tr>
-        <tr><td><b>L_wb</b> (m) — wheelbase efektif</td><td>jarak mendatar dari pusat roda sumbu depan ke titik tengah kelompok roda belakang. Untuk 6x4: bukan ke axle pertama belakang, tetapi ke tengah antara dua axle belakang.</td><td>meteran, roda lurus. FAW JH6 6x4 sekitar 4,2 m. Hanya memengaruhi indikator beban pindah ke depan, bukan jarak henti.</td></tr>
+        <tr><th>Parameter</th><th>Definisi</th><th>Cara mengukur</th></tr>
+        <tr><td><b>a_retard</b> (m/s²)</td><td>perlambatan tambahan dari rem mesin dan retarder</td><td>lepas gas, retarder maksimum, ukur dengan akselerometer</td></tr>
+        <tr><td><b>v_retard_on</b> (km/h)</td><td>kecepatan minimum agar retarder bekerja</td><td>aktifkan pada berbagai kecepatan, catat saat efeknya hilang</td></tr>
+        <tr><td><b>v_retard_fade</b> (km/h)</td><td>rentang kecepatan sampai retarder penuh</td><td>selisih kecepatan penuh terhadap ambang</td></tr>
+        <tr><td><b>L_veh</b> (m)</td><td>panjang bemper depan sampai ujung belakang</td><td>meteran. FAW JH6 sekitar 10,4 m</td></tr>
+        <tr><td><b>h_cog</b> (m)</td><td>tinggi pusat massa dari jalan, kondisi bermuatan</td><td>timbang gandar depan saat diam dan saat mengerem</td></tr>
+        <tr><td><b>L_wb</b> (m)</td><td>jarak sumbu depan ke titik tengah kelompok roda belakang</td><td>meteran. FAW JH6 6x4 sekitar 4,2 m</td></tr>
       </table>
-      <pre class="formula">h = (N₂ − N₁) · L / (m · a)
-
-N₁, N₂ dalam Newton · L dan h dalam meter · m dalam kg · a dalam m/s²</pre>
-      <p>Tinggi titik berat hanya memengaruhi indikator beban pindah ke depan, bukan jarak henti.
-        Bila sulit diukur, nilai perkiraan tidak mengubah hasil pengereman.</p>
-
-      <h4>Parameter mana yang memengaruhi hasil apa</h4>
+      <pre class="formula">h_cog = (N₂ − N₁) · L_wb / (m · a)</pre>
       <table class="eq wide">
         <tr><th>Parameter</th><th>Memengaruhi</th><th>Tidak memengaruhi</th></tr>
-        <tr><td>massa kosong / muatan</td><td><code>a_brake</code>, ambang TTC, jarak henti, energi rem, beban axle</td><td>—</td></tr>
-        <tr><td><code>a_brake</code> kosong / muat</td><td>seluruh angka absolut: jarak henti, ambang pemicu, kecepatan aman</td><td>—</td></tr>
-        <tr><td>latency, relay+solenoid, bangun tekanan</td><td>waktu reaksi, <code>TTC_min</code>, jarak henti</td><td>keputusan saat objek sudah diam</td></tr>
-        <tr><td>retarder (tiga nilai)</td><td>kemampuan menahan laju di turunan</td><td>jarak henti rem servis</td></tr>
-        <tr><td>panjang kendaraan</td><td>gambar di layar, posisi bemper</td><td>jarak henti</td></tr>
-        <tr><td>tinggi titik berat &amp; wheelbase</td><td>indikator beban pindah ke depan</td><td>jarak henti, ambang pemicu</td></tr>
+        <tr><td>massa</td><td>a_brake, ambang pemicu, jarak henti, energi, beban axle</td><td>—</td></tr>
+        <tr><td>a_brake</td><td>seluruh angka absolut</td><td>—</td></tr>
+        <tr><td>latency, valve, build</td><td>waktu reaksi, TTC_min, jarak henti</td><td>—</td></tr>
+        <tr><td>retarder</td><td>menahan laju di turunan</td><td>jarak henti rem servis</td></tr>
+        <tr><td>L_veh</td><td>gambar dan posisi bemper</td><td>jarak henti</td></tr>
+        <tr><td>h_cog, L_wb</td><td>indikator beban pindah ke depan</td><td>jarak henti, ambang pemicu</td></tr>
       </table>
-
       <h4>Protokol pengukuran minimal</h4>
-      <p>Dua sesi sudah mengurangi sebagian besar ketidakpastian:</p>
       <table class="eq wide">
         <tr><th>Sesi</th><th>Kondisi</th><th>Yang dilakukan</th><th>Yang diperoleh</th></tr>
-        <tr><td>1</td><td>unit kosong 26 t</td><td>chipseal kering dan datar, panjang ≥ 200 m; tiga kali full brake dari 40 km/h; rekam tekanan pada satu di antaranya</td><td>rem maks kosong, bangun tekanan</td></tr>
-        <tr><td>2</td><td>unit bermuatan 66,5 t</td><td>lokasi dan prosedur sama</td><td>rem maks muat, verifikasi jarak henti</td></tr>
+        <tr><td>1</td><td>unit kosong 26 t</td><td>chipseal kering, datar, ≥ 200 m; tiga kali rem penuh dari 40 km/h; rekam tekanan</td><td>a_brake_empty, T_build</td></tr>
+        <tr><td>2</td><td>unit bermuatan 66,5 t</td><td>lokasi dan prosedur sama</td><td>a_brake_loaded, verifikasi jarak henti</td></tr>
       </table>
-      <p>Rasio nilai bermuatan terhadap nilai kosong menunjukkan sifat sistem rem: sekitar 0,39
-        bila gaya rem tetap, lebih besar bila terdapat <i>load sensing</i> yang menaikkan tekanan
-        saat bermuatan.</p>
+      <p>Rasio nilai bermuatan terhadap kosong menunjukkan sifat sistem rem: sekitar 0,39 bila
+        gaya rem tetap, lebih besar bila terdapat katup pengindra beban.</p>
 
-      <h3>9. Batasan model</h3>
+      <h3>14. Batasan model</h3>
       <ul>
         <li>Satu dimensi: tanpa manuver mengelak dan tanpa rotasi roda.</li>
-        <li>Load transfer dan inersia rotasi tidak dimodelkan; faktor massa ekuivalen 1,04–1,06
-          belum diterapkan.</li>
+        <li>Load transfer dan inersia rotasi tidak dimodelkan.</li>
         <li>ABS tidak dimodelkan; perlambatan dianggap tercapai tanpa siklus penguncian.</li>
-        <li>Penurunan performa rem akibat panas (<i>fade</i>) tidak dimodelkan; <code>a_brake</code>
-          dianggap tetap.</li>
+        <li>Penurunan performa rem akibat panas tidak dimodelkan; <code>a_brake</code> dianggap tetap.</li>
         <li>Koefisien gesek dianggap seragam sepanjang lintasan.</li>
-        <li><i>Latency</i>, <code>brakeBuild</code>, dan <code>a_brake</code> masih berupa asumsi
-          sampai tersedia hasil pengukuran unit.</li>
-        <li>Kecepatan dihitung dari perpindahan, bukan dari putaran roda. Apabila kecepatan
-          diturunkan dari sensor putaran roda, kondisi roda terkunci perlu ditangani terpisah.</li>
+        <li>Latency, brakeBuild, dan a_brake masih asumsi sampai tersedia hasil pengukuran unit.</li>
+        <li>Kecepatan dihitung dari perpindahan, bukan putaran roda.</li>
       </ul>
-
 
     </div>
   </div>
