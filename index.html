@@ -571,15 +571,34 @@ selama aktif:
         sedangkan <code>a_req</code> mengukur kemampuan berhenti terhadap objek yang diam.</p>
 
       <h3>6. Logic 3 — prediktif</h3>
-      <p>Logic ini menilai bahaya dari <b>perlambatan objek di depan</b>, bukan dari jarak.
-        Nilainya diperoleh dari turunan <i>range-rate</i> yang dihaluskan dengan filter 0,15 detik.</p>
-      <pre class="formula">a_lead   = filter_0,15s( d(−range_rate) / dt )
-leadDist = a_lead &gt; 0,1 ? v_lead² / (2 · a_lead) : (v_lead &lt; 0,3 ? 0 : tak terhingga)
-budget   = gap + leadDist − margin(3 m)
-a_ff     = requiredDecel(v, budget, latency, build)
+      <p>Logic ini bekerja dari <b>perubahan kecepatan objek di depan</b>, bukan dari jarak.
+        Radar mengirim dua nilai setiap siklus: jarak (<i>range</i>) dan kecepatan mendekat
+        (<i>range-rate</i>, diukur melalui Doppler). Dari keduanya simulator menghitung berapa
+        cepat kecepatan mendekat berubah; itulah perlambatan objek depan, <code>a_lead</code>.</p>
+      <p>Alasannya sederhana: kalau truk depan mengerem, kecepatan mendekat bertambah. Radar
+        melihat pertambahan itu <b>sebelum</b> jaraknya menyusut banyak, sehingga ego vehicle
+        mendapat waktu lebih panjang daripada logic berbasis jarak.</p>
+
+      <h4>Langkah perhitungan</h4>
+      <pre class="formula">1) a_lead   = filter_0,15s( d(−range_rate) / dt )
+2) leadDist = jarak yang masih dibutuhkan truk depan untuk berhenti
+3) budget   = gap + leadDist − margin(3 m)
+4) a_ff     = requiredDecel(v_ego, budget, latency, build)
 
 a_ff ≥ 0,55 · a_tersedia → full brake
 a_ff ≥ 0,25 · a_tersedia → soft brake</pre>
+
+      <table class="eq wide">
+        <tr><th>Langkah</th><th>Arti</th><th>Cara memperoleh</th></tr>
+        <tr><td>1</td><td>perlambatan objek depan</td><td>selisih <i>range-rate</i> antar-siklus, dihaluskan 0,15 detik agar tidak terpicu noise radar</td></tr>
+        <tr><td>2</td><td>jarak berhenti objek depan</td><td><code>v_lead² / (2 · a_lead)</code>; nol bila objek sudah berhenti, tak terhingga bila objek melaju tanpa mengerem</td></tr>
+        <tr><td>3</td><td>jalan yang tersedia untuk ego</td><td>jarak sekarang ditambah jarak berhenti objek, dikurangi margin 3 m</td></tr>
+        <tr><td>4</td><td>perlambatan yang dibutuhkan</td><td><code>requiredDecel</code>, sudah memperhitungkan latency dan kenaikan tekanan</td></tr>
+      </table>
+
+      <p>Inti langkah 3: yang dihitung bukan jarak ke bemper truk depan, melainkan <b>jarak ke
+        titik tempat truk depan akan berhenti</b>. Titik itu masih bergerak selama truk depan
+        belum berhenti, dan radar memperkirakannya dari perlambatan yang sedang berlangsung.</p>
 
       <svg viewBox="0 0 720 300" class="diagram" role="img" aria-label="Logic 3 prediktif: radar membaca perlambatan truk depan lalu memperkirakan titik berhentinya">
         <defs>
@@ -622,37 +641,46 @@ a_ff ≥ 0,25 · a_tersedia → soft brake</pre>
         <text x="420" y="250" class="ds" fill="#86efac">ego berhenti sebelum objek</text>
 
         <rect x="16" y="256" width="688" height="34" rx="7" class="dbox" style="stroke:#f59e0b"/>
-        <text x="360" y="270" class="dt" text-anchor="middle" fill="#fbbf24">reaksi 0,3 detik setelah lampu rem depan menyala</text>
-        <text x="360" y="284" class="ds" text-anchor="middle">= filter a_lead 0,15 s + latency sistem 0,23 s (bukan angka tetap)</text>
+        <text x="360" y="270" class="dt" text-anchor="middle" fill="#fbbf24">mulai mengerem 0,3 detik setelah truk depan mulai melambat</text>
+        <text x="360" y="284" class="ds" text-anchor="middle">= waktu filter 0,15 s + latency sistem 0,23 s</text>
       </svg>
 
-      <p><code>requiredDecel</code> mencari percepatan terkecil sehingga jarak henti tidak
-        melebihi <code>budget</code>. Karena hasilnya sudah memperhitungkan latency dan kenaikan
-        tekanan, logic ini mulai bekerja jauh lebih awal daripada TTC relatif.</p>
+      <h4>Contoh satu siklus</h4>
+      <pre class="formula">ego 40 km/h (11,1 m/s) · depan 38 km/h (10,6 m/s) · gap 30 m
 
-      <h4>Asal angka reaksi 0,30 detik</h4>
-      <p>Angka itu bukan parameter yang disetel, melainkan penjumlahan dua tahap:</p>
-      <pre class="formula">reaksi = waktu sampai a_ff melewati ambang + latency sistem
-       = 0,03 … 0,10 s              + 0,23 s
-       = 0,26 … 0,33 s</pre>
-      <table class="eq wide">
-        <tr><th>Filter a_lead</th><th>Perintah keluar</th><th>Rem bekerja</th><th>Total reaksi</th></tr>
-        <tr><td>0,05 s</td><td>1,010 s</td><td>1,260 s</td><td>0,26 s</td></tr>
-        <tr><td><b>0,15 s (bawaan)</b></td><td>1,030 s</td><td>1,280 s</td><td><b>0,28 s</b></td></tr>
-        <tr><td>0,50 s</td><td>1,095 s</td><td>1,345 s</td><td>0,34 s</td></tr>
-      </table>
-      <p>Mempercepat filter menurunkan reaksi, tetapi membuat sistem lebih mudah terpicu oleh
-        noise radar. Mempercepat perangkat keras menurunkan reaksi tanpa risiko tersebut.</p>
+range-rate awal            = −0,50 m/s     (mendekat pelan)
+depan mengerem 3 m/s²  → range-rate turun 3 × 0,005 = 0,015 m/s per siklus
+                         menjadi −0,515 m/s
+a_lead  = 0,015 / 0,005 = 3,0 m/s²         (setelah filter 0,15 s)
 
-      <h4>Radar dan objek statis</h4>
-      <p>Radar 77 GHz mengukur jarak, <i>range-rate</i> melalui Doppler, sudut azimuth, kekuatan
-        gema, dan sebaran titik deteksi. Radar tidak memberikan identitas objek, sehingga kendaraan
-        yang berhenti, pagar, rambu, dan tanggul diperlakukan sama sebagai objek statis.</p>
-      <p>Untuk objek statis, <code>a_lead</code> bernilai nol sehingga rumus berubah fungsi menjadi
-        kriteria jarak henti. Akibatnya pemicu terjadi dari jarak sangat jauh: pada 70 km/h, soft
-        brake aktif bila objek statis berada dalam 268 meter. Karena itu <i>feed-forward</i> hanya
-        diterapkan pada target yang pernah bergerak, sedangkan objek yang sejak awal diam ditangani
-        TTC dan <code>a_req</code>.</p>
+leadDist = 10,6² / (2 × 3) = 18,7 m
+budget   = 30 + 18,7 − 3 = 45,7 m
+a_ff     = requiredDecel(11,1 ; 45,7 ; 0,23 ; 0,85) = 1,60 m/s²
+
+1,60 ≥ 0,55 × 1,80 (= 0,99)  →  full brake</pre>
+      <p>Pada jarak 30 m dan selisih kecepatan hanya 0,5 m/s, logic berbasis TTC belum melihat
+        bahaya apa pun. Logic prediktif sudah memerintahkan full brake, karena truk depan
+        melambat lebih cepat daripada ego.</p>
+
+      <h4>Yang tidak dipakai</h4>
+      <p>Logic ini tidak memakai lampu rem, kamera, maupun sensor cahaya. Radar hanya mengukur
+        jarak dan <i>range-rate</i>; perlambatan objek dihitung dari perubahan nilai itu. Alasannya
+        operasional: unit berjalan 24 jam dengan debu dan cahaya berubah, sedangkan radar tetap
+        bekerja pada kondisi tersebut.</p>
+
+      <h4>Batas: objek yang tidak pernah bergerak</h4>
+      <p>Radar tidak memberi identitas objek. Truk yang berhenti, pagar, rambu, dan tanggul
+        terlihat sama. Karena itu <i>feed-forward</i> hanya diaktifkan untuk target yang
+        <b>pernah bergerak</b> (<code>leadMovingSeen</code>): kecepatan objek melewati 1 m/s
+        sekali saja sudah cukup.</p>
+      <p>Untuk objek yang sejak awal diam, <code>a_lead</code> nol sehingga rumus berubah menjadi
+        kriteria jarak henti biasa. Bila tetap dipakai, pemicunya terjadi dari jarak sangat jauh:
+        pada 70 km/h, soft brake akan aktif ketika objek statis masih 432 m di depan (22 detik),
+        dan full brake pada 203 m (10 detik). Karena itu objek statis diserahkan ke TTC dan
+        <code>a_req</code>.</p>
+      <p>Satu kasus tetap perlu diketahui: bila objek berhenti <b>sebelum</b> radar pernah
+        melihatnya bergerak (misalnya truk sudah berhenti di tikungan), logic ini tidak
+        memberikan feed-forward. Deteksinya bergantung pada dua logic lain.</p>
 
       <h3>7. Logic 4 — jarak aman murni</h3>
       <p>Logic ini hanya memakai <b>jarak dan kecepatan sendiri</b>. Kecepatan objek di depan tidak

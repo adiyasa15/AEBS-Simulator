@@ -229,7 +229,7 @@ export class Sim {
       // Butuh a_ego sedemikian rupa sehingga jarak berhenti ego <= gap + jarak berhenti truk depan.
       // Feed-forward HANYA untuk target bergerak. Untuk objek statis (rambu, tanggul,
       // pembatas jalan) a_lead selalu 0 sehingga rumusnya merosot menjadi "jarak henti",
-      // dan itu memicu rem dari jarak yang sangat jauh (268 m pada 70 km/h).
+      // dan itu memicu rem dari jarak yang sangat jauh (432 m pada 70 km/h).
       // Target statis diserahkan ke TTC/a_req yang ambangnya berbasis waktu.
       if (c.logic === 'predictive' && this.leadMovingSeen) {
         const aL = Math.max(0, this.aLeadEst);
