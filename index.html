@@ -1041,6 +1041,10 @@ tekanan mulai naik 0,23 s kemudian, penuh pada 0,85 s</pre>
 
       <p>Dengan bobot 70 % keselamatan dan 30 % keausan, urutannya: prediktif 71,2 · TTC relatif
         61,7 · TTC + jarak aman 53,5 · jarak 4 detik murni 13,8.</p>
+      <p>Seluruh angka di tabel ini dihasilkan oleh model yang sama dengan halaman ini, bukan
+        perkiraan: <code>node tools/bandingkan-logic.mjs</code> menjalankan kelima keadaan untuk
+        keempat logic dan mencetak tabel beserta skornya, dengan <code>--json</code> bila hasilnya
+        akan dibandingkan dengan uji nyata.</p>
       <p>Dua hal yang perlu dibaca hati-hati. Pertama, keadaan 1 (objek diam pada tepat 4 detik,
         60 km/h) membuat ketiga pilihan pertama gagal dengan cara yang sama; itu batas aturan jarak,
         bukan perbedaan mutu logic. Kedua, nilai keausan tidak mengukur umur kampas dalam jam,

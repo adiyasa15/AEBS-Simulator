@@ -113,6 +113,22 @@ waktu bangun tekanan rem, latency sensor, panjang kendaraan.
 - **Truk mendadak** — 55 km/h, gap 45 m, turunan 2 %.
 - **Jalan berlumpur** — μ 0.28, 35 km/h.
 
+## Perbandingan empat logic (terukur)
+
+Skor perbandingan dihitung dari simulasi, bukan dari tabel tulisan tangan:
+
+```
+node tools/bandingkan-logic.mjs          # tabel + skor
+node tools/bandingkan-logic.mjs --json   # JSON untuk dibandingkan dengan uji nyata
+```
+
+Skrip memakai modul yang sama dengan halaman web (`js/sim.js`), menjalankan lima keadaan
+untuk keempat logic, lalu menghitung keselamatan (70 %) dan keausan (30 %). Bila parameter
+di `js/presets.js` diganti dengan hasil brake test, skor ikut berubah tanpa menyunting dokumen.
+
+Hasil pada keadaan sekarang (66,5 t, μ 0,60): prediktif 71,2 · TTC relatif 61,7 ·
+TTC + jarak aman 53,5 · jarak 4 detik murni 13,8.
+
 ## Batasan
 
 - 1D — tidak ada manuver mengelak, sudut, atau tikungan.
