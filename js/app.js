@@ -181,6 +181,19 @@ function readCfg() {
 }
 
 /* ---------- UI sync ---------- */
+// Jarak aman mengikuti aturan: gap = headway × kecepatan.
+// Dipakai saat pengguna mengubah headway atau kecepatan awal.
+function syncGapToHeadway() {
+  if (!el.gap0 || !el.headway || !el.v0) return;
+  const v = +el.v0.value;                  // km/h
+  const hw = +el.headway.value;            // detik
+  const target = Math.round(hw * v / 3.6); // meter
+  const min = +el.gap0.min || 0;
+  const max = +el.gap0.max || 200;
+  el.gap0.value = Math.max(min, Math.min(max, target));
+}
+
+
 function syncLabels() {
   el.v0o.textContent = `${el.v0.value} km/h`;
   el.gap0o.textContent = `${el.gap0.value} m`;
@@ -249,7 +262,11 @@ el.resetBtn.addEventListener('click', () => hardReset(false));
 
 // slider & select
 ['v0', 'gap0', 'vLead', 'grade', 'partialTTC', 'fullTTC', 'surface', 'headway', 'filterTau', 'logic'].forEach((k) => {
-  el[k].addEventListener('input', () => { syncLabels(); hardReset(false); });
+  el[k].addEventListener('input', () => {
+    if (k === 'v0' || k === 'headway') syncGapToHeadway();
+    syncLabels();
+    hardReset(false);
+  });
 });
 el.aeb.addEventListener('change', () => hardReset(false));
 el.leadBrake.addEventListener('change', () => { applyLeadMode(); hardReset(false); });
@@ -406,6 +423,7 @@ function boot() {
   renderer.resize();
   buildSpecGrid();
   loadSpec('faw-jh6');
+  syncGapToHeadway();
   hardReset(false);
 
   const FIXED = 1 / 200;
