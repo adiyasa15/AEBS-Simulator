@@ -429,6 +429,11 @@ applied naik linear sebesar dt / brakeBuild           (bawaan 0,85 s)</pre>
         menghasilkan jarak terlalu pendek: pada 40 km/h dengan a = 3 m/s² hasilnya 23,1 m,
         sedangkan jarak sesungguhnya 27,8 m.</p>
 
+      <p>Empat bagian berikut menjelaskan empat <b>pilihan aturan pemicu</b>. Satu unit
+        menjalankan satu pilihan; pemilihan dilakukan di panel dan tidak ada penggabungan antar
+        pilihan. Setiap pilihan sudah lengkap dengan ambang, tingkat pengereman, dan batasnya
+        sendiri.</p>
+
       <h3>4. Logic 1 — TTC relatif</h3>
       <p>Logic ini menilai bahaya dari kecepatan mendekat saat itu.</p>
       <pre class="formula">TTC   = gap / closing               (tak terhingga bila closing ≤ 0,05)
@@ -496,8 +501,9 @@ TTC ≤ ambang_soft atau a_req ≥ 0,5 · a_tersedia  → soft brake</pre>
         Pemicu baru bekerja setelah kendaraan depan mengerem dan kecepatan mendekat terbentuk.</p>
 
       <h3>5. Logic 2 — TTC relatif ditambah jarak aman</h3>
-      <p>Logic ini menjalankan dua kriteria sekaligus: TTC seperti logic 1, ditambah penjaga jarak
-        berbasis waktu.</p>
+      <p>Di dalam logic ini ada dua kriteria: TTC seperti logic 1, ditambah penjaga jarak berbasis
+        waktu. Keduanya bagian dari satu pilihan aturan, bukan dua logic yang dijalankan
+        bersamaan.</p>
       <pre class="formula">THW    = gap / v_ego
 v_safe = gap / headway              (headway bawaan 4 detik)
 
@@ -745,15 +751,15 @@ selama aktif:
         <tr><td>Objek diam, jarak 8 detik (120 m)</td><td>rem 0,25 s, berhenti sisa 21,9 m</td><td>rem 3,50 s, <b>tabrakan 37,7 km/h</b></td></tr>
         <tr><td>Objek diam, jarak tepat 4 detik (67 m)</td><td>berhenti sisa 0,1 m</td><td><b>tabrakan 21,7 km/h</b></td></tr>
       </table>
-      <p>Perbedaan keduanya terletak pada lapisan kedua: logic 2 masih memakai TTC dan
-        <i>safety override</i> yang dapat menaikkan ke full brake, sedangkan logic 4 berhenti pada
-        dua tingkat penjaga jarak. Saat kecepatan objek hampir sama, keduanya berperilaku identik
+      <p>Perbedaan keduanya terletak pada isi masing-masing pilihan: logic 2 memuat TTC dan
+        <i>safety override</i> yang dapat menaikkan ke full brake, sedangkan logic 4 hanya memuat
+        penjaga jarak dua tingkat. Saat kecepatan objek hampir sama, keduanya berperilaku identik
         karena TTC menjadi tak terhingga.</p>
       <p>Karena itu logic 4 dipakai untuk menegakkan aturan jarak, bukan sebagai pengganti fungsi
         AEB.</p>
 
       <h3>8. Safety override</h3>
-      <p>Pada logic 1, 2, dan 3 terdapat satu lapisan tambahan yang bekerja setiap siklus tanpa
+      <p>Kriteria ini menjadi bagian dari logic 1, 2, dan 3. Ia bekerja setiap siklus tanpa
         menunggu ambang TTC:</p>
       <pre class="formula">leadDist = objek diam ? 0 : v_lead² / (2 · a_lead)
 budget   = gap + leadDist − margin
@@ -762,9 +768,9 @@ demand   = requiredDecel(v, budget, latency, build)
 demand ≥ 0,85 · a_tersedia → full brake
 demand ≥ 0,40 · a_tersedia → soft brake</pre>
       <p>Tujuannya satu: rem tidak boleh menunggu sampai perlambatan yang dibutuhkan melampaui
-        kemampuan truk. Karena <code>a_tersedia</code> diturunkan dari massa, lapisan ini bekerja
-        lebih awal pada unit bermuatan. Logic 4 tidak memakai lapisan ini karena tujuannya memang
-        hanya menjaga jarak.</p>
+        kemampuan truk. Karena <code>a_tersedia</code> diturunkan dari massa, kriteria ini bekerja
+        lebih awal pada unit bermuatan. Logic 4 tidak memuat kriteria ini karena isinya memang
+        hanya penjaga jarak.</p>
 
       <h3>9. Tingkat pengereman</h3>
       <p>Sistem memakai dua tingkat, sesuai unit yang terpasang:</p>
