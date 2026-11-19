@@ -779,15 +779,18 @@ reaksi ≈ 0,03 + 0,23 = 0,26 s … 0,10 + 0,23 = 0,33 s</pre>
         objek tidak dipakai sama sekali, sehingga TTC tidak dihitung.</p>
       <pre class="formula">THW    = gap / v_ego                  (hanya jarak dan kecepatan sendiri)
 v_safe = gap / 4
-aktif bila THW &lt; 4 detik; lepas bila THW &gt; 4,05 detik
+aktif TEPAT pada THW = 4 detik; lepas bila THW &gt; 4,05 detik
 
 a_butuh = (v − v_safe) / 2
 t       = (4 − THW) / 2               (dibatasi 0 sampai 1)
 batas   = min(1,2 × (1 + t) , 0,8 × a_tersedia)
-level   = min(1, a_butuh / a_tersedia, batas / a_tersedia)</pre>
+level   = min( max(a_butuh / a_tersedia , 0,55) , batas / a_tersedia )</pre>
+      <p>Pada batas 4 detik sistem <b>langsung bertindak</b>, minimal soft brake (0,55), lalu
+        naik bila pelanggaran bertambah — maksimum 80 % kapasitas.</p>
       <table class="eq wide">
         <tr><th>Kondisi (66,5 t, 45 km/h)</th><th>Logic 2 (TTC + 4 s)</th><th>Logic 4 (4 s murni)</th></tr>
-        <tr><td>Depan tetap, jarak 6 detik</td><td>tidak mengerem</td><td>tidak mengerem</td></tr>
+        <tr><td>Depan tetap, jarak 4,5 detik</td><td>tidak mengerem</td><td>tidak mengerem</td></tr>
+        <tr><td><b>Depan tetap, jarak tepat 4,0 detik</b></td><td>tidak mengerem</td><td><b>langsung soft brake</b></td></tr>
         <tr><td>Depan tetap, jarak 3,5 detik</td><td>mulai 0,25 s</td><td>mulai 0,25 s</td></tr>
         <tr><td>Depan mogok 0,3 m/s²</td><td>mulai 9,28 s, sisa 3,4 m</td><td>mulai 9,23 s, sisa 2,8 m</td></tr>
         <tr><td><b>Objek diam, jarak tepat 4 detik</b></td><td>berhenti, sisa 0,1 m</td><td><b>tabrakan 21,7 km/h</b></td></tr>

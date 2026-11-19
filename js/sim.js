@@ -264,7 +264,8 @@ export class Sim {
         // tanpa ambang mati saat mengaktifkan. Histeresis hanya saat melepas
         // (0,05 detik) supaya pengereman tidak berkedip di sekitar batas.
         const thw = this.vEgo > 0.3 ? gap / this.vEgo : Infinity;
-        if (thw < c.headway) this.govActive = true;
+        // aktif TEPAT pada 4 detik (termasuk), bukan setelah terlampaui
+        if (thw <= c.headway + 1e-9) this.govActive = true;
         else if (thw > c.headway + 0.05) this.govActive = false;
 
         if (this.govActive) {
@@ -278,7 +279,9 @@ export class Sim {
           // melewati 80 % kapasitas truk — sisanya urusan AEB. Tanpa pembatasan ini,
           // pada unit bermuatan (a_tersedia 1,80) batas 2,4 m/s² berarti rem penuh.
           const cap = Math.min(base * (1 + t), 0.8 * p.aAvail);
-          const lvl = Math.min(1, Math.max(0, need / p.aAvail), cap / p.aAvail);
+          // pada batas 4 detik langsung bertindak: minimal soft brake (0,55),
+          // lalu naik sebanding bila pelanggaran bertambah
+          const lvl = Math.min(Math.max(Math.max(0, need / p.aAvail), 0.55), 1, cap / p.aAvail);
           if (lvl > desired) {
             desired = lvl;
             stage = 'partial';
