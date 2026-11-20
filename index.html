@@ -68,7 +68,7 @@
       <div class="row"><label class="lbl" for="vLead">Lead Speed (Object Didepan)</label><output id="vLeado">0 km/h</output></div>
       <input type="range" id="vLead" min="0" max="50" step="1" value="0" />
 
-      <div class="row"><label class="lbl" for="grade">Grade (Jalan turunan)</label><output id="gradeo">0 %</output></div>
+      <div class="row"><label class="lbl" for="grade">Grade (slope)</label><output id="gradeo">0 %</output></div>
       <input type="range" id="grade" min="-8" max="10" step="0.5" value="0" />
     </section>
 
@@ -198,56 +198,56 @@
 <div class="modal" id="methodModal" hidden>
   <div class="modal-body">
     <header>
-      <h2>Metode perhitungan simulasi<span class="hintkbd">Esc untuk menutup</span></h2>
+      <h2>Computation method<span class="hintkbd">Esc to close</span></h2>
       <button id="methodClose" aria-label="Tutup">✕</button>
     </header>
     <div class="modal-content">
 
-      <p class="lead">Aplikasi ini menghitung ulang seluruh besaran setiap <b>5 milidetik</b>
-        (200 kali per detik). Dokumen ini menjelaskan urutannya: dari gaya, ke percepatan,
-        ke kecepatan dan posisi, lalu ke keputusan pengereman.</p>
+      <p class="lead">This application recomputes every quantity every <b>5 milliseconds</b>
+        (200 times per second). This document follows that order: force, then acceleration, then
+        speed and position, then the braking decision.</p>
 
-      <h3>1. Dasar perhitungan</h3>
-      <p>Gerak dihitung satu dimensi sepanjang sumbu jalan. Setiap siklus, seluruh gaya
-        dijumlahkan, percepatan dihitung, lalu kecepatan dan posisi diperbarui.</p>
+      <h3>1. Basics</h3>
+      <p>Motion is computed in one dimension along the road axis. Every cycle all forces are
+        summed, acceleration is computed, then speed and position are updated.</p>
 
-      <h4>Notasi</h4>
-      <p><b>a</b> selalu berarti percepatan atau perlambatan (m/s²), dan <b>m</b> selalu berarti
-        massa (kg atau t). Tidak ada simbol yang dipakai untuk dua arti.</p>
+      <h4>Notation</h4>
+      <p><b>a</b> always means acceleration or deceleration (m/s²), and <b>m</b> always means mass
+        (kg or t). No symbol is used for two meanings.</p>
       <table class="eq wide">
-        <tr><th>Simbol</th><th>Arti</th><th>Satuan</th></tr>
-        <tr><td><code>a</code></td><td>percepatan; negatif berarti melambat</td><td>m/s²</td></tr>
-        <tr><td><code>a_tersedia</code></td><td>perlambatan maksimum yang dapat dihasilkan saat itu</td><td>m/s²</td></tr>
-        <tr><td><code>a_brake</code></td><td>kemampuan rem, yaitu gaya rem dibagi massa</td><td>m/s²</td></tr>
-        <tr><td><code>a_req</code>, <code>a_ff</code></td><td>perlambatan yang dibutuhkan menurut logic 1 dan logic 3</td><td>m/s²</td></tr>
-        <tr><td><code>a_lead</code></td><td>perlambatan objek di depan</td><td>m/s²</td></tr>
-        <tr><td><code>m</code></td><td>massa kendaraan</td><td>kg / t</td></tr>
-        <tr><td><code>F</code></td><td>gaya</td><td>N</td></tr>
-        <tr><td><code>v</code>, <code>s</code></td><td>kecepatan, posisi</td><td>m/s, m</td></tr>
-        <tr><td><code>t</code>, <code>T</code></td><td><code>t</code> waktu berjalan; <code>T</code> waktu bangun tekanan rem</td><td>s</td></tr>
-        <tr><td><code>μ</code>, <code>g</code></td><td>koefisien gesek, gravitasi 9,81</td><td>—, m/s²</td></tr>
+        <tr><th>Symbol</th><th>Meaning</th><th>Unit</th></tr>
+        <tr><td><code>a</code></td><td>acceleration; negative means slowing down</td><td>m/s²</td></tr>
+        <tr><td><code>a_available</code></td><td>maximum deceleration the system can produce at that moment</td><td>m/s²</td></tr>
+        <tr><td><code>a_brake</code></td><td>brake capability: brake force divided by mass</td><td>m/s²</td></tr>
+        <tr><td><code>a_req</code>, <code>a_ff</code></td><td>deceleration required by logic 1 and logic 3</td><td>m/s²</td></tr>
+        <tr><td><code>a_lead</code></td><td>deceleration of the object ahead</td><td>m/s²</td></tr>
+        <tr><td><code>m</code></td><td>vehicle mass</td><td>kg / t</td></tr>
+        <tr><td><code>F</code></td><td>force</td><td>N</td></tr>
+        <tr><td><code>v</code>, <code>s</code></td><td>speed, position</td><td>m/s, m</td></tr>
+        <tr><td><code>t</code>, <code>T</code></td><td><code>t</code> elapsed time; <code>T</code> brake pressure build-up time</td><td>s</td></tr>
+        <tr><td><code>μ</code>, <code>g</code></td><td>friction coefficient, gravity 9.81</td><td>—, m/s²</td></tr>
       </table>
 
-      <h4>Variabel keadaan</h4>
+      <h4>State variables</h4>
       <table class="eq wide">
-        <tr><th>Simbol</th><th>Arti</th></tr>
-        <tr><td><code>s_ego</code></td><td>posisi bemper depan <i>ego vehicle</i> (m)</td></tr>
-        <tr><td><code>v_ego</code></td><td>kecepatan <i>ego vehicle</i> (m/s)</td></tr>
-        <tr><td><code>s_lead</code>, <code>v_lead</code></td><td>posisi buritan dan kecepatan objek di depan</td></tr>
+        <tr><th>Symbol</th><th>Meaning</th></tr>
+        <tr><td><code>s_ego</code></td><td>front bumper position of the ego vehicle (m)</td></tr>
+        <tr><td><code>v_ego</code></td><td>ego vehicle speed (m/s)</td></tr>
+        <tr><td><code>s_lead</code>, <code>v_lead</code></td><td>rear position and speed of the object ahead</td></tr>
         <tr><td><code>gap</code></td><td><code>s_lead − s_ego</code></td></tr>
-        <tr><td><code>closing</code></td><td>kecepatan mendekat, <code>v_ego − v_lead</code></td></tr>
+        <tr><td><code>closing</code></td><td>approach speed, <code>v_ego − v_lead</code></td></tr>
       </table>
 
-      <h4>Persamaan gerak</h4>
-      <p>Percepatan adalah satu langkah di dalam siklus, bukan hasil akhir. Nilainya diperoleh
-        dari jumlah gaya dibagi massa, yang setara dengan perubahan momentum:</p>
+      <h4>Equations of motion</h4>
+      <p>Acceleration is one step inside the cycle, not the final result. It comes from the sum of
+        forces divided by mass, which is the rate of change of momentum:</p>
       <pre class="formula">p = m · v          dp/dt = ΣF          a = ΣF / m</pre>
-      <p>Suku gaya yang dijumlahkan setiap langkah:</p>
-      <pre class="formula">a_fric     = applied × a_tersedia
-a_tersedia = min( μ · g , a_brake )
-a_regen    = regen × min(1, applied × 2,2)      # hanya pada EV
-a_resist   = 0,045 + 0,00016 · v²               # gelinding dan aerodinamika
-a_grade    = g × kemiringan / 100
+      <p>Terms summed at every step:</p>
+      <pre class="formula">a_fric     = applied × a_available
+a_available= min( μ · g , a_brake )
+a_regen    = regen × min(1, applied × 2.2)      # EV only
+a_resist   = 0.045 + 0.00016 · v²               # rolling and aerodynamic
+a_grade    = g × slope / 100
 a_retard   = a_retardMax × avail(v)
 a_net      = a_fric + a_regen + a_resist + a_retard − a_grade − a_throttle
 
@@ -285,15 +285,15 @@ s′ = s + ½ (v + v′) · dt</pre>
         <circle cx="360" cy="209" r="4" fill="#e2e8f0"/>
 
         <line x1="120" y1="252" x2="196" y2="256" stroke="#6f8aa6" stroke-width="2" marker-end="url(#ah)"/>
-        <text x="120" y="243" class="dlabel">arah gerak (v)</text>
+        <text x="120" y="243" class="dlabel">direction of travel (v)</text>
 
         <line x1="360" y1="209" x2="452" y2="215" stroke="#38bdf8" stroke-width="3" marker-end="url(#ahb)"/>
         <text x="392" y="170" class="dlabel" fill="#7dd3fc">g · sin θ</text>
-        <text x="392" y="184" class="dsmall" fill="#7dd3fc">= g × grade/100 = 0,59 m/s² (6 %)</text>
+        <text x="392" y="184" class="dsmall" fill="#7dd3fc">= g × grade/100 = 0.59 m/s² (6 %)</text>
 
         <line x1="360" y1="238" x2="352" y2="196" stroke="#22c55e" stroke-width="3" marker-end="url(#ahg)"/>
         <text x="236" y="146" class="dlabel" fill="#86efac">N = m·g·cos θ</text>
-        <text x="236" y="160" class="dsmall" fill="#86efac">menentukan batas gesek μ·g</text>
+        <text x="236" y="160" class="dsmall" fill="#86efac">sets the μ·g friction limit</text>
         <line x1="300" y1="153" x2="349" y2="201" stroke="#1f5136" stroke-width="1" stroke-dasharray="3 3"/>
 
         <line x1="470" y1="252" x2="360" y2="245" stroke="#ef4444" stroke-width="4" marker-end="url(#ahr)"/>
@@ -304,42 +304,41 @@ s′ = s + ½ (v + v′) · dt</pre>
         <text x="532" y="296" class="dsmall" fill="#fbbf24">engine brake + retarder</text>
 
         <line x1="628" y1="246" x2="588" y2="243" stroke="#94a3b8" stroke-width="2" marker-end="url(#ah)"/>
-        <text x="556" y="228" class="dsmall">gelinding + aero</text>
+        <text x="556" y="228" class="dsmall">rolling + aero</text>
 
         <line x1="300" y1="276" x2="392" y2="280" stroke="#22c55e" stroke-width="3" marker-end="url(#ahg)"/>
         <text x="300" y="296" class="dlabel" fill="#86efac">F_gas (a_throttle)</text>
-        <text x="300" y="308" class="dsmall" fill="#86efac">hanya bekerja saat AEB tidak aktif</text>
+        <text x="300" y="308" class="dsmall" fill="#86efac">active only while AEB is inactive</text>
 
-        <text x="20" y="336" class="dlabel">a_net = F_rem/m + F_ret/m + F_gelinding/m − g·sin θ − a_throttle</text>
+        <text x="20" y="336" class="dlabel">a_net = F_brake/m + F_ret/m + F_rolling/m − g·sin θ − a_throttle</text>
       </svg>
-
-      <h4>Peran massa</h4>
-      <p>Perlambatan dibatasi dua hal yang berbeda sifatnya:</p>
+      <h4>Role of mass</h4>
+      <p>Deceleration is limited by two things of different nature:</p>
       <table class="eq wide">
-        <tr><th>Batas</th><th>Rumus</th><th>Pengaruh massa</th></tr>
-        <tr><td>Gesekan ban–jalan</td><td><code>μ · g</code></td><td>tidak bergantung massa</td></tr>
-        <tr><td>Kapasitas rem</td><td><code>F_rem / m</code></td><td>berbanding terbalik dengan massa</td></tr>
+        <tr><th>Limit</th><th>Formula</th><th>Effect of mass</th></tr>
+        <tr><td>Tyre–road friction</td><td><code>μ · g</code></td><td>independent of mass</td></tr>
+        <tr><td>Brake capacity</td><td><code>F_brake / m</code></td><td>inversely proportional to mass</td></tr>
       </table>
-      <p>Dengan gaya rem tetap 119,6 kN, perlambatan menjadi 4,60 m/s² pada 26 t dan
-        <b>1,80 m/s² pada 66,5 t</b>. Massa naik 2,56 kali, perlambatan turun menjadi 39 %.
-        Perlambatan hanya bisa setara bila gaya rem naik sebanding massa, misalnya melalui
-        katup pengindra beban. Nilai <code>a_brake</code> karena itu harus berasal dari uji
-        pengereman unit, bukan diasumsikan.</p>
+      <p>With a fixed brake force of 119.6 kN, deceleration is 4.60 m/s² at 26 t and
+        <b>1.80 m/s² at 66.5 t</b>. Mass rises 2.56 times, deceleration falls to 39 %. Deceleration
+        can only stay equal if brake force rises in proportion to mass, for example through a
+        load-sensing valve. That is why <code>a_brake</code> must come from a brake test on the
+        unit, not from an assumption.</p>
 
-      <h3>2. Siklus perhitungan 200 Hz</h3>
-      <p>Persamaan gerak hanya sah bila gaya dianggap tetap dalam satu selang waktu. Simulator
-        memakai selang 5 milidetik. Semakin kecil selang, semakin kecil penyimpangan ketika gaya
-        berubah cepat.</p>
+      <h3>2. The 200 Hz cycle</h3>
+      <p>The equations of motion are only valid if forces are treated as constant inside one time
+        step. The simulator uses 5 milliseconds. The smaller the step, the smaller the error when
+        forces change quickly.</p>
       <table class="eq wide">
-        <tr><th>Frekuensi</th><th>Selang</th><th>Jarak henti terhitung</th><th>Selisih</th></tr>
-        <tr><td>200 Hz</td><td>5 ms</td><td>24,76 m</td><td>acuan</td></tr>
-        <tr><td>20 Hz</td><td>50 ms</td><td>25,01 m</td><td>+1,0 %</td></tr>
-        <tr><td>4 Hz</td><td>250 ms</td><td>26,19 m</td><td>+5,8 %</td></tr>
+        <tr><th>Frequency</th><th>Step</th><th>Computed stopping distance</th><th>Difference</th></tr>
+        <tr><td>200 Hz</td><td>5 ms</td><td>24.76 m</td><td>reference</td></tr>
+        <tr><td>20 Hz</td><td>50 ms</td><td>25.01 m</td><td>+1.0 %</td></tr>
+        <tr><td>4 Hz</td><td>250 ms</td><td>26.19 m</td><td>+5.8 %</td></tr>
       </table>
-      <p>Bila gaya benar-benar konstan, semua frekuensi memberi hasil sama. Selisih muncul
-        ketika gaya berubah di dalam satu langkah. Angka 200 Hz adalah pilihan ketelitian
-        hitungan, bukan gambaran perangkat keras: radar mengirim data setiap 20–50 ms dan sistem
-        pada truk berjalan 20–50 Hz.</p>
+      <p>If forces were truly constant, every frequency would give the same result. The difference
+        appears when force changes inside one step. The 200 Hz figure is a numerical choice, not a
+        description of the hardware: the radar delivers data every 20–50 ms and systems on the
+        truck run at 20–50 Hz.</p>
 
       <svg viewBox="0 0 720 210" class="diagram" role="img" aria-label="Lingkaran perhitungan tiap 5 milidetik">
         <defs>
@@ -351,27 +350,27 @@ s′ = s + ½ (v + v′) · dt</pre>
         <rect x="19" y="30" width="130" height="54" rx="8" class="dbox" style="stroke:#f59e0b"/>
         <text x="84" y="50" class="dt" text-anchor="middle" fill="#fbbf24">a_net</text>
         <text x="84" y="66" class="ds" text-anchor="middle">ΣF / m</text>
-        <text x="84" y="78" class="ds" text-anchor="middle">gaya → percepatan</text>
+        <text x="84" y="78" class="ds" text-anchor="middle">force → acceleration</text>
 
         <rect x="157" y="30" width="130" height="54" rx="8" class="dbox"/>
         <text x="222" y="50" class="dt" text-anchor="middle">v′</text>
         <text x="222" y="66" class="ds" text-anchor="middle">v − a·dt</text>
-        <text x="222" y="78" class="ds" text-anchor="middle">kecepatan baru</text>
+        <text x="222" y="78" class="ds" text-anchor="middle">new speed</text>
 
         <rect x="295" y="30" width="130" height="54" rx="8" class="dbox"/>
         <text x="360" y="50" class="dt" text-anchor="middle">s′</text>
         <text x="360" y="66" class="ds" text-anchor="middle">s + ½(v+v′)·dt</text>
-        <text x="360" y="78" class="ds" text-anchor="middle">posisi baru</text>
+        <text x="360" y="78" class="ds" text-anchor="middle">new position</text>
 
         <rect x="433" y="30" width="130" height="54" rx="8" class="dbox"/>
         <text x="498" y="50" class="dt" text-anchor="middle">gap · TTC</text>
         <text x="498" y="66" class="ds" text-anchor="middle">a_req</text>
-        <text x="498" y="78" class="ds" text-anchor="middle">seberapa bahaya</text>
+        <text x="498" y="78" class="ds" text-anchor="middle">how hazardous</text>
 
         <rect x="571" y="30" width="130" height="54" rx="8" class="dbox" style="stroke:#f59e0b"/>
         <text x="636" y="50" class="dt" text-anchor="middle" fill="#fbbf24">level 0…1</text>
-        <text x="636" y="66" class="ds" text-anchor="middle">keputusan rem</text>
-        <text x="636" y="78" class="ds" text-anchor="middle">sebagian / penuh</text>
+        <text x="636" y="66" class="ds" text-anchor="middle">brake decision</text>
+        <text x="636" y="78" class="ds" text-anchor="middle">soft / full brake</text>
 
         <line x1="149" y1="57" x2="155" y2="57" class="darrow" marker-end="url(#la)"/>
         <line x1="287" y1="57" x2="293" y2="57" class="darrow" marker-end="url(#la)"/>
@@ -382,21 +381,20 @@ s′ = s + ½ (v + v′) · dt</pre>
 
         <rect x="250" y="104" width="222" height="46" rx="8" class="dbox" style="stroke:#ef4444"/>
         <text x="361" y="122" class="dt" text-anchor="middle" fill="#fca5a5">latency + build-up</text>
-        <text x="361" y="138" class="ds" text-anchor="middle">perintah → tekanan → a_aktual nyata</text>
+        <text x="361" y="138" class="ds" text-anchor="middle">command → pressure → actual a</text>
 
         <path d="M250,127 L84,127 L84,86" class="darrow" marker-end="url(#la)"/>
         <text x="92" y="100" class="ds">t + 5 ms</text>
-        <text x="92" y="112" class="ds">siklus berikutnya</text>
+        <text x="92" y="112" class="ds">next cycle</text>
 
-        <text x="19" y="182" class="ds">Satu putaran = satu langkah waktu. Dalam satu detik, putaran ini berjalan 200 kali.</text>
-        <text x="19" y="196" class="ds">Kotak kuning = titik keputusan. Kotak merah = penundaan nyata yang tidak bisa dilewati.</text>
+        <text x="19" y="182" class="ds">One revolution = one time step. This loop runs 200 times per second.</text>
+        <text x="19" y="196" class="ds">Yellow box = decision point. Red box = real delay that cannot be skipped.</text>
       </svg>
-
-      <h3>3. Penundaan aktuator</h3>
-      <p>Perintah pengereman tidak bekerja seketika. Ada penundaan tetap, lalu tekanan naik
-        secara bertahap:</p>
-      <pre class="formula">latency = sensorDelay + processDelay + valveDelay     (bawaan 0,23 s)
-applied naik linear sebesar dt / brakeBuild           (bawaan 0,85 s)</pre>
+      <h3>3. Actuator delay</h3>
+      <p>A braking command does not act instantly. There is a fixed delay, then pressure rises
+        gradually:</p>
+      <pre class="formula">latency = sensorDelay + processDelay + valveDelay     (default 0.23 s)
+applied rises linearly by dt / brakeBuild              (default 0.85 s)</pre>
 
       <svg viewBox="0 0 720 150" class="timeline" role="img" aria-label="Timeline respons rem">
         <rect x="50" y="42" width="45" height="68" fill="#1d4ed8" opacity="0.35"/>
@@ -406,54 +404,51 @@ applied naik linear sebesar dt / brakeBuild           (bawaan 0,85 s)</pre>
         <line x1="50" y1="110" x2="50" y2="42" stroke="#33475b" stroke-width="1.5"/>
         <path d="M50 110 L95 110 L307 58 L700 58" fill="none" stroke="#f59e0b" stroke-width="2.2"/>
         <circle cx="307" cy="58" r="3.5" fill="#f59e0b"/>
-        <text x="66" y="132" class="tl">latensi</text>
-        <text x="66" y="145" class="tl2">0,18 s</text>
-        <text x="196" y="132" class="tl">build-up tekanan</text>
-        <text x="196" y="145" class="tl2">0,85 s</text>
-        <text x="470" y="132" class="tl">deselerasi penuh</text>
-        <text x="470" y="145" class="tl2">sampai berhenti</text>
-        <text x="50" y="36" class="tl2">perintah rem</text>
-        <text x="300" y="36" class="tl2">a penuh</text>
+        <text x="66" y="132" class="tl">latency</text>
+        <text x="66" y="145" class="tl2">0.18 s</text>
+        <text x="196" y="132" class="tl">pressure build-up</text>
+        <text x="196" y="145" class="tl2">0.85 s</text>
+        <text x="470" y="132" class="tl">full deceleration</text>
+        <text x="470" y="145" class="tl2">until stopped</text>
+        <text x="50" y="36" class="tl2">brake command</text>
+        <text x="300" y="36" class="tl2">full a</text>
       </svg>
-
       <table class="eq wide">
-        <tr><th>Tahap</th><th>Perkiraan</th><th>Cara memperoleh</th></tr>
-        <tr><td><i>data age</i> radar</td><td>10–50 ms</td><td>selisih waktu antar-frame dengan waktu penggunaan</td></tr>
-        <tr><td><i>loop period</i></td><td>5–20 ms</td><td>periode siklus program</td></tr>
-        <tr><td><i>compute time</i></td><td>&lt;1 ms</td><td>waktu hitung per siklus</td></tr>
-        <tr><td>relai dan katup</td><td>20–50 ms</td><td>sampai solenoid aktif</td></tr>
-        <tr><td>tekanan ke 75 %</td><td>200–600 ms</td><td>batas UN R13: 0,6 s</td></tr>
+        <tr><th>Stage</th><th>Typical</th><th>How to obtain it</th></tr>
+        <tr><td>radar <i>data age</i></td><td>10–50 ms</td><td>time between frames minus the time until use</td></tr>
+        <tr><td><i>loop period</i></td><td>5–20 ms</td><td>program cycle period</td></tr>
+        <tr><td><i>compute time</i></td><td>&lt;1 ms</td><td>computation time per cycle</td></tr>
+        <tr><td>relay and valve</td><td>20–50 ms</td><td>until the solenoid is energised</td></tr>
+        <tr><td>pressure to 75 %</td><td>200–600 ms</td><td>UN R13 limit: 0.6 s</td></tr>
       </table>
-      <p>Kedua nilai, <code>latency</code> dan <code>brakeBuild</code>, dipakai pada rumus pemicu,
-        bukan hanya pada model aktuator. Rumus sederhana <code>v²/(2a)</code> tidak dipakai karena
-        menghasilkan jarak terlalu pendek: pada 40 km/h dengan a = 3 m/s² hasilnya 23,1 m,
-        sedangkan jarak sesungguhnya 27,8 m.</p>
+      <p>Both values, <code>latency</code> and <code>brakeBuild</code>, are used inside the trigger
+        formulas, not only in the actuator model. The simple formula <code>v²/(2a)</code> is not
+        used because it gives a distance that is too short: at 40 km/h with a = 3 m/s² it yields
+        23.1 m, while the real distance is 27.8 m.</p>
 
-      <p>Empat bagian berikut menjelaskan empat <b>pilihan aturan pemicu</b>. Satu unit
-        menjalankan satu pilihan; pemilihan dilakukan di panel dan tidak ada penggabungan antar
-        pilihan. Setiap pilihan sudah lengkap dengan ambang, tingkat pengereman, dan batasnya
-        sendiri.</p>
+      <p>Four sections follow, describing four <b>alternative trigger rules</b>. One unit runs one
+        choice; the choice is made on the panel and there is no combination between choices. Each
+        choice is complete with its own thresholds, braking levels, and limits.</p>
 
-      <h3>4. Logic 1 — TTC relatif</h3>
-      <p>Logic ini menilai bahaya dari kecepatan mendekat saat itu.</p>
-      <p>Kecepatan mendekat diperoleh dari dua sumber, keduanya sudah tersedia tanpa perhitungan
-        tambahan: kecepatan sendiri dari sensor kendaraan, dan <i>range-rate</i> objek dari Doppler.
-        Radar tidak mengukur kecepatan objek secara langsung; yang dilaporkan adalah kecepatan
-        relatif terhadap radar, sehingga:</p>
-      <pre class="formula">v_lead  = v_ego + range-rate            (range-rate negatif saat objek mendekat)
+      <h3>4. Logic 1 — relative TTC</h3>
+      <p>This logic judges danger from the approach speed at that moment.</p>
+      <p>Approach speed comes from two sources, both available without extra computation: own speed
+        from the vehicle sensor, and the object <i>range-rate</i> from Doppler. The radar does not
+        measure object speed directly; it reports speed relative to the radar, therefore:</p>
+      <pre class="formula">v_lead  = v_ego + range-rate            (range-rate is negative when approaching)
 closing = v_ego − v_lead = −range-rate</pre>
-      <p>Logic ini hanya memakai <b>nilai</b> range-rate saat itu. Ia tidak menghitung
-        <i>perubahan</i> nilai itu terhadap waktu, sehingga tidak memerlukan filter. Yang menghitung
-        perubahan tersebut adalah logic 3, dan di situlah filter 0,15 detik diperlukan.</p>
-      <pre class="formula">TTC   = gap / closing               (tak terhingga bila closing ≤ 0,05)
+      <p>This logic uses only the <b>value</b> of range-rate at that moment. It does not compute how
+        that value changes over time, so no filter is needed. Computing that change is what logic 3
+        does, and that is where the 0.15 s filter is required.</p>
+      <pre class="formula">TTC   = gap / closing               (infinite when closing ≤ 0.05)
 a_req = closing² / (2 · gap)
-TTC_min = latency + v / (2 · a_tersedia)
+TTC_min = latency + v / (2 · a_available)
 
-ambang_full = max(0,9 ; 1,1 · TTC_min)
-ambang_soft = max(1,8 ; 1,5 · TTC_min)
+full_threshold = max(0.9 ; 1.1 · TTC_min)
+soft_threshold = max(1.8 ; 1.5 · TTC_min)
 
-TTC ≤ ambang_full atau a_req ≥ 0,9 · a_tersedia  → full brake
-TTC ≤ ambang_soft atau a_req ≥ 0,5 · a_tersedia  → soft brake</pre>
+TTC ≤ full_threshold or a_req ≥ 0.9 · a_available  → full brake
+TTC ≤ soft_threshold or a_req ≥ 0.5 · a_available  → soft brake</pre>
 
       <svg viewBox="0 0 720 300" class="diagram" role="img" aria-label="Logic 1 TTC: dua truk berjarak 44 m dengan selisih kecepatan kecil">
         <defs>
@@ -479,49 +474,48 @@ TTC ≤ ambang_soft atau a_req ≥ 0,5 · a_tersedia  → soft brake</pre>
         <use href="#trk" x="470" y="148"/>
 
         <text x="175" y="140" class="ds" text-anchor="middle">ego · 40 km/h</text>
-        <text x="565" y="140" class="ds" text-anchor="middle">depan · 38 km/h</text>
+        <text x="565" y="140" class="ds" text-anchor="middle">lead · 38 km/h</text>
 
         <line x1="240" y1="196" x2="466" y2="196" stroke="#7dd3fc" stroke-width="1.6"/>
         <line x1="240" y1="190" x2="240" y2="202" stroke="#7dd3fc" stroke-width="1.6"/>
         <line x1="466" y1="190" x2="466" y2="202" stroke="#7dd3fc" stroke-width="1.6"/>
         <text x="353" y="188" class="ds" text-anchor="middle" fill="#7dd3fc">gap 44 m</text>
 
-        <text x="353" y="244" class="ds" text-anchor="middle">closing (kecepatan mendekat) = 40 − 38 = 2 km/h</text>
+        <text x="353" y="244" class="ds" text-anchor="middle">closing (approach speed) = 40 − 38 = 2 km/h</text>
 
         <rect x="250" y="256" width="420" height="34" rx="7" class="dbox" style="stroke:#f59e0b"/>
-        <text x="460" y="270" class="dt" text-anchor="middle" fill="#fbbf24">TTC = 44 m ÷ 0,56 m/s = 80 detik</text>
-        <text x="460" y="284" class="ds" text-anchor="middle">80 detik dianggap "belum bahaya" → tidak ada reaksi</text>
+        <text x="460" y="270" class="dt" text-anchor="middle" fill="#fbbf24">TTC = 44 m ÷ 0.56 m/s = 80 s</text>
+        <text x="460" y="284" class="ds" text-anchor="middle">80 s treated as not yet hazardous → no reaction</text>
 
         <text x="16" y="268" class="ds">TTC =</text>
         <text x="16" y="282" class="ds">gap ÷</text>
         <text x="16" y="296" class="ds">closing</text>
       </svg>
-
-      <p>Ambangnya tidak tetap. Nilainya naik mengikuti <code>TTC_min</code>, yaitu waktu minimum
-        yang dibutuhkan truk untuk berhenti pada kecepatan dan kemampuan rem saat itu. Karena
-        <code>a_tersedia</code> membawa massa, unit bermuatan memakai ambang lebih awal.</p>
+      <p>The thresholds are not fixed. They rise with <code>TTC_min</code>, the minimum time the
+        truck needs to stop at the current speed and brake capability. Because
+        <code>a_available</code> carries mass, a loaded unit uses earlier thresholds.</p>
       <table class="eq wide">
-        <tr><th>Kecepatan</th><th>Muat 66,5 t (a 1,80)</th><th>Kosong 26 t (a 4,60)</th></tr>
-        <tr><td>44 km/h</td><td>full 2,5 s · soft 3,5 s</td><td>full 1,7 s · soft 2,3 s</td></tr>
-        <tr><td>60 km/h (batas muatan)</td><td>full 5,4 s · soft 7,3 s</td><td>full 2,2 s · soft 3,1 s</td></tr>
+        <tr><th>Speed</th><th>Loaded 66.5 t (a 1.80)</th><th>Empty 26 t (a 4.60)</th></tr>
+        <tr><td>44 km/h</td><td>full 4.0 s · soft 5.4 s</td><td>full 1.7 s · soft 2.3 s</td></tr>
+        <tr><td>60 km/h (loaded limit)</td><td>full 5.4 s · soft 7.3 s</td><td>full 2.2 s · soft 3.1 s</td></tr>
       </table>
-      <p>Kelemahan logic ini muncul saat dua kendaraan bergerak dengan kecepatan hampir sama:
-        <code>closing</code> mendekati nol sehingga TTC sangat besar, meskipun jaraknya pendek.
-        Pemicu baru bekerja setelah kendaraan depan mengerem dan kecepatan mendekat terbentuk.</p>
+      <p>The weakness of this logic appears when two vehicles move at almost the same speed:
+        <code>closing</code> approaches zero so TTC becomes very large, even though the gap is
+        short. The trigger only acts after the leading vehicle brakes and an approach speed
+        develops.</p>
 
-      <h3>5. Logic 2 — TTC relatif ditambah jarak aman</h3>
-      <p>Di dalam logic ini ada dua kriteria: TTC seperti logic 1, ditambah penjaga jarak berbasis
-        waktu. Keduanya bagian dari satu pilihan aturan, bukan dua logic yang dijalankan
-        bersamaan.</p>
+      <h3>5. Logic 2 — relative TTC plus safe distance</h3>
+      <p>Inside this logic there are two criteria: TTC as in logic 1, plus a time-based distance
+        keeper. Both are part of one rule, not two logics running together.</p>
       <pre class="formula">THW    = gap / v_ego
-v_safe = gap / headway              (headway bawaan 4 detik)
+v_safe = gap / headway              (default headway 4 seconds)
 
-penjaga aktif bila THW ≤ headway; lepas bila THW &gt; headway + 0,05
+keeper engages when THW ≤ headway; releases when THW &gt; headway + 0.05
 
-selama aktif:
-    a_butuh = (v − v_safe) / 2
-    level   = 0,55 bila a_butuh &lt; 0,55 · a_tersedia
-              1,00 bila a_butuh ≥ 0,55 · a_tersedia</pre>
+while engaged:
+    a_need = (v − v_safe) / 2
+    level  = 0.55 when a_need &lt; 0.55 · a_available
+             1.00 when a_need ≥ 0.55 · a_available</pre>
 
       <svg viewBox="0 0 720 300" class="diagram" role="img" aria-label="Logic 2 jarak aman: pengukuran 4 detik di antara dua truk">
         <defs>
@@ -547,7 +541,7 @@ selama aktif:
         <use href="#trk" x="470" y="148"/>
 
         <text x="175" y="140" class="ds" text-anchor="middle">ego · 40 km/h</text>
-        <text x="565" y="140" class="ds" text-anchor="middle">depan · 38 km/h</text>
+        <text x="565" y="140" class="ds" text-anchor="middle">lead · 38 km/h</text>
 
         <line x1="240" y1="196" x2="466" y2="196" stroke="#22c55e" stroke-width="1.6"/>
         <line x1="240" y1="188" x2="240" y2="204" stroke="#22c55e" stroke-width="1.6"/>
@@ -560,60 +554,58 @@ selama aktif:
         <text x="381" y="184" class="ds" text-anchor="middle">3 s</text>
         <text x="437" y="184" class="ds" text-anchor="middle">4 s</text>
 
-        <text x="353" y="244" class="ds" text-anchor="middle">THW = gap ÷ kecepatan = 44 m ÷ 11,1 m/s = 4,0 detik</text>
+        <text x="353" y="244" class="ds" text-anchor="middle">THW = gap ÷ speed = 44 m ÷ 11.1 m/s = 4.0 s</text>
 
         <rect x="250" y="256" width="420" height="34" rx="7" class="dbox" style="stroke:#f59e0b"/>
-        <text x="460" y="270" class="dt" text-anchor="middle" fill="#fbbf24">THW &lt; 4 detik → soft brake</text>
-        <text x="460" y="284" class="ds" text-anchor="middle">1,2 m/s² naik bertahap, dibatasi 80 % kapasitas · THW ≥ 4 detik → tidak ada aksi</text>
+        <text x="460" y="270" class="dt" text-anchor="middle" fill="#fbbf24">THW &lt; 4 s → soft brake</text>
+        <text x="460" y="284" class="ds" text-anchor="middle">1.2 m/s² ramping, capped at 80 % capacity · THW ≥ 4 s → no action</text>
 
-        <text x="16" y="268" class="ds">jaga</text>
-        <text x="16" y="282" class="ds">jarak</text>
-        <text x="16" y="296" class="ds">4 detik</text>
+        <text x="16" y="268" class="ds">keep</text>
+        <text x="16" y="282" class="ds">distance</text>
+        <text x="16" y="296" class="ds">4 s</text>
       </svg>
-
-      <p>Dua kriteria di atas tidak selalu berimpit. Jarak 4 detik menetapkan jarak berdasarkan
-        waktu; <code>a_req</code> menetapkan kebutuhan perlambatan untuk berhenti tepat pada objek.
-        Keduanya bertemu pada satu kecepatan, yaitu <code>v = 4 × a_tersedia</code> — sekitar
-        26 km/h untuk a_tersedia 1,80 m/s².</p>
+      <p>The two criteria do not always coincide. The 4-second rule sets distance by time;
+        <code>a_req</code> sets the deceleration needed to stop exactly at the object. They meet at
+        one speed, <code>v = 4 × a_available</code> — about 26 km/h for a_available 1.80 m/s².</p>
       <table class="eq wide">
-        <tr><th>Kecepatan<br>(objek diam)</th><th>Jarak 4 detik</th><th>Jarak saat<br>a_req = 50 % kapasitas</th><th>Kriteria<br>lebih dulu</th></tr>
+        <tr><th>Speed<br>(object at rest)</th><th>4-second distance</th><th>Distance when<br>a_req = 50 % capacity</th><th>Criterion<br>arriving first</th></tr>
         <tr><td>30 km/h</td><td>33 m</td><td>39 m</td><td>a_req</td></tr>
         <tr><td>50 km/h</td><td>56 m</td><td>107 m</td><td>a_req</td></tr>
       </table>
-      <p>Di atas 26 km/h, <code>a_req</code> sudah mencapai 50 % kapasitas sebelum jarak menyusut
-        sampai 4 detik, sehingga rem bekerja meskipun jarak masih di atas 4 detik. Ini bukan
-        kesalahan hitung: 4 detik menjamin waktu reaksi terhadap kendaraan yang bergerak,
-        sedangkan <code>a_req</code> mengukur kemampuan berhenti terhadap objek yang diam.</p>
+      <p>Above 26 km/h, <code>a_req</code> reaches 50 % capacity before the gap shrinks to 4 seconds,
+        so braking acts while the gap is still above 4 seconds. This is not a calculation error:
+        4 seconds guarantees reaction time against a moving vehicle, while <code>a_req</code>
+        measures the ability to stop against a stationary object.</p>
 
-      <h3>6. Logic 3 — prediktif</h3>
-      <p>Logic ini bekerja dari <b>perubahan kecepatan objek di depan</b>, bukan dari jarak.
-        Radar mengirim dua nilai setiap siklus: jarak (<i>range</i>) dan kecepatan mendekat
-        (<i>range-rate</i>, diukur melalui Doppler). Dari keduanya simulator menghitung berapa
-        cepat kecepatan mendekat berubah; itulah perlambatan objek depan, <code>a_lead</code>.</p>
-      <p>Alasannya sederhana: kalau truk depan mengerem, kecepatan mendekat bertambah. Radar
-        melihat pertambahan itu <b>sebelum</b> jaraknya menyusut banyak, sehingga ego vehicle
-        mendapat waktu lebih panjang daripada logic berbasis jarak.</p>
+      <h3>6. Logic 3 — predictive</h3>
+      <p>This logic works from <b>the change of speed of the object ahead</b>, not from distance.
+        The radar sends two values every cycle: range and approach speed (<i>range-rate</i>,
+        measured through Doppler). From both the simulator computes how fast the approach speed is
+        changing; that is the deceleration of the object ahead, <code>a_lead</code>.</p>
+      <p>The reasoning is simple: when the truck ahead brakes, the approach speed grows. The radar
+        sees that growth <b>before</b> the gap shrinks much, so the ego vehicle gets more time than
+        with a distance-based logic.</p>
 
-      <h4>Langkah perhitungan</h4>
-      <pre class="formula">1) a_lead   = filter_0,15s( d(−range_rate) / dt )
-2) leadDist = jarak yang masih dibutuhkan truk depan untuk berhenti
+      <h4>Computation steps</h4>
+      <pre class="formula">1) a_lead   = filter_0.15s( d(−range_rate) / dt )
+2) leadDist = distance the lead truck still needs to stop
 3) budget   = gap + leadDist − margin(3 m)
 4) a_ff     = requiredDecel(v_ego, budget, latency, build)
 
-a_ff ≥ 0,55 · a_tersedia → full brake
-a_ff ≥ 0,25 · a_tersedia → soft brake</pre>
+a_ff ≥ 0.55 · a_available → full brake
+a_ff ≥ 0.25 · a_available → soft brake</pre>
 
       <table class="eq wide">
-        <tr><th>Langkah</th><th>Arti</th><th>Cara memperoleh</th></tr>
-        <tr><td>1</td><td>perlambatan objek depan</td><td>selisih <i>range-rate</i> antar-siklus, dihaluskan 0,15 detik agar tidak terpicu noise radar</td></tr>
-        <tr><td>2</td><td>jarak berhenti objek depan</td><td><code>v_lead² / (2 · a_lead)</code>; nol bila objek sudah berhenti, tak terhingga bila objek melaju tanpa mengerem</td></tr>
-        <tr><td>3</td><td>jalan yang tersedia untuk ego</td><td>jarak sekarang ditambah jarak berhenti objek, dikurangi margin 3 m</td></tr>
-        <tr><td>4</td><td>perlambatan yang dibutuhkan</td><td><code>requiredDecel</code>, sudah memperhitungkan latency dan kenaikan tekanan</td></tr>
+        <tr><th>Step</th><th>Meaning</th><th>How it is obtained</th></tr>
+        <tr><td>1</td><td>deceleration of the object ahead</td><td>difference of <i>range-rate</i> between cycles, smoothed over 0.15 s so radar noise does not trigger it</td></tr>
+        <tr><td>2</td><td>stopping distance of the object ahead</td><td><code>v_lead² / (2 · a_lead)</code>; zero when the object has stopped, infinite when it moves without braking</td></tr>
+        <tr><td>3</td><td>road available to ego</td><td>current gap plus the object stopping distance, minus a 3 m margin</td></tr>
+        <tr><td>4</td><td>deceleration required</td><td><code>requiredDecel</code>, already accounting for latency and pressure build-up</td></tr>
       </table>
 
-      <p>Inti langkah 3: yang dihitung bukan jarak ke bemper truk depan, melainkan <b>jarak ke
-        titik tempat truk depan akan berhenti</b>. Titik itu masih bergerak selama truk depan
-        belum berhenti, dan radar memperkirakannya dari perlambatan yang sedang berlangsung.</p>
+      <p>The core of step 3: what is computed is not the distance to the lead truck bumper, but
+        <b>the point where the lead truck will stop</b>. That point is still moving while the lead
+        truck has not stopped, and the radar estimates it from the deceleration in progress.</p>
 
       <svg viewBox="0 0 720 300" class="diagram" role="img" aria-label="Logic 3 prediktif: radar membaca perlambatan truk depan lalu memperkirakan titik berhentinya">
         <defs>
@@ -639,7 +631,7 @@ a_ff ≥ 0,25 · a_tersedia → soft brake</pre>
         <use href="#trk" x="480" y="148"/>
 
         <text x="155" y="140" class="ds" text-anchor="middle">ego · 40 km/h</text>
-        <text x="575" y="140" class="ds" text-anchor="middle">depan · 38 km/h</text>
+        <text x="575" y="140" class="ds" text-anchor="middle">lead · 38 km/h</text>
 
         <path d="M228,178 L472,150 L472,206 L228,192 Z" fill="rgba(59,130,246,.10)" stroke="rgba(59,130,246,.35)" stroke-dasharray="4 4"/>
 
@@ -647,40 +639,39 @@ a_ff ≥ 0,25 · a_tersedia → soft brake</pre>
         <circle cx="476" cy="186" r="13" fill="none" stroke="#ef4444" stroke-opacity="0.45"/>
         <line x1="500" y1="168" x2="560" y2="168" stroke="#f87171" stroke-width="2" marker-end="url(#ra3)"/>
         <text x="566" y="164" class="ds" fill="#fca5a5">a_lead = 3 m/s²</text>
-        <text x="566" y="178" class="ds" fill="#fca5a5">(dibaca dari Doppler)</text>
+        <text x="566" y="178" class="ds" fill="#fca5a5">(from Doppler)</text>
 
         <line x1="472" y1="212" x2="620" y2="212" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 4"/>
-        <text x="620" y="236" class="ds" text-anchor="end">depan berhenti di sini</text>
+        <text x="620" y="236" class="ds" text-anchor="end">lead stops here</text>
 
         <line x1="228" y1="232" x2="420" y2="232" stroke="#22c55e" stroke-width="1.6" stroke-dasharray="5 4"/>
-        <text x="420" y="250" class="ds" fill="#86efac">ego berhenti sebelum objek</text>
+        <text x="420" y="250" class="ds" fill="#86efac">ego stops before the object</text>
 
         <rect x="16" y="256" width="688" height="34" rx="7" class="dbox" style="stroke:#f59e0b"/>
-        <text x="360" y="270" class="dt" text-anchor="middle" fill="#fbbf24">mulai mengerem 0,3 detik setelah truk depan mulai melambat</text>
-        <text x="360" y="284" class="ds" text-anchor="middle">= waktu filter 0,15 s + latency sistem 0,23 s</text>
+        <text x="360" y="270" class="dt" text-anchor="middle" fill="#fbbf24">starts braking 0.3 s after the lead truck began slowing</text>
+        <text x="360" y="284" class="ds" text-anchor="middle">= filter 0.15 s + system latency 0.23 s</text>
       </svg>
-
-      <h4>Dari mana <code>a_lead</code> berasal</h4>
-      <p>Ada dua cara berbeda untuk memperoleh kecepatan objek, dan keduanya tidak sama:</p>
+      <h4>Where <code>a_lead</code> comes from</h4>
+      <p>There are two different ways to obtain object speed, and they are not the same:</p>
       <table class="eq wide">
-        <tr><th>Cara</th><th>Prinsip</th><th>Kekurangan</th></tr>
-        <tr><td>Selisih jarak</td><td>jarak diukur dua kali, selisihnya dibagi selang waktu</td><td>butuh selang panjang agar tidak berisik; resolusi jarak 0,1–0,5 m membuat hasilnya kasar pada selang 20–50 ms</td></tr>
-        <tr><td><b>Doppler</b> (dipakai radar ini)</td><td>pergeseran frekuensi pantulan dibaca langsung setiap pengukuran, tanpa menunggu selang panjang</td><td>hanya memberi kecepatan searah radar, bukan arah melintang</td></tr>
+        <tr><th>Method</th><th>Principle</th><th>Drawback</th></tr>
+        <tr><td>Range difference</td><td>range measured twice, the difference divided by the time step</td><td>needs a long step to stay quiet; a range resolution of 0.1–0.5 m makes the result coarse over 20–50 ms</td></tr>
+        <tr><td><b>Doppler</b> (used by this radar)</td><td>the frequency shift of the echo is read directly at every measurement, without waiting for a long baseline</td><td>gives only speed along the radar line, not lateral speed</td></tr>
       </table>
-      <p>Pada 77 GHz, panjang gelombang 3,9 mm, sehingga kecepatan mendekat 1 m/s menghasilkan
-        pergeseran 513 Hz. Pergeseran itu dibaca setiap <i>chirp</i>, jadi kecepatan tersedia
-        hampir setiap 20–50 ms — bukan hasil pembagian jarak antar periode yang berjarak detik.</p>
-      <p>Perlambatan objek diperoleh dengan <b>diferensial</b>, yaitu menghitung perubahan
-        kecepatan dibagi selang waktunya:</p>
+      <p>At 77 GHz the wavelength is 3.9 mm, so an approach speed of 1 m/s produces a 513 Hz shift.
+        That shift is read every <i>chirp</i>, so speed is available almost every 20–50 ms — not the
+        result of dividing ranges across a period of seconds.</p>
+      <p>Object deceleration is obtained by <b>differentiation</b>: the change of speed divided by
+        the time step.</p>
       <pre class="formula">a_lead = (v₁ − v₂) / (t₂ − t₁)
 
-contoh: (10,6 − 10,3) m/s ÷ (0,10 s) = 3,0 m/s²</pre>
-      <p>Ini hitungan aritmetika atas dua angka radar, bukan aksi pada kendaraan: tidak ada rem
-        yang bekerja, dan kecepatan ego vehicle tidak diubah oleh langkah ini. Pengereman baru
-        diputuskan setelah nilainya dibandingkan dengan ambang.</p>
-      <p>Karena selisih dua angka yang berdekatan mudah terpengaruh derau, hasilnya dihaluskan
-        dengan filter orde satu 0,15 detik. Inilah yang dihitung simulator pada setiap siklus
-        5 milidetik.</p>
+example: (10.6 − 10.3) m/s ÷ (0.10 s) = 3.0 m/s²</pre>
+      <p>This is arithmetic over two radar readings, not an action on the vehicle: no brake is
+        applied and ego speed is not changed by this step. Braking is decided only after the value
+        is compared with a threshold.</p>
+      <p>Because the difference of two close numbers is easily disturbed by noise, the result is
+        smoothed with a first-order filter of 0.15 s. That is what the simulator computes every
+        5 millisecond cycle.</p>
 
       <svg viewBox="0 0 760 372" class="diagram" role="img" aria-label="Efek Doppler: pergeseran frekuensi pantulan menjadi kecepatan, lalu perubahannya menjadi perlambatan">
         <defs>
@@ -698,7 +689,7 @@ contoh: (10,6 − 10,3) m/s ÷ (0,10 s) = 3,0 m/s²</pre>
         <!-- ikon radar -->
         <path d="M28,58 L96,44 L96,108 L28,94 Z" fill="#1e4fa3" stroke="#60a5fa" stroke-width="1.2"/>
         <rect x="20" y="70" width="10" height="16" rx="2" fill="#0f2b4d" stroke="#60a5fa"/>
-        <text x="62" y="126" class="ds" text-anchor="middle">radar 77 GHz</text>
+        <text x="62" y="126" class="ds" text-anchor="middle">77 GHz radar</text>
 
         <line x1="102" y1="66" x2="140" y2="66" stroke="#7dd3fc" stroke-width="2" marker-end="url(#dop1)"/>
         <line x1="102" y1="122" x2="140" y2="122" stroke="#f87171" stroke-width="2" marker-end="url(#dop2)"/>
@@ -708,11 +699,11 @@ contoh: (10,6 − 10,3) m/s ÷ (0,10 s) = 3,0 m/s²</pre>
         <polyline points="150.0,66.0 152.0,60.0 154.0,55.3 156.0,53.1 158.0,53.8 160.0,57.4 162.0,62.9 164.0,69.1 166.0,74.6 168.0,78.2 170.0,78.9 172.0,76.7 174.0,72.0 176.0,66.0 178.0,60.0 180.0,55.3 182.0,53.1 184.0,53.8 186.0,57.4 188.0,62.9 190.0,69.1 192.0,74.6 194.0,78.2 196.0,78.9 198.0,76.7 200.0,72.0 202.0,66.0 204.0,60.0 206.0,55.3 208.0,53.1 210.0,53.8 212.0,57.4 214.0,62.9 216.0,69.1 218.0,74.6 220.0,78.2 222.0,78.9 224.0,76.7 226.0,72.0 228.0,66.0 230.0,60.0 232.0,55.3 234.0,53.1 236.0,53.8 238.0,57.4 240.0,62.9 242.0,69.1 244.0,74.6 246.0,78.2 248.0,78.9 250.0,76.7 252.0,72.0 254.0,66.0 256.0,60.0 258.0,55.3 260.0,53.1 262.0,53.8 264.0,57.4 266.0,62.9 268.0,69.1 270.0,74.6 272.0,78.2 274.0,78.9 276.0,76.7 278.0,72.0 280.0,66.0 282.0,60.0 284.0,55.3 286.0,53.1 288.0,53.8 290.0,57.4 292.0,62.9 294.0,69.1 296.0,74.6 298.0,78.2 300.0,78.9 302.0,76.7 304.0,72.0 306.0,66.0 308.0,60.0 310.0,55.3 312.0,53.1 314.0,53.8 316.0,57.4 318.0,62.9 320.0,69.1 322.0,74.6 324.0,78.2 326.0,78.9 328.0,76.7 330.0,72.0 332.0,66.0 334.0,60.0 336.0,55.3 338.0,53.1 340.0,53.8 342.0,57.4 344.0,62.9 346.0,69.1 348.0,74.6 350.0,78.2 352.0,78.9 354.0,76.7 356.0,72.0 358.0,66.0 360.0,60.0 362.0,55.3 364.0,53.1 366.0,53.8 368.0,57.4 370.0,62.9 372.0,69.1 374.0,74.6 376.0,78.2 378.0,78.9 380.0,76.7 382.0,72.0 384.0,66.0 386.0,60.0 388.0,55.3 390.0,53.1 392.0,53.8 394.0,57.4 396.0,62.9 398.0,69.1 400.0,74.6 402.0,78.2 404.0,78.9 406.0,76.7 408.0,72.0 410.0,66.0 412.0,60.0 414.0,55.3 416.0,53.1 418.0,53.8 420.0,57.4 422.0,62.9 424.0,69.1 426.0,74.6 428.0,78.2 430.0,78.9 432.0,76.7 434.0,72.0 436.0,66.0 438.0,60.0 440.0,55.3 442.0,53.1 444.0,53.8 446.0,57.4 448.0,62.9 450.0,69.1 452.0,74.6 454.0,78.2 456.0,78.9 458.0,76.7 460.0,72.0 462.0,66.0 464.0,60.0 466.0,55.3 468.0,53.1 470.0,53.8 472.0,57.4 474.0,62.9 476.0,69.1 478.0,74.6 480.0,78.2 482.0,78.9 484.0,76.7 486.0,72.0 488.0,66.0 490.0,60.0 492.0,55.3 494.0,53.1 496.0,53.8 498.0,57.4 500.0,62.9 502.0,69.1 504.0,74.6 506.0,78.2 508.0,78.9 510.0,76.7 512.0,72.0 514.0,66.0 516.0,60.0 518.0,55.3 520.0,53.1 522.0,53.8 524.0,57.4 526.0,62.9 528.0,69.1 530.0,74.6 532.0,78.2 534.0,78.9 536.0,76.7 538.0,72.0 540.0,66.0 542.0,60.0 544.0,55.3 546.0,53.1 548.0,53.8 550.0,57.4 552.0,62.9 554.0,69.1 556.0,74.6 558.0,78.2 560.0,78.9 562.0,76.7 564.0,72.0 566.0,66.0 568.0,60.0 570.0,55.3 572.0,53.1 574.0,53.8 576.0,57.4 578.0,62.9 580.0,69.1 582.0,74.6 584.0,78.2 586.0,78.9 588.0,76.7 590.0,72.0" fill="none" stroke="#7dd3fc" stroke-width="2"/>
         <polyline points="150.0,122.0 152.0,115.0 154.0,110.2 156.0,109.1 158.0,112.2 160.0,118.3 162.0,125.7 164.0,131.8 166.0,134.9 168.0,133.8 170.0,129.0 172.0,122.0 174.0,115.0 176.0,110.2 178.0,109.1 180.0,112.2 182.0,118.3 184.0,125.7 186.0,131.8 188.0,134.9 190.0,133.8 192.0,129.0 194.0,122.0 196.0,115.0 198.0,110.2 200.0,109.1 202.0,112.2 204.0,118.3 206.0,125.7 208.0,131.8 210.0,134.9 212.0,133.8 214.0,129.0 216.0,122.0 218.0,115.0 220.0,110.2 222.0,109.1 224.0,112.2 226.0,118.3 228.0,125.7 230.0,131.8 232.0,134.9 234.0,133.8 236.0,129.0 238.0,122.0 240.0,115.0 242.0,110.2 244.0,109.1 246.0,112.2 248.0,118.3 250.0,125.7 252.0,131.8 254.0,134.9 256.0,133.8 258.0,129.0 260.0,122.0 262.0,115.0 264.0,110.2 266.0,109.1 268.0,112.2 270.0,118.3 272.0,125.7 274.0,131.8 276.0,134.9 278.0,133.8 280.0,129.0 282.0,122.0 284.0,115.0 286.0,110.2 288.0,109.1 290.0,112.2 292.0,118.3 294.0,125.7 296.0,131.8 298.0,134.9 300.0,133.8 302.0,129.0 304.0,122.0 306.0,115.0 308.0,110.2 310.0,109.1 312.0,112.2 314.0,118.3 316.0,125.7 318.0,131.8 320.0,134.9 322.0,133.8 324.0,129.0 326.0,122.0 328.0,115.0 330.0,110.2 332.0,109.1 334.0,112.2 336.0,118.3 338.0,125.7 340.0,131.8 342.0,134.9 344.0,133.8 346.0,129.0 348.0,122.0 350.0,115.0 352.0,110.2 354.0,109.1 356.0,112.2 358.0,118.3 360.0,125.7 362.0,131.8 364.0,134.9 366.0,133.8 368.0,129.0 370.0,122.0 372.0,115.0 374.0,110.2 376.0,109.1 378.0,112.2 380.0,118.3 382.0,125.7 384.0,131.8 386.0,134.9 388.0,133.8 390.0,129.0 392.0,122.0 394.0,115.0 396.0,110.2 398.0,109.1 400.0,112.2 402.0,118.3 404.0,125.7 406.0,131.8 408.0,134.9 410.0,133.8 412.0,129.0 414.0,122.0 416.0,115.0 418.0,110.2 420.0,109.1 422.0,112.2 424.0,118.3 426.0,125.7 428.0,131.8 430.0,134.9 432.0,133.8 434.0,129.0 436.0,122.0 438.0,115.0 440.0,110.2 442.0,109.1 444.0,112.2 446.0,118.3 448.0,125.7 450.0,131.8 452.0,134.9 454.0,133.8 456.0,129.0 458.0,122.0 460.0,115.0 462.0,110.2 464.0,109.1 466.0,112.2 468.0,118.3 470.0,125.7 472.0,131.8 474.0,134.9 476.0,133.8 478.0,129.0 480.0,122.0 482.0,115.0 484.0,110.2 486.0,109.1 488.0,112.2 490.0,118.3 492.0,125.7 494.0,131.8 496.0,134.9 498.0,133.8 500.0,129.0 502.0,122.0 504.0,115.0 506.0,110.2 508.0,109.1 510.0,112.2 512.0,118.3 514.0,125.7 516.0,131.8 518.0,134.9 520.0,133.8 522.0,129.0 524.0,122.0 526.0,115.0 528.0,110.2 530.0,109.1 532.0,112.2 534.0,118.3 536.0,125.7 538.0,131.8 540.0,134.9 542.0,133.8 544.0,129.0 546.0,122.0 548.0,115.0 550.0,110.2 552.0,109.1 554.0,112.2 556.0,118.3 558.0,125.7 560.0,131.8 562.0,134.9 564.0,133.8 566.0,129.0 568.0,122.0 570.0,115.0 572.0,110.2 574.0,109.1 576.0,112.2 578.0,118.3 580.0,125.7 582.0,131.8 584.0,134.9 586.0,133.8 588.0,129.0 590.0,122.0" fill="none" stroke="#f87171" stroke-width="2"/>
 
-        <text x="600" y="58" class="ds" text-anchor="end" fill="#7dd3fc">gelombang pancar</text>
-        <text x="600" y="72" class="ds" text-anchor="end">f₀ tetap</text>
-        <text x="600" y="114" class="ds" text-anchor="end" fill="#fca5a5">gelombang pantul</text>
+        <text x="600" y="58" class="ds" text-anchor="end" fill="#7dd3fc">transmitted wave</text>
+        <text x="600" y="72" class="ds" text-anchor="end">f₀ constant</text>
+        <text x="600" y="114" class="ds" text-anchor="end" fill="#fca5a5">reflected wave</text>
         <text x="600" y="128" class="ds" text-anchor="end">f₀ + Δf</text>
-        <text x="600" y="146" class="ds" text-anchor="end" fill="#fbbf24">periode lebih pendek → objek mendekat</text>
+        <text x="600" y="146" class="ds" text-anchor="end" fill="#fbbf24">shorter period → object approaching</text>
 
         <!-- panel 2: dua kali ukur -->
         <line x1="90" y1="222" x2="740" y2="222" stroke="#33475b" stroke-width="2"/>
@@ -720,79 +711,78 @@ contoh: (10,6 − 10,3) m/s ÷ (0,10 s) = 3,0 m/s²</pre>
         <circle cx="470" cy="222" r="6" fill="#fbbf24"/>
         <line x1="200" y1="222" x2="470" y2="222" stroke="#fbbf24" stroke-width="2" marker-end="url(#dop2)"/>
 
-        <text x="200" y="206" class="ds" text-anchor="middle" fill="#86efac">ukur 1</text>
-        <text x="200" y="248" class="dt" text-anchor="middle">v₁ = 10,6 m/s</text>
-        <text x="470" y="206" class="ds" text-anchor="middle" fill="#fbbf24">ukur 2</text>
-        <text x="470" y="248" class="dt" text-anchor="middle">v₂ = 10,3 m/s</text>
-        <text x="335" y="212" class="ds" text-anchor="middle">ΔT = 0,10 s</text>
-        <text x="640" y="206" class="ds" text-anchor="middle">tiap chirp,</text>
+        <text x="200" y="206" class="ds" text-anchor="middle" fill="#86efac">measurement 1</text>
+        <text x="200" y="248" class="dt" text-anchor="middle">v₁ = 10.6 m/s</text>
+        <text x="470" y="206" class="ds" text-anchor="middle" fill="#fbbf24">measurement 2</text>
+        <text x="470" y="248" class="dt" text-anchor="middle">v₂ = 10.3 m/s</text>
+        <text x="335" y="212" class="ds" text-anchor="middle">ΔT = 0.10 s</text>
+        <text x="640" y="206" class="ds" text-anchor="middle">every chirp,</text>
         <text x="640" y="220" class="ds" text-anchor="middle">20–50 ms</text>
 
         <!-- panel 3: perhitungan -->
         <rect x="10" y="268" width="740" height="94" rx="8" class="dbox" style="stroke:#f59e0b"/>
         <text x="26" y="292" class="dt" fill="#fbbf24">Δf = 2 · v / λ</text>
-        <text x="26" y="310" class="ds">λ = 3,9 mm pada 77 GHz → kecepatan 1 m/s menghasilkan pergeseran 513 Hz</text>
-        <text x="26" y="332" class="dt">a_lead = (v₁ − v₂) / ΔT = (10,6 − 10,3) / 0,10 = 3,0 m/s²</text>
-        <text x="26" y="350" class="ds">lalu dihaluskan filter 0,15 detik, karena turunan menaikkan derau radar</text>
+        <text x="26" y="310" class="ds">λ = 3.9 mm at 77 GHz → 1 m/s produces a 513 Hz shift</text>
+        <text x="26" y="332" class="dt">a_lead = (v₁ − v₂) / ΔT = (10.6 − 10.3) / 0.10 = 3.0 m/s²</text>
+        <text x="26" y="350" class="ds">then smoothed by a 0.15 s filter: differentiation amplifies radar noise</text>
       </svg>
 
-      <h4>Contoh satu siklus</h4>
-      <pre class="formula">ego 40 km/h (11,1 m/s) · depan 38 km/h (10,6 m/s) · gap 30 m
+      <h4>One worked cycle</h4>
+      <pre class="formula">ego 40 km/h (11.1 m/s) · lead 38 km/h (10.6 m/s) · gap 30 m
 
-range-rate awal            = −0,50 m/s     (mendekat pelan)
-depan mengerem 3 m/s²  → range-rate turun 3 × 0,005 = 0,015 m/s per siklus
-                         menjadi −0,515 m/s
-a_lead  = 0,015 / 0,005 = 3,0 m/s²         (setelah filter 0,15 s)
+initial range-rate       = −0.50 m/s     (approaching slowly)
+lead brakes at 3 m/s²  → range-rate falls 3 × 0.005 = 0.015 m/s per cycle
+                         to −0.515 m/s
+a_lead  = 0.015 / 0.005 = 3.0 m/s²       (after the 0.15 s filter)
 
-leadDist = 10,6² / (2 × 3) = 18,7 m
-budget   = 30 + 18,7 − 3 = 45,7 m
-a_ff     = requiredDecel(11,1 ; 45,7 ; 0,23 ; 0,85) = 1,60 m/s²
+leadDist = 10.6² / (2 × 3) = 18.7 m
+budget   = 30 + 18.7 − 3 = 45.7 m
+a_ff     = requiredDecel(11.1 ; 45.7 ; 0.23 ; 0.85) = 1.60 m/s²
 
-1,60 ≥ 0,55 × 1,80 (= 0,99)  →  full brake</pre>
-      <p>Pada jarak 30 m dan selisih kecepatan hanya 0,5 m/s, logic berbasis TTC belum melihat
-        bahaya apa pun. Logic prediktif sudah memerintahkan full brake, karena truk depan
-        melambat lebih cepat daripada ego.</p>
+1.60 ≥ 0.55 × 1.80 (= 0.99)  →  full brake</pre>
+      <p>At a 30 m gap and a speed difference of only 0.5 m/s, a TTC-based logic sees no danger at
+        all. The predictive logic already commands full brake, because the truck ahead is slowing
+        faster than ego.</p>
 
-      <h4>Objek diam: kriteria TTC di dalam logic ini</h4>
-      <p>Logic ini <b>berdiri sendiri</b>. Di dalamnya terdapat dua bagian yang dijalankan setiap
-        siklus: <i>feed-forward</i> dari <code>a_lead</code>, dan kriteria TTC + <code>a_req</code>.
-        Bagian TTC tidak perlu diambil dari logic lain; ia bagian dari logic ini.</p>
-      <p><i>Feed-forward</i> hanya dipakai untuk objek yang <b>pernah bergerak</b>
-        (<code>leadMovingSeen</code>: kecepatan objek melewati 1 m/s sekali saja sudah cukup).
-        Alasannya, radar tidak memberi identitas objek: truk yang berhenti, rambu, pagar, dan
-        tanggul menghasilkan pantulan yang tidak bisa dibedakan. Objek diam ditangani kriteria
-        TTC + <code>a_req</code> yang juga ada di dalam logic ini.</p>
+      <h4>Object at rest: the TTC criterion inside this logic</h4>
+      <p>This logic <b>stands alone</b>. Inside it two parts run every cycle: <i>feed-forward</i>
+        from <code>a_lead</code>, and the TTC + <code>a_req</code> criteria. The TTC part is not
+        taken from another logic; it is part of this one.</p>
+      <p><i>Feed-forward</i> is used only for objects that <b>have moved</b>
+        (<code>leadMovingSeen</code>: speed above 1 m/s once is enough). The reason is that the
+        radar gives no object identity: a stopped truck, a sign, a fence, and an embankment return
+        reflections that cannot be distinguished. Objects at rest are handled by the TTC +
+        <code>a_req</code> criteria, which are also inside this logic.</p>
       <table class="eq wide">
-        <tr><th>Objek diam, 60 km/h</th><th>Logic 3 — prediktif</th><th>Logic 1 — TTC relatif</th></tr>
-        <tr><td>jarak 67 m</td><td>tabrakan 29,2 km/h</td><td>tabrakan 29,2 km/h</td></tr>
-        <tr><td>jarak 120 m</td><td>berhenti sisa 21,9 m</td><td>berhenti sisa 21,9 m</td></tr>
-        <tr><td>jarak 170 m</td><td>berhenti sisa 31,5 m</td><td>berhenti sisa 31,5 m</td></tr>
-        <tr><td>jarak 250 m</td><td>berhenti sisa 67,1 m</td><td>berhenti sisa 67,1 m</td></tr>
+        <tr><th>Object at rest, 60 km/h</th><th>Logic 3 — predictive</th><th>Logic 1 — relative TTC</th></tr>
+        <tr><td>gap 67 m</td><td>collision 29.2 km/h</td><td>collision 29.2 km/h</td></tr>
+        <tr><td>gap 120 m</td><td>stops, 21.9 m left</td><td>stops, 21.9 m left</td></tr>
+        <tr><td>gap 170 m</td><td>stops, 31.5 m left</td><td>stops, 31.5 m left</td></tr>
+        <tr><td>gap 250 m</td><td>stops, 67.1 m left</td><td>stops, 67.1 m left</td></tr>
       </table>
-      <p>Hasilnya sama persis karena bagian TTC-nya sama. Artinya untuk objek yang sejak awal
-        diam, kemampuan logic 3 setara logic 1; keunggulannya hanya muncul ketika objek pernah
-        bergerak.</p>
-      <p>Kalau <i>feed-forward</i> dipaksa untuk objek diam, <code>a_lead</code> bernilai nol
-        sehingga rumusnya berubah menjadi kriteria jarak henti dan memicu dari tempat yang tidak
-        masuk akal: pada 60 km/h soft brake akan aktif saat objek masih 319 m di depan (19 detik),
-        full brake pada 151 m (9 detik). Karena itu bagian itu dibatasi.</p>
-      <p>Batas yang tetap ada: bila objek berhenti <b>sebelum</b> radar pernah melihatnya
-        bergerak (truk sudah berhenti di tikungan), <i>feed-forward</i> tidak bekerja dan logic ini
-        hanya sekuat kriteria TTC-nya — termasuk tidak dapat menghindari tabrakan pada 67 m di
-        60 km/h.</p>
+      <p>The results are identical because the TTC part is the same. It means that for objects at
+        rest from the start, logic 3 is as capable as logic 1; its advantage appears only when the
+        object has moved.</p>
+      <p>If <i>feed-forward</i> were forced onto a stationary object, <code>a_lead</code> would be
+        zero, so the formula degrades into a stopping-distance criterion and triggers at absurd
+        range: at 60 km/h soft brake would engage with the object still 319 m ahead (19 s), full
+        brake at 151 m (9 s). That is why the part is restricted.</p>
+      <p>A limit remains: if an object stops <b>before</b> the radar ever saw it move (a truck
+        already stopped around a bend), <i>feed-forward</i> does not work and this logic is only as
+        strong as its TTC criterion — including failing to avoid a collision at 67 m at 60 km/h.</p>
 
-      <h3>7. Logic 4 — jarak aman murni</h3>
-      <p>Logic ini hanya memakai <b>jarak dan kecepatan sendiri</b>. Kecepatan objek di depan tidak
-        dipakai, sehingga TTC tidak dihitung dan tidak ada <code>a_req</code>.</p>
+      <h3>7. Logic 4 — pure distance keeper</h3>
+      <p>This logic uses only <b>gap and own speed</b>. The speed of the object ahead is not used,
+        so TTC is not computed and there is no <code>a_req</code>.</p>
       <pre class="formula">THW    = gap / v_ego
-v_safe = gap / headway              (headway bawaan 4 detik)
+v_safe = gap / headway              (default headway 4 seconds)
 
-penjaga aktif bila THW ≤ headway; lepas bila THW &gt; headway + 0,05
+keeper engages when THW ≤ headway; releases when THW &gt; headway + 0.05
 
-selama aktif:
-    a_butuh = (v − v_safe) / 2
-    level   = 0,55 bila a_butuh &lt; 0,55 · a_tersedia
-              1,00 bila a_butuh ≥ 0,55 · a_tersedia</pre>
+while engaged:
+    a_need = (v − v_safe) / 2
+    level  = 0.55 when a_need &lt; 0.55 · a_available
+             1.00 when a_need ≥ 0.55 · a_available</pre>
 
       <svg viewBox="0 0 720 300" class="diagram" role="img" aria-label="Logic 4 jarak 4 detik murni: jarak aman dihitung dari kecepatan sendiri">
         <defs>
@@ -813,7 +803,7 @@ selama aktif:
         <use href="#trk4" x="470" y="148"/>
 
         <text x="175" y="140" class="ds" text-anchor="middle">ego · 60 km/h</text>
-        <text x="565" y="140" class="ds" text-anchor="middle">depan · 30 km/h</text>
+        <text x="565" y="140" class="ds" text-anchor="middle">lead · 30 km/h</text>
 
         <line x1="240" y1="196" x2="466" y2="196" stroke="#22c55e" stroke-width="1.6"/>
         <line x1="240" y1="188" x2="240" y2="204" stroke="#22c55e" stroke-width="1.6"/>
@@ -826,72 +816,72 @@ selama aktif:
         <text x="381" y="184" class="ds" text-anchor="middle">3 s</text>
         <text x="437" y="184" class="ds" text-anchor="middle">4 s</text>
 
-        <text x="353" y="244" class="ds" text-anchor="middle">jarak aman = 4 × kecepatan kita = 4 × 16,7 m/s = 66,7 m</text>
+        <text x="353" y="244" class="ds" text-anchor="middle">safe distance = 4 × our speed = 4 × 16.7 m/s = 66.7 m</text>
 
         <rect x="250" y="256" width="420" height="34" rx="7" class="dbox" style="stroke:#f59e0b"/>
-        <text x="460" y="270" class="dt" text-anchor="middle" fill="#fbbf24">tepat 4 detik → soft brake</text>
-        <text x="460" y="284" class="ds" text-anchor="middle">kecepatan objek tidak dipakai sama sekali</text>
+        <text x="460" y="270" class="dt" text-anchor="middle" fill="#fbbf24">exactly 4 s → soft brake</text>
+        <text x="460" y="284" class="ds" text-anchor="middle">lead speed not used at all</text>
 
       </svg>
-
-      <p>Aturan ini mengikuti kecepatan: pada 40 km/h batasnya 44 m, 50 km/h 56 m, dan 60 km/h
-        (batas unit bermuatan) 67 m. Mengubah headway pada panel menggeser jarak aman secara
-        otomatis.</p>
-      <p>Yang perlu dipahami: logic ini <b>tidak mengenali bahaya yang mendekat cepat</b>. Terhadap
-        objek diam pada jarak 8 detik (120 m), ia tetap diam sampai jarak menyusut ke batas,
-        sedangkan pada titik itu jarak henti sudah lebih panjang daripada jarak yang tersisa.</p>
+      <p>The rule follows speed: at 40 km/h the limit is 44 m, at 50 km/h 56 m, and at 60 km/h (the
+        loaded-unit limit) 67 m. Changing the headway on the panel shifts the safe distance
+        automatically.</p>
+      <p>What must be understood: this logic <b>does not recognise danger that approaches
+        quickly</b>. Against a stationary object at an 8-second gap (120 m), it stays passive until
+        the gap shrinks to the limit, and at that point the stopping distance is already longer
+        than the remaining gap.</p>
       <table class="eq wide">
-        <tr><th>Kondisi (66,5 t, 60 km/h)</th><th>Logic 2</th><th>Logic 4</th></tr>
-        <tr><td>Objek diam, jarak 8 detik (120 m)</td><td>rem 0,28 s, berhenti sisa 21,9 m</td><td>rem 3,53 s, <b>tabrakan 29,3 km/h</b></td></tr>
-        <tr><td>Objek diam, jarak tepat 4 detik (67 m)</td><td><b>tabrakan 29,2 km/h</b></td><td><b>tabrakan 29,7 km/h</b></td></tr>
+        <tr><th>Condition (66.5 t, 60 km/h)</th><th>Logic 2</th><th>Logic 4</th></tr>
+        <tr><td>Object at rest, 8-second gap (120 m)</td><td>brakes at 0.28 s, stops with 21.9 m left</td><td>brakes at 3.53 s, <b>collision 29.3 km/h</b></td></tr>
+        <tr><td>Object at rest, exactly 4-second gap (67 m)</td><td><b>collision 29.2 km/h</b></td><td><b>collision 29.7 km/h</b></td></tr>
       </table>
-      <p>Baris kedua menegaskan batas aturannya, bukan perbedaan kedua logic: pada 60 km/h
-        kendaraan baru berhenti setelah menempuh <b>98,1 m</b> (terukur dari baris pertama: 120 m
-        dikurangi sisa 21,9 m), sehingga 67 m tidak cukup untuk pilihan mana pun.</p>
-      <p>Perbedaan keduanya terletak pada isi masing-masing pilihan: logic 2 memuat TTC dan
-        <i>safety override</i> yang dapat menaikkan ke full brake, sedangkan logic 4 hanya memuat
-        penjaga jarak dua tingkat. Saat kecepatan objek hampir sama, keduanya berperilaku identik
-        karena TTC menjadi tak terhingga.</p>
-      <p>Karena itu logic 4 dipakai untuk menegakkan aturan jarak, bukan sebagai pengganti fungsi
-        AEB.</p>
+      <p>The second row underlines the limit of the rule, not a difference between the two logics:
+        at 60 km/h the vehicle only stops after travelling <b>98.1 m</b> (measured from the first
+        row: 120 m minus 21.9 m left), so 67 m is not enough for any choice.</p>
+      <p>The difference between them lies in their contents: logic 2 contains TTC and the
+        <i>safety override</i> that can raise the command to full brake, while logic 4 contains
+        only the two-level distance keeper. When object speed is nearly equal, both behave
+        identically because TTC becomes infinite.</p>
+      <p>That is why logic 4 is used to enforce the distance rule, not as a replacement for the AEB
+        function.</p>
 
       <h3>8. Safety override</h3>
-      <p>Kriteria ini menjadi bagian dari logic 1, 2, dan 3. Ia bekerja setiap siklus tanpa
-        menunggu ambang TTC:</p>
-      <pre class="formula">leadDist = objek diam ? 0 : v_lead² / (2 · a_lead)
+      <p>This criterion is part of logic 1, 2, and 3. It acts every cycle without waiting for the
+        TTC threshold:</p>
+      <pre class="formula">leadDist = object at rest ? 0 : v_lead² / (2 · a_lead)
 budget   = gap + leadDist − margin
 demand   = requiredDecel(v, budget, latency, build)
 
-demand ≥ 0,85 · a_tersedia → full brake
-demand ≥ 0,40 · a_tersedia → soft brake</pre>
-      <p>Tujuannya satu: rem tidak boleh menunggu sampai perlambatan yang dibutuhkan melampaui
-        kemampuan truk. Karena <code>a_tersedia</code> diturunkan dari massa, kriteria ini bekerja
-        lebih awal pada unit bermuatan. Logic 4 tidak memuat kriteria ini karena isinya memang
-        hanya penjaga jarak.</p>
+demand ≥ 0.85 · a_available → full brake
+demand ≥ 0.40 · a_available → soft brake</pre>
+      <p>Its purpose is single: the brake must not wait until the required deceleration exceeds the
+        capability of the truck. Because <code>a_available</code> is derived from mass, this
+        criterion acts earlier on a loaded unit. Logic 4 does not contain it, because its content
+        is only the distance keeper.</p>
 
-      <h3>9. Tingkat pengereman</h3>
-      <p>Sistem memakai dua tingkat, sesuai unit yang terpasang:</p>
+      <h3>9. Braking levels</h3>
+      <p>The system uses two levels, matching the unit installed:</p>
       <table class="eq wide">
-        <tr><th>Istilah</th><th>Level</th><th>Kosong 26 t</th><th>Muat 66,5 t</th></tr>
-        <tr><td><b>soft brake</b></td><td>0,55</td><td>2,53 m/s²</td><td>0,99 m/s²</td></tr>
-        <tr><td><b>full brake</b></td><td>1,00</td><td>4,60 m/s²</td><td>1,80 m/s²</td></tr>
+        <tr><th>Term</th><th>Level</th><th>Empty 26 t</th><th>Loaded 66.5 t</th></tr>
+        <tr><td><b>soft brake</b></td><td>0.55</td><td>2.53 m/s²</td><td>0.99 m/s²</td></tr>
+        <tr><td><b>full brake</b></td><td>1.00</td><td>4.60 m/s²</td><td>1.80 m/s²</td></tr>
       </table>
-      <p>Level adalah fraksi kapasitas, bukan angka mutlak. Karena kapasitas berbeda, nilai
-        absolutnya berbeda meski persentasenya sama.</p>
+      <p>Level is a fraction of capacity, not an absolute figure. Because capacity differs, the
+        absolute values differ even at the same percentage.</p>
 
-      <h3>10. Jarak henti dan TTC minimum</h3>
-      <pre class="formula">d_henti = v·T − a·T²/6 + (v − a·T/2)² / (2a) + v·latency
+      <h3>10. Stopping distance and minimum TTC</h3>
+      <pre class="formula">d_stop = v·T − a·T²/6 + (v − a·T/2)² / (2a) + v·latency
 TTC_min = latency + v / (2a)</pre>
-      <p><code>TTC_min</code> adalah TTC terkecil yang masih memungkinkan kendaraan berhenti.
-        Nilainya meningkat seiring kecepatan, sehingga ambang TTC berupa konstanta tidak dapat
-        berlaku untuk seluruh rentang kecepatan.</p>
+      <p><code>TTC_min</code> is the smallest TTC that still allows the vehicle to stop. It grows
+        with speed, so a TTC threshold given as a constant cannot hold across the whole speed
+        range.</p>
       <table class="eq wide">
-        <tr><th>Kondisi</th><th>20 km/h</th><th>40 km/h</th><th>60 km/h</th></tr>
-        <tr><td>Muat 66,5 t (a 1,80)</td><td>1,8 s</td><td>3,3 s</td><td>4,9 s</td></tr>
-        <tr><td>Kosong 26 t (a 4,60)</td><td>0,8 s</td><td>1,4 s</td><td>2,0 s</td></tr>
+        <tr><th>Condition</th><th>20 km/h</th><th>40 km/h</th><th>60 km/h</th></tr>
+        <tr><td>Loaded 66.5 t (a 1.80)</td><td>1.8 s</td><td>3.3 s</td><td>4.9 s</td></tr>
+        <tr><td>Empty 26 t (a 4.60)</td><td>0.8 s</td><td>1.4 s</td><td>2.0 s</td></tr>
       </table>
 
-      <h3>11. Alur keputusan</h3>
+      <h3>11. Decision flow</h3>
 
       <svg viewBox="0 0 720 470" class="diagram" role="img" aria-label="Alur logic AEB dari radar ke perlambatan">
         <defs>
@@ -901,12 +891,12 @@ TTC_min = latency + v / (2a)</pre>
         </defs>
 
         <rect x="14" y="16" width="196" height="54" rx="8" class="dbox"/>
-        <text x="112" y="36" class="dt" text-anchor="middle">Radar 77 GHz</text>
+        <text x="112" y="36" class="dt" text-anchor="middle">77 GHz radar</text>
         <text x="112" y="53" class="ds" text-anchor="middle">range · range-rate (Doppler)</text>
 
         <rect x="252" y="16" width="196" height="54" rx="8" class="dbox"/>
         <text x="350" y="36" class="dt" text-anchor="middle">Target track</text>
-        <text x="350" y="53" class="ds" text-anchor="middle">koreksi heading · koridor lajur</text>
+        <text x="350" y="53" class="ds" text-anchor="middle">heading correction · lane corridor</text>
 
         <rect x="490" y="16" width="216" height="54" rx="8" class="dbox"/>
         <text x="598" y="36" class="dt" text-anchor="middle">gap · closing · v_ego</text>
@@ -920,25 +910,25 @@ TTC_min = latency + v / (2a)</pre>
         <line x1="598" y1="70" x2="598" y2="104" class="darrow" marker-end="url(#fa)"/>
 
         <rect x="14" y="104" width="196" height="92" rx="8" class="dbox"/>
-        <text x="112" y="124" class="dt" text-anchor="middle">Logic 1 — TTC relatif</text>
-        <text x="112" y="142" class="ds" text-anchor="middle">TTC ≤ 1,8 s → sebagian</text>
-        <text x="112" y="157" class="ds" text-anchor="middle">TTC ≤ 0,9 s → penuh</text>
+        <text x="112" y="124" class="dt" text-anchor="middle">Logic 1 — relative TTC</text>
+        <text x="112" y="142" class="ds" text-anchor="middle">TTC ≤ 1.8 s → soft brake</text>
+        <text x="112" y="157" class="ds" text-anchor="middle">TTC ≤ 0.9 s → full brake</text>
         <text x="112" y="172" class="ds" text-anchor="middle">a_req = closing² / 2·gap</text>
-        <text x="112" y="187" class="ds" text-anchor="middle">gap &lt; 4 m → penuh</text>
+        <text x="112" y="187" class="ds" text-anchor="middle">gap &lt; 4 m → full brake</text>
 
         <rect x="252" y="104" width="196" height="92" rx="8" class="dbox"/>
-        <text x="350" y="124" class="dt" text-anchor="middle">Logic 2 — TTC + jarak aman</text>
+        <text x="350" y="124" class="dt" text-anchor="middle">Logic 2 — TTC + safe distance</text>
         <text x="350" y="142" class="ds" text-anchor="middle">v_safe = gap / 4 s</text>
         <text x="350" y="157" class="ds" text-anchor="middle">a = (v − v_safe) / 2</text>
-        <text x="350" y="172" class="ds" text-anchor="middle">dibatasi 1,2 m/s²</text>
-        <text x="350" y="187" class="ds" text-anchor="middle">penjaga jarak, bukan AEB</text>
+        <text x="350" y="172" class="ds" text-anchor="middle">capped at 1.2 m/s²</text>
+        <text x="350" y="187" class="ds" text-anchor="middle">distance keeper, not AEB</text>
 
         <rect x="490" y="104" width="216" height="92" rx="8" class="dbox" style="stroke:#f59e0b"/>
-        <text x="598" y="124" class="dt" text-anchor="middle" fill="#fbbf24">Logic 3 — prediktif</text>
+        <text x="598" y="124" class="dt" text-anchor="middle" fill="#fbbf24">Logic 3 — predictive</text>
         <text x="598" y="142" class="ds" text-anchor="middle">a_lead = d(−range-rate)/dt</text>
         <text x="598" y="157" class="ds" text-anchor="middle">a_ff = requiredDecel(v, budget)</text>
         <text x="598" y="172" class="ds" text-anchor="middle">budget = gap + leadDist − 3 m</text>
-        <text x="598" y="187" class="ds" text-anchor="middle">≥ 0,55·a_tersedia → penuh</text>
+        <text x="598" y="187" class="ds" text-anchor="middle">≥ 0.55 · a_available → full brake</text>
 
         <line x1="112" y1="196" x2="112" y2="232" class="darrow"/>
         <line x1="350" y1="196" x2="350" y2="232" class="darrow"/>
@@ -949,226 +939,225 @@ TTC_min = latency + v / (2a)</pre>
 
         <rect x="252" y="258" width="196" height="46" rx="8" class="dbox" style="stroke:#f59e0b"/>
         <text x="350" y="274" class="dt" text-anchor="middle" fill="#fbbf24">level 0 … 1</text>
-        <text x="350" y="292" class="ds" text-anchor="middle">fraksi a_tersedia</text>
+        <text x="350" y="292" class="ds" text-anchor="middle">fraction of a_available</text>
 
         <line x1="350" y1="304" x2="350" y2="326" class="darrow" marker-end="url(#fa)"/>
 
         <rect x="14" y="326" width="216" height="54" rx="8" class="dbox"/>
         <text x="122" y="345" class="dt" text-anchor="middle">Latency</text>
-        <text x="122" y="362" class="ds" text-anchor="middle">sensor + mikroprosesor + valve</text>
-        <text x="122" y="375" class="ds" text-anchor="middle">±0,23 s (parameter)</text>
+        <text x="122" y="362" class="ds" text-anchor="middle">sensor + microcontroller + valve</text>
+        <text x="122" y="375" class="ds" text-anchor="middle">±0.23 s (parameter)</text>
 
         <rect x="252" y="326" width="196" height="54" rx="8" class="dbox"/>
-        <text x="350" y="345" class="dt" text-anchor="middle">Build-up pneumatik</text>
-        <text x="350" y="362" class="ds" text-anchor="middle">tekanan naik 0,85 s</text>
-        <text x="350" y="375" class="ds" text-anchor="middle">batas R13: 75 % di 0,6 s</text>
+        <text x="350" y="345" class="dt" text-anchor="middle">Pneumatic build-up</text>
+        <text x="350" y="362" class="ds" text-anchor="middle">pressure rises 0.85 s</text>
+        <text x="350" y="375" class="ds" text-anchor="middle">R13 limit: 75 % at 0.6 s</text>
 
         <rect x="470" y="326" width="236" height="54" rx="8" class="dbox" style="stroke:#ef4444"/>
-        <text x="588" y="345" class="dt" text-anchor="middle" fill="#fca5a5">a_aktual</text>
-        <text x="588" y="362" class="ds" text-anchor="middle">deselerasi nyata di roda</text>
-        <text x="588" y="375" class="ds" text-anchor="middle">dibatasi μ·g dan kapasitas rem</text>
+        <text x="588" y="345" class="dt" text-anchor="middle" fill="#fca5a5">a_actual</text>
+        <text x="588" y="362" class="ds" text-anchor="middle">actual deceleration at the wheels</text>
+        <text x="588" y="375" class="ds" text-anchor="middle">limited by μ·g and brake capacity</text>
         <line x1="230" y1="353" x2="249" y2="353" class="darrow" marker-end="url(#fa)"/>
         <line x1="448" y1="353" x2="467" y2="353" class="darrow" marker-end="url(#fa)"/>
 
         <line x1="588" y1="380" x2="588" y2="404" class="darrow" marker-end="url(#fa)"/>
         <rect x="330" y="404" width="376" height="52" rx="8" class="dbox"/>
         <text x="518" y="422" class="dt" text-anchor="middle">v′ = max(0, v − a_net·dt)</text>
-        <text x="518" y="440" class="ds" text-anchor="middle">s′ = s + ½(v + v′)·dt · integrasi 200 Hz</text>
+        <text x="518" y="440" class="ds" text-anchor="middle">s′ = s + ½(v + v′) · dt · 200 Hz integration</text>
 
       </svg>
+      <h3>12. Worked example</h3>
+      <p>Condition: flat road, dry chipseal (μ 0.60), <i>ego vehicle</i> 40 km/h, an object ahead at
+        15 km/h moving steadily, initial gap 44.4 m (4 seconds).</p>
+      <h4>Brake capability</h4>
+      <table class="eq wide">
+        <tr><th>Quantity</th><th>Empty 26 t</th><th>Loaded 66.5 t</th></tr>
+        <tr><td>a_available</td><td>4.60 m/s²</td><td><b>1.80 m/s²</b></td></tr>
+        <tr><td>soft threshold (0.55 ×)</td><td>2.53 m/s²</td><td>0.99 m/s²</td></tr>
+      </table>
+      <h4>One step of logic 1, loaded condition</h4>
+      <pre class="formula">gap     = 34.0 m
+v_ego   = 11.06 m/s          v_lead = 4.17 m/s
+closing = 6.89 m/s
+TTC     = 4.94 s
+TTC_min = 0.23 + 11.06 / (2 × 1.80) = 3.30 s
+soft threshold = 1.5 × 3.30 = 4.95 s
 
-      <h3>12. Contoh perhitungan</h3>
-      <p>Kondisi: jalan datar, chipseal kering (μ 0,60), <i>ego vehicle</i> 40 km/h, objek di depan
-        15 km/h yang bergerak tetap, jarak awal 44,4 m (4 detik).</p>
-      <h4>Kemampuan rem</h4>
+TTC 4.94 ≤ 4.95  →  soft brake (0.55)
+a_requested = 0.55 × 1.80 = 0.99 m/s²
+pressure starts rising 0.23 s later, full at 0.85 s</pre>
+      <h4>Results of the three logics</h4>
       <table class="eq wide">
-        <tr><th>Besaran</th><th>Kosong 26 t</th><th>Muat 66,5 t</th></tr>
-        <tr><td>a_tersedia</td><td>4,60 m/s²</td><td><b>1,80 m/s²</b></td></tr>
-        <tr><td>ambang soft (0,55 ×)</td><td>2,53 m/s²</td><td>0,99 m/s²</td></tr>
+        <tr><th>Logic</th><th>Mass</th><th>Peak deceleration</th><th>Final gap</th><th>Brake energy</th></tr>
+        <tr><td>Relative TTC</td><td>26 t</td><td>4.60 m/s²</td><td>6.5 m</td><td>1.48 MJ</td></tr>
+        <tr><td>Relative TTC</td><td>66.5 t</td><td>0.99 m/s²</td><td>8.6 m</td><td>3.30 MJ</td></tr>
+        <tr><td>TTC + safe distance</td><td>26 t</td><td>1.15 m/s²</td><td>16.4 m</td><td>1.31 MJ</td></tr>
+        <tr><td>TTC + safe distance</td><td>66.5 t</td><td>1.10 m/s²</td><td>16.3 m</td><td>3.34 MJ</td></tr>
+        <tr><td>Predictive</td><td>26 t</td><td>4.60 m/s²</td><td>6.5 m</td><td>1.48 MJ</td></tr>
+        <tr><td>Predictive</td><td>66.5 t</td><td>0.99 m/s²</td><td>8.6 m</td><td>3.30 MJ</td></tr>
       </table>
-      <h4>Satu langkah pada logic 1, kondisi bermuatan</h4>
-      <pre class="formula">gap     = 34,0 m
-v_ego   = 11,06 m/s          v_lead = 4,17 m/s
-closing = 6,89 m/s
-TTC     = 4,94 s
-TTC_min = 0,23 + 11,06 / (2 × 1,80) = 3,30 s
-ambang soft = 1,5 × 3,30 = 4,95 s
+      <p>The predictive logic gives the same result as relative TTC in this scenario because the
+        object moves steadily, so <code>a_lead</code> is zero. Its advantage appears when the object
+        brakes or stops.</p>
 
-TTC 4,94 ≤ 4,95  →  soft brake (0,55)
-a_diminta = 0,55 × 1,80 = 0,99 m/s²
-tekanan mulai naik 0,23 s kemudian, penuh pada 0,85 s</pre>
-      <h4>Hasil ketiga logic</h4>
+      <h3>13. Parameters to fill in</h3>
+      <p>The <b>Spec — editable</b> panel holds 13 columns. Every row states the symbol, unit,
+        meaning, and how to obtain it.</p>
+      <h4>Mass</h4>
       <table class="eq wide">
-        <tr><th>Logic</th><th>Massa</th><th>Deselerasi puncak</th><th>Jarak akhir</th><th>Energi rem</th></tr>
-        <tr><td>TTC relatif</td><td>26 t</td><td>4,60 m/s²</td><td>6,5 m</td><td>1,48 MJ</td></tr>
-        <tr><td>TTC relatif</td><td>66,5 t</td><td>0,99 m/s²</td><td>8,6 m</td><td>3,30 MJ</td></tr>
-        <tr><td>TTC + jarak aman</td><td>26 t</td><td>1,15 m/s²</td><td>16,4 m</td><td>1,31 MJ</td></tr>
-        <tr><td>TTC + jarak aman</td><td>66,5 t</td><td>1,10 m/s²</td><td>16,3 m</td><td>3,34 MJ</td></tr>
-        <tr><td>Prediktif</td><td>26 t</td><td>4,60 m/s²</td><td>6,5 m</td><td>1,48 MJ</td></tr>
-        <tr><td>Prediktif</td><td>66,5 t</td><td>0,99 m/s²</td><td>8,6 m</td><td>3,30 MJ</td></tr>
+        <tr><th>Parameter</th><th>Definition</th><th>How to measure</th></tr>
+        <tr><td><b>m_empty</b> (t)</td><td>unit weight without payload, including fuel and fixed equipment</td><td>weighbridge. FAW JH6: 26 t</td></tr>
+        <tr><td><b>m_loaded</b> (t)</td><td>total weight with the vessel full of coal</td><td>weigh the loaded unit; 26 + 40.5 = 66.5 t</td></tr>
       </table>
-      <p>Logic prediktif memberi hasil sama dengan TTC relatif pada skenario ini karena objek
-        bergerak tetap, sehingga <code>a_lead</code> nol. Keunggulannya muncul ketika objek
-        mengerem atau berhenti.</p>
-
-      <h3>13. Parameter yang harus diisi</h3>
-      <p>Panel <b>Spec — editable</b> memuat 13 kolom. Setiap baris menyebut simbol, satuan, arti,
-        dan cara memperolehnya.</p>
-      <h4>Massa</h4>
+      <h4>Braking capability</h4>
       <table class="eq wide">
-        <tr><th>Parameter</th><th>Definisi</th><th>Cara mengukur</th></tr>
-        <tr><td><b>m_empty</b> (t)</td><td>berat unit tanpa muatan, termasuk bahan bakar dan perlengkapan tetap</td><td>jembatan timbang. FAW JH6: 26 t</td></tr>
-        <tr><td><b>m_loaded</b> (t)</td><td>berat total saat vessel penuh batubara</td><td>timbang unit bermuatan; 26 + 40,5 = 66,5 t</td></tr>
+        <tr><th>Parameter</th><th>Definition</th><th>How to measure</th></tr>
+        <tr><td><b>a_brake_empty</b> (m/s²)</td><td>steady deceleration of the empty unit, service brake only, dry surface</td><td>accelerometer; full brake from 40 km/h; take the highest flat value; three runs, use the lowest</td></tr>
+        <tr><td><b>a_brake_loaded</b> (m/s²)</td><td>same, with the vessel fully loaded</td><td>same protocol on the loaded unit</td></tr>
       </table>
-      <h4>Kemampuan pengereman</h4>
+      <p>If only the stopping distance <code>d</code> from speed <code>v</code> is available:</p>
+      <pre class="formula">a = v² / (2 · d)          example: 40 km/h stopping in 34 m → 1.81 m/s²</pre>
+      <p>That figure is lower than the steady value because it includes the pressure build-up
+        phase.</p>
+      <h4>Timing</h4>
       <table class="eq wide">
-        <tr><th>Parameter</th><th>Definisi</th><th>Cara mengukur</th></tr>
-        <tr><td><b>a_brake_empty</b> (m/s²)</td><td>perlambatan mantap unit kosong, rem servis saja, permukaan kering</td><td>akselerometer; rem penuh dari 40 km/h; ambil nilai datar tertinggi; tiga kali, pakai yang terendah</td></tr>
-        <tr><td><b>a_brake_loaded</b> (m/s²)</td><td>sama, dengan vessel terisi penuh</td><td>protokol sama pada unit bermuatan</td></tr>
+        <tr><th>Parameter</th><th>Definition</th><th>How to measure</th></tr>
+        <tr><td><b>t_latency</b> (s)</td><td>radar data age + cycle wait + compute time</td><td>a GPIO pin goes high before reading the radar and low after the decision is out; measure the pulse width</td></tr>
+        <tr><td><b>t_valve</b> (s)</td><td>delay from electrical command to valve opening</td><td>record the command pin and pressure together</td></tr>
+        <tr><td><b>T_build</b> (s)</td><td>pressure rise from zero to full</td><td>from the pressure curve; if only time to 75 % is known, divide by 0.75</td></tr>
       </table>
-      <p>Bila hanya tersedia jarak berhenti <code>d</code> dari kecepatan <code>v</code>:</p>
-      <pre class="formula">a = v² / (2 · d)          contoh: 40 km/h berhenti 34 m → 1,81 m/s²</pre>
-      <p>Angka itu lebih rendah daripada nilai mantap karena mencakup fase rem mulai bekerja.</p>
-      <h4>Waktu</h4>
+      <h4>Supporting</h4>
       <table class="eq wide">
-        <tr><th>Parameter</th><th>Definisi</th><th>Cara mengukur</th></tr>
-        <tr><td><b>t_latency</b> (s)</td><td>umur data radar + tunggu siklus + waktu hitung</td><td>pin GPIO menyala sebelum membaca radar, mati setelah keputusan keluar; ukur lebar pulsa</td></tr>
-        <tr><td><b>t_valve</b> (s)</td><td>jeda perintah listrik sampai katup terbuka</td><td>rekam pin perintah dan tekanan bersamaan</td></tr>
-        <tr><td><b>T_build</b> (s)</td><td>tekanan naik dari nol sampai penuh</td><td>dari kurva tekanan; bila hanya waktu ke 75 %, bagi 0,75</td></tr>
-      </table>
-      <h4>Pendukung</h4>
-      <table class="eq wide">
-        <tr><th>Parameter</th><th>Definisi</th><th>Cara mengukur</th></tr>
-        <tr><td><b>a_retard</b> (m/s²)</td><td>perlambatan tambahan dari rem mesin dan retarder</td><td>lepas gas, retarder maksimum, ukur dengan akselerometer</td></tr>
-        <tr><td><b>v_retard_on</b> (km/h)</td><td>kecepatan minimum agar retarder bekerja</td><td>aktifkan pada berbagai kecepatan, catat saat efeknya hilang</td></tr>
-        <tr><td><b>v_retard_fade</b> (km/h)</td><td>rentang kecepatan sampai retarder penuh</td><td>selisih kecepatan penuh terhadap ambang</td></tr>
-        <tr><td><b>L_veh</b> (m)</td><td>panjang bemper depan sampai ujung belakang</td><td>meteran. FAW JH6 sekitar 10,4 m</td></tr>
-        <tr><td><b>h_cog</b> (m)</td><td>tinggi pusat massa dari jalan, kondisi bermuatan</td><td>timbang gandar depan saat diam dan saat mengerem</td></tr>
-        <tr><td><b>L_wb</b> (m)</td><td>jarak sumbu depan ke titik tengah kelompok roda belakang</td><td>meteran. FAW JH6 6x4 sekitar 4,2 m</td></tr>
+        <tr><th>Parameter</th><th>Definition</th><th>How to measure</th></tr>
+        <tr><td><b>a_retard</b> (m/s²)</td><td>extra deceleration from engine brake and retarder</td><td>release the throttle, maximum retarder, measure with an accelerometer</td></tr>
+        <tr><td><b>v_retard_on</b> (km/h)</td><td>minimum speed for the retarder to act</td><td>enable at several speeds, note where the effect disappears</td></tr>
+        <tr><td><b>v_retard_fade</b> (km/h)</td><td>speed range until full retarder effect</td><td>difference between full-effect speed and the threshold</td></tr>
+        <tr><td><b>L_veh</b> (m)</td><td>front bumper to rear end</td><td>tape measure. FAW JH6 about 10.4 m</td></tr>
+        <tr><td><b>h_cog</b> (m)</td><td>centre of mass height above the road, loaded</td><td>weigh the front axle at rest and while braking</td></tr>
+        <tr><td><b>L_wb</b> (m)</td><td>front axle to the centre of the rear wheel group</td><td>tape measure. FAW JH6 6x4 about 4.2 m</td></tr>
       </table>
       <pre class="formula">h_cog = (N₂ − N₁) · L_wb / (m · a)</pre>
       <table class="eq wide">
-        <tr><th>Parameter</th><th>Memengaruhi</th><th>Tidak memengaruhi</th></tr>
-        <tr><td>massa</td><td>a_brake, ambang pemicu, jarak henti, energi, beban axle</td><td>—</td></tr>
-        <tr><td>a_brake</td><td>seluruh angka absolut</td><td>—</td></tr>
-        <tr><td>latency, valve, build</td><td>waktu reaksi, TTC_min, jarak henti</td><td>—</td></tr>
-        <tr><td>retarder</td><td>menahan laju di turunan</td><td>jarak henti rem servis</td></tr>
-        <tr><td>L_veh</td><td>gambar dan posisi bemper</td><td>jarak henti</td></tr>
-        <tr><td>h_cog, L_wb</td><td>indikator beban pindah ke depan</td><td>jarak henti, ambang pemicu</td></tr>
+        <tr><th>Parameter</th><th>Affects</th><th>Does not affect</th></tr>
+        <tr><td>mass</td><td>a_brake, trigger thresholds, stopping distance, energy, axle load</td><td>—</td></tr>
+        <tr><td>a_brake</td><td>every absolute figure</td><td>—</td></tr>
+        <tr><td>latency, valve, build</td><td>reaction time, TTC_min, stopping distance</td><td>—</td></tr>
+        <tr><td>retarder</td><td>holding speed downhill</td><td>service-brake stopping distance</td></tr>
+        <tr><td>L_veh</td><td>drawing and bumper position</td><td>stopping distance</td></tr>
+        <tr><td>h_cog, L_wb</td><td>load-transfer indicator to the front</td><td>stopping distance, trigger thresholds</td></tr>
       </table>
-      <h4>Protokol pengukuran minimal</h4>
+      <h4>Minimum measurement protocol</h4>
       <table class="eq wide">
-        <tr><th>Sesi</th><th>Kondisi</th><th>Yang dilakukan</th><th>Yang diperoleh</th></tr>
-        <tr><td>1</td><td>unit kosong 26 t</td><td>chipseal kering, datar, ≥ 200 m; tiga kali rem penuh dari 40 km/h; rekam tekanan</td><td>a_brake_empty, T_build</td></tr>
-        <tr><td>2</td><td>unit bermuatan 66,5 t</td><td>lokasi dan prosedur sama</td><td>a_brake_loaded, verifikasi jarak henti</td></tr>
+        <tr><th>Session</th><th>Condition</th><th>What is done</th><th>What is obtained</th></tr>
+        <tr><td>1</td><td>empty unit 26 t</td><td>dry chipseal, flat, ≥ 200 m; three full-brake runs from 40 km/h; record pressure</td><td>a_brake_empty, T_build</td></tr>
+        <tr><td>2</td><td>loaded unit 66.5 t</td><td>same location and procedure</td><td>a_brake_loaded, stopping-distance check</td></tr>
       </table>
-      <p>Rasio nilai bermuatan terhadap kosong menunjukkan sifat sistem rem: sekitar 0,39 bila
-        gaya rem tetap, lebih besar bila terdapat katup pengindra beban.</p>
+      <p>The ratio of loaded to empty value shows the nature of the brake system: about 0.39 if
+        brake force is fixed, higher if a load-sensing valve is fitted.</p>
 
-      <h3>14. Perbandingan empat logic</h3>
-      <p>Kelima keadaan memakai <b>jarak awal 70 m</b> dan tidak melewati <b>60 km/h</b>, yaitu
-        batas kecepatan unit bermuatan di jalan hauling. Pada 60 km/h, 70 m setara 4,2 detik
-        (acuan 4 detik = 66,7 m).</p>
+      <h3>14. Comparison of the four logics</h3>
+      <p>The five cases use an <b>initial gap of 70 m</b> and do not exceed <b>60 km/h</b>, the speed
+        limit for loaded units on the haul road. At 60 km/h, 70 m equals 4.2 seconds (4-second
+        reference = 66.7 m).</p>
       <table class="eq wide">
-        <tr><th>Keadaan</th><th>Kondisi</th></tr>
-        <tr><td>K1 — objek diam</td><td>60 km/h, objek diam, jarak 70 m (4,2 detik)</td></tr>
-        <tr><td>K2 — objek diam, lebih lambat</td><td>50 km/h, objek diam, jarak 70 m (5,0 detik)</td></tr>
-        <tr><td>K3 — depan mengerem keras</td><td>45 km/h, jarak 70 m, objek mengerem 5 m/s²</td></tr>
-        <tr><td>K4 — depan mogok</td><td>45 km/h, jarak 70 m, objek mengerem 0,3 m/s²</td></tr>
-        <tr><td>K5 — konvoi melambat</td><td>40 km/h, jarak 70 m, objek 38 km/h mengerem 3 m/s²</td></tr>
+        <tr><th>Case</th><th>Condition</th></tr>
+        <tr><td>K1 — object at rest</td><td>60 km/h, object at rest, gap 70 m (4.2 s)</td></tr>
+        <tr><td>K2 — object at rest, slower</td><td>50 km/h, object at rest, gap 70 m (5.0 s)</td></tr>
+        <tr><td>K3 — lead brakes hard</td><td>45 km/h, gap 70 m, lead decelerates 5 m/s²</td></tr>
+        <tr><td>K4 — lead breaks down</td><td>45 km/h, gap 70 m, lead decelerates 0.3 m/s²</td></tr>
+        <tr><td>K5 — convoy slows</td><td>40 km/h, gap 70 m, lead 38 km/h decelerates 3 m/s²</td></tr>
       </table>
-      <p>Unit bermuatan 66,5 t, jalan datar, μ 0,60, latency 0,23 s, build 0,85 s. Nilai
-        keselamatan dihitung dari sisa jarak saat berhenti: tabrakan bernilai 0, berhenti dengan
-        sisa 5 m atau lebih bernilai 100. Nilai keausan dihitung dari rata-rata puncak perlambatan
-        dibanding kapasitas rem, dan energi rem pada konvoi tetap 40/38 km/h selama 30 detik pada
-        jarak 3,5 detik.</p>
+      <p>Loaded unit 66.5 t, flat road, μ 0.60, latency 0.23 s, build 0.85 s. The safety value is
+        computed from the gap remaining at standstill: a collision scores 0, stopping with 5 m or
+        more left scores 100. The wear value is computed from the average peak deceleration
+        against brake capacity, and from brake energy in a steady convoy at 40/38 km/h for
+        30 seconds at a 3.5-second gap.</p>
 
-      <h4>Hasil per keadaan</h4>
+      <h4>Results per case</h4>
       <table class="eq wide">
-        <tr><th>Keadaan</th><th>1 — TTC relatif</th><th>2 — TTC + jarak</th><th>3 — prediktif</th><th>4 — 4 detik murni</th></tr>
-        <tr><td>K1 objek diam 60 km/h</td><td>tabrakan 26,6</td><td>tabrakan 26,6</td><td>tabrakan 26,6</td><td>tabrakan 29,6</td></tr>
-        <tr><td>K2 objek diam 50 km/h</td><td>sisa 9,5 m</td><td>sisa 9,5 m</td><td>sisa 9,5 m</td><td>tabrakan 16,7</td></tr>
-        <tr><td>K3 depan rem 5 m/s²</td><td>sisa 5,5 m</td><td>sisa 5,5 m</td><td><b>sisa 35,8 m</b></td><td>tabrakan 7,4</td></tr>
-        <tr><td>K4 depan mogok</td><td>sisa 2,4 m</td><td>sisa 4,0 m</td><td><b>sisa 8,9 m</b></td><td>sisa 2,9 m</td></tr>
-        <tr><td>K5 konvoi melambat</td><td>sisa 22,9 m</td><td>sisa 22,9 m</td><td><b>sisa 24,1 m</b></td><td>sisa 1,8 m</td></tr>
-        <tr><td>Puncak perlambatan rata-rata</td><td>82 %</td><td>71 %</td><td>82 %</td><td>100 %</td></tr>
-        <tr><td>Aktivasi tanpa bahaya (30 s)</td><td>0</td><td>1 · 1,17 MJ</td><td>0</td><td>1 · 1,17 MJ</td></tr>
+        <tr><th>Case</th><th>1 — relative TTC</th><th>2 — TTC + distance</th><th>3 — predictive</th><th>4 — pure 4 s</th></tr>
+        <tr><td>K1 object at rest 60 km/h</td><td>collision 26.6</td><td>collision 26.6</td><td>collision 26.6</td><td>collision 29.6</td></tr>
+        <tr><td>K2 object at rest 50 km/h</td><td>9.5 m left</td><td>9.5 m left</td><td>9.5 m left</td><td>collision 16.7</td></tr>
+        <tr><td>K3 lead brakes 5 m/s²</td><td>5.5 m left</td><td>5.5 m left</td><td><b>35.8 m left</b></td><td>collision 7.4</td></tr>
+        <tr><td>K4 lead breaks down</td><td>2.4 m left</td><td>4.0 m left</td><td><b>8.9 m left</b></td><td>2.9 m left</td></tr>
+        <tr><td>K5 convoy slows</td><td>22.9 m left</td><td>22.9 m left</td><td><b>24.1 m left</b></td><td>1.8 m left</td></tr>
+        <tr><td>Average peak deceleration</td><td>82 %</td><td>71 %</td><td>82 %</td><td>100 %</td></tr>
+        <tr><td>Nuisance activations (30 s)</td><td>0</td><td>1 · 1.17 MJ</td><td>0</td><td>1 · 1.17 MJ</td></tr>
       </table>
-      <p>Angka tabrakan dalam km/h. K1 gagal pada ketiga pilihan berbasis TTC dengan cara yang sama,
-        karena pada 60 km/h jarak henti mencapai 98,1 m sehingga 70 m tidak cukup. K2 menunjukkan
-        hal berbeda: pada 50 km/h, 70 m sudah memenuhi aturan 4 detik, dan hanya logic 4 yang tetap
-        tabrakan — karena penjaga jaraknya baru bekerja tepat di 4,0 detik, saat jarak tersisa
-        tidak lagi cukup untuk berhenti.</p>
+      <p>Collision figures are in km/h. K1 fails on the three TTC-based choices in the same way,
+        because at 60 km/h the stopping distance reaches 98.1 m, so 70 m is not enough. K2 shows
+        something different: at 50 km/h, 70 m already satisfies the 4-second rule, and only logic 4
+        still collides — because its distance keeper acts exactly at 4.0 seconds, when the remaining
+        gap is no longer sufficient to stop.</p>
 
-      <h4>Ringkasan dan skor</h4>
+      <h4>Summary and scores</h4>
       <table class="eq wide">
         <tr>
           <th style="width:14%">Logic</th>
-          <th style="width:36%">Keselamatan pengemudi</th>
-          <th style="width:34%">Keausan sistem pengereman</th>
-          <th style="width:16%">Skor<br>70 : 30</th>
+          <th style="width:36%">Driver safety</th>
+          <th style="width:34%">Brake system wear</th>
+          <th style="width:16%">Score<br>70 : 30</th>
         </tr>
         <tr>
-          <td><b>1 — TTC relatif</b></td>
-          <td>Berhenti pada K2 sampai K5, tetapi pada K3 hanya sisa <b>5,5 m</b> dan pada K4
-            <b>2,4 m</b> dengan rem menyala-mati 6 kali. Pada K4 rem baru bekerja setelah 18,45 s,
-            karena TTC baru menyusut di akhir. K1 tabrakan 26,6 km/h.</td>
-          <td>Puncak rata-rata 82 %, tidak ada aktivasi tanpa bahaya. Yang cepat habis:
-            <b>kampas dan drum</b> — setiap kejadian adalah pengereman keras. Perawatan: periksa
-            ketebalan kampas setelah kejadian keras.</td>
-          <td><b>63,9</b><br><span class="ds">peringkat 2</span></td>
+          <td><b>1 — relative TTC</b></td>
+          <td>Stops in K2 to K5, but in K3 with only <b>5.5 m</b> left and in K4 <b>2.4 m</b> with
+            the brake switching on and off 6 times. In K4 the brake only acts after 18.45 s,
+            because TTC shrinks late. K1 collides at 26.6 km/h.</td>
+          <td>Average peak 82 %, no nuisance activations. Consumed fastest:
+            <b>pads and drums</b> — every event is a hard stop. Maintenance: check pad thickness
+            after hard events.</td>
+          <td><b>63.9</b><br><span class="ds">rank 2</span></td>
         </tr>
         <tr>
-          <td><b>2 — TTC + jarak aman</b></td>
-          <td>Hasil K2, K3, K5 sama dengan logic 1; K4 lebih baik (<b>4,0 m</b>). K1 tetap tabrakan.
-            Penjaga jarak tidak menolong pada K1 karena pada 70 m jaraknya sudah di bawah ambang
-            4 detik sejak awal.</td>
-          <td>Penjaga jarak menyala pada konvoi normal: <b>1 aktivasi dan 1,17 MJ</b> dalam 30
-            detik. Puncak rata-rata 71 %. Yang cepat habis: <b>katup solenoid dan seal</b> karena
-            siklus sering, ditambah kampas. Perawatan katup lebih pendek.</td>
-          <td><b>58,4</b><br><span class="ds">peringkat 3</span></td>
+          <td><b>2 — TTC + safe distance</b></td>
+          <td>K2, K3, K5 match logic 1; K4 is better (<b>4.0 m</b>). K1 still collides. The distance
+            keeper does not help in K1 because at 70 m the gap is already below the 4-second
+            threshold from the start.</td>
+          <td>The keeper engages in normal convoy: <b>1 activation and 1.17 MJ</b> in 30 seconds.
+            Average peak 71 %. Consumed fastest: <b>solenoid valve and seals</b> because of frequent
+            cycling, plus pads. Valve service interval is shorter.</td>
+          <td><b>58.4</b><br><span class="ds">rank 3</span></td>
         </tr>
         <tr>
-          <td><b>3 — prediktif</b></td>
-          <td>Satu-satunya yang berhenti dengan sisa besar pada objek bergerak: <b>35,8 m</b> pada
-            K3 dan <b>8,9 m</b> pada K4. K1 tabrakan, sebab untuk objek yang sejak awal diam bagian
-            prediktif tidak bekerja dan yang tersisa hanya kriteria TTC.</td>
-          <td>Puncak rata-rata 82 %, tanpa aktivasi tanpa bahaya. Pengereman dibagi lebih awal
-            sehingga panas lebih merata. Yang cepat habis: <b>kampas</b> secara merata.
-            Perawatan: interval normal.</td>
-          <td><b>71,2</b><br><span class="ds">peringkat 1</span></td>
+          <td><b>3 — predictive</b></td>
+          <td>The only one stopping with a large margin against a moving object: <b>35.8 m</b> in
+            K3 and <b>8.9 m</b> in K4. K1 collides, because for an object at rest from the start the
+            predictive part does not act and only the TTC criterion remains.</td>
+          <td>Average peak 82 %, no nuisance activations. Braking is spread earlier so heat is more
+            even. Consumed fastest: <b>pads</b>, evenly. Maintenance: normal interval.</td>
+          <td><b>71.2</b><br><span class="ds">rank 1</span></td>
         </tr>
         <tr>
-          <td><b>4 — jarak 4 detik murni</b></td>
-          <td>Tabrakan pada K1, K2, dan K3 (7,4 km/h pada K3). Berhenti hanya pada K4 dan K5 dengan
-            sisa <b>2,9 m</b> dan <b>1,8 m</b>. Tidak mengenali bahaya yang mendekat cepat, dan
-            tetap tabrakan meskipun aturan 4 detik sudah dipenuhi seperti pada K2.</td>
-          <td>Paling merusak: puncak <b>100 %</b> setiap kali bekerja, ditambah 1 aktivasi dan
-            1,17 MJ tanpa bahaya dalam 30 detik. Yang cepat habis: <b>kampas, drum, dan katup</b>
-            sekaligus. Perawatan paling sering dari keempat pilihan.</td>
-          <td><b>13,5</b><br><span class="ds">peringkat 4</span></td>
+          <td><b>4 — pure 4-second keeper</b></td>
+          <td>Collides in K1, K2, and K3 (7.4 km/h in K3). Stops only in K4 and K5 with
+            <b>2.9 m</b> and <b>1.8 m</b> left. Does not recognise fast-approaching danger, and
+            still collides even when the 4-second rule is satisfied as in K2.</td>
+          <td>Most damaging: peak <b>100 %</b> every time it acts, plus 1 activation and 1.17 MJ
+            without hazard in 30 seconds. Consumed fastest: <b>pads, drums, and valve</b> together.
+            The most frequent maintenance of the four choices.</td>
+          <td><b>13.5</b><br><span class="ds">rank 4</span></td>
         </tr>
       </table>
 
-      <p>Dengan bobot 70 % keselamatan dan 30 % keausan: prediktif 71,2 · TTC relatif 63,9 ·
-        TTC + jarak aman 58,4 · jarak 4 detik murni 13,5.</p>
-      <p>Seluruh angka di tabel ini dihasilkan oleh model yang sama dengan halaman ini:
-        <code>node tools/bandingkan-logic.mjs</code> menjalankan kelima keadaan untuk keempat
-        logic dan mencetak tabel beserta skornya, dengan <code>--json</code> bila hasilnya akan
-        dibandingkan dengan uji nyata.</p>
-      <p>Nilai keausan tidak mengukur umur kampas dalam jam, hanya membandingkan beban panas dan
-        frekuensi siklus antar pilihan. Angka absolutnya baru sah setelah <code>a_brake</code> dan
-        waktu aktuator berasal dari uji pengereman unit.</p>
+      <p>With 70 % safety and 30 % wear weighting: predictive 71.2 · relative TTC 63.9 ·
+        TTC + safe distance 58.4 · pure 4-second keeper 13.5.</p>
+      <p>Every figure in these tables is produced by the same model as this page:
+        <code>node tools/bandingkan-logic.mjs</code> runs the five cases for the four logics and
+        prints the table with its scores, with <code>--json</code> when the result is to be compared
+        with a real test.</p>
+      <p>The wear value does not measure pad life in hours; it only compares heat load and cycle
+        frequency between choices. Its absolute figures become valid only after
+        <code>a_brake</code> and actuator timing come from a brake test on the unit.</p>
 
-      <h3>15. Batasan model</h3>
+      <h3>15. Model limits</h3>
       <ul>
-        <li>Satu dimensi: tanpa manuver mengelak dan tanpa rotasi roda.</li>
-        <li>Load transfer dan inersia rotasi tidak dimodelkan.</li>
-        <li>ABS tidak dimodelkan; perlambatan dianggap tercapai tanpa siklus penguncian.</li>
-        <li>Penurunan performa rem akibat panas tidak dimodelkan; <code>a_brake</code> dianggap tetap.</li>
-        <li>Koefisien gesek dianggap seragam sepanjang lintasan.</li>
-        <li>Latency, brakeBuild, dan a_brake masih asumsi sampai tersedia hasil pengukuran unit.</li>
-        <li>Kecepatan dihitung dari perpindahan, bukan putaran roda.</li>
+        <li>One dimension: no evasive manoeuvre and no wheel rotation.</li>
+        <li>Load transfer and rotational inertia are not modelled.</li>
+        <li>ABS is not modelled; deceleration is assumed to be reached without lock cycles.</li>
+        <li>Brake fade from heat is not modelled; <code>a_brake</code> is treated as constant.</li>
+        <li>Friction coefficient is assumed uniform along the route.</li>
+        <li>Latency, brakeBuild, and a_brake are still assumptions until unit measurements exist.</li>
+        <li>Speed is computed from displacement, not from wheel rotation.</li>
       </ul>
 
     </div>
