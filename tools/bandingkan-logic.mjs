@@ -53,7 +53,7 @@ const LOGICS = [
 const GAP0 = 70;
 const CASES = [
   { id: 'K1', name: 'objek diam 60 km/h', detail: `60 km/h, objek diam, ${GAP0} m (4,2 s)`, cfg: { v0: 60, vLead: 0, gap0: GAP0 } },
-  { id: 'K2', name: 'objek diam 70 km/h', detail: `70 km/h, objek diam, ${GAP0} m (3,6 s)`, cfg: { v0: 70, vLead: 0, gap0: GAP0 } },
+  { id: 'K2', name: 'objek diam 50 km/h', detail: `50 km/h, objek diam, ${GAP0} m (5,0 s)`, cfg: { v0: 50, vLead: 0, gap0: GAP0 } },
   { id: 'K3', name: 'depan mengerem keras', detail: `45 km/h, ${GAP0} m, objek 5 m/s²`, cfg: { v0: 45, vLead: 45, gap0: GAP0, leadBrake: true, leadBrakeDecel: 5 } },
   { id: 'K4', name: 'depan mogok', detail: `45 km/h, ${GAP0} m, objek 0,3 m/s²`, cfg: { v0: 45, vLead: 45, gap0: GAP0, leadBrake: true, leadBrakeDecel: 0.3 } },
   { id: 'K5', name: 'konvoi melambat', detail: `40 km/h, ${GAP0} m, objek 38 km/h rem 3`, cfg: { v0: 40, vLead: 38, gap0: GAP0, leadBrake: true, leadBrakeDecel: 3 } }

@@ -126,8 +126,8 @@ Skrip memakai modul yang sama dengan halaman web (`js/sim.js`), menjalankan lima
 untuk keempat logic, lalu menghitung keselamatan (70 %) dan keausan (30 %). Bila parameter
 di `js/presets.js` diganti dengan hasil brake test, skor ikut berubah tanpa menyunting dokumen.
 
-Hasil pada keadaan sekarang (66,5 t, μ 0,60, semua keadaan berjarak awal 70 m):
-prediktif 57,2 · TTC relatif 49,9 · TTC + jarak aman 44,4 · jarak 4 detik murni 13,5.
+Hasil pada keadaan sekarang (66,5 t, μ 0,60, semua keadaan berjarak awal 70 m, maksimum 60 km/h):
+prediktif 71,2 · TTC relatif 63,9 · TTC + jarak aman 58,4 · jarak 4 detik murni 13,5.
 
 ## Batasan
 
