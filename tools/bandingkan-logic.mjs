@@ -48,16 +48,19 @@ const LOGICS = [
 ];
 
 // Lima keadaan. Keadaan 1 sengaja memakai tepat 4 detik untuk menguji batas aturan.
+// Semua keadaan memakai jarak awal yang sama, 70 m, supaya kelima pilihan diuji pada
+// kondisi yang sebanding. Pada 60 km/h, 70 m setara 4,2 detik (4 detik = 66,7 m).
+const GAP0 = 70;
 const CASES = [
-  { id: 'K1', name: 'objek diam, 4 detik', detail: '60 km/h, objek diam, 67 m', cfg: { v0: 60, vLead: 0, gap0: 67 } },
-  { id: 'K2', name: 'objek diam, 8 detik', detail: '60 km/h, objek diam, 120 m', cfg: { v0: 60, vLead: 0, gap0: 120 } },
-  { id: 'K3', name: 'depan mengerem keras', detail: '45 km/h, 60 m, objek 5 m/s²', cfg: { v0: 45, vLead: 45, gap0: 60, leadBrake: true, leadBrakeDecel: 5 } },
-  { id: 'K4', name: 'depan mogok', detail: '45 km/h, 60 m, objek 0,3 m/s²', cfg: { v0: 45, vLead: 45, gap0: 60, leadBrake: true, leadBrakeDecel: 0.3 } },
-  { id: 'K5', name: 'konvoi melambat', detail: '40 km/h, 6 detik, objek 38 km/h rem 3', cfg: { v0: 40, vLead: 38, gap0: 66.7, leadBrake: true, leadBrakeDecel: 3 } }
+  { id: 'K1', name: 'objek diam 60 km/h', detail: `60 km/h, objek diam, ${GAP0} m (4,2 s)`, cfg: { v0: 60, vLead: 0, gap0: GAP0 } },
+  { id: 'K2', name: 'objek diam 70 km/h', detail: `70 km/h, objek diam, ${GAP0} m (3,6 s)`, cfg: { v0: 70, vLead: 0, gap0: GAP0 } },
+  { id: 'K3', name: 'depan mengerem keras', detail: `45 km/h, ${GAP0} m, objek 5 m/s²`, cfg: { v0: 45, vLead: 45, gap0: GAP0, leadBrake: true, leadBrakeDecel: 5 } },
+  { id: 'K4', name: 'depan mogok', detail: `45 km/h, ${GAP0} m, objek 0,3 m/s²`, cfg: { v0: 45, vLead: 45, gap0: GAP0, leadBrake: true, leadBrakeDecel: 0.3 } },
+  { id: 'K5', name: 'konvoi melambat', detail: `40 km/h, ${GAP0} m, objek 38 km/h rem 3`, cfg: { v0: 40, vLead: 38, gap0: GAP0, leadBrake: true, leadBrakeDecel: 3 } }
 ];
 
 // Keadaan tanpa bahaya: konvoi tetap, 30 detik. Konvoi haul road hampir selalu begini.
-const NUISANCE = { v0: 40, vLead: 38, gap0: 3.5 * 40 / 3.6, seconds: 30 };
+const NUISANCE = { v0: 40, vLead: 38, gap0: 3.5 * 40 / 3.6, seconds: 30, headway: 4 };
 
 function runLogic(over, maxT = MAX_T) {
   const s = new Sim({ ...BASE, ...over });
