@@ -442,9 +442,9 @@ applied naik linear sebesar dt / brakeBuild           (bawaan 0,85 s)</pre>
         relatif terhadap radar, sehingga:</p>
       <pre class="formula">v_lead  = v_ego + range-rate            (range-rate negatif saat objek mendekat)
 closing = v_ego − v_lead = −range-rate</pre>
-      <p>Logic ini hanya memakai <b>nilai</b> range-rate saat itu, tanpa menurunkannya terhadap
-        waktu, sehingga tidak memerlukan filter. Yang menurunkan range-rate untuk memperoleh
-        perlambatan objek adalah logic 3, dan di situlah filter 0,15 detik diperlukan.</p>
+      <p>Logic ini hanya memakai <b>nilai</b> range-rate saat itu. Ia tidak menghitung
+        <i>perubahan</i> nilai itu terhadap waktu, sehingga tidak memerlukan filter. Yang menghitung
+        perubahan tersebut adalah logic 3, dan di situlah filter 0,15 detik diperlukan.</p>
       <pre class="formula">TTC   = gap / closing               (tak terhingga bila closing ≤ 0,05)
 a_req = closing² / (2 · gap)
 TTC_min = latency + v / (2 · a_tersedia)
@@ -670,12 +670,19 @@ a_ff ≥ 0,25 · a_tersedia → soft brake</pre>
       <p>Pada 77 GHz, panjang gelombang 3,9 mm, sehingga kecepatan mendekat 1 m/s menghasilkan
         pergeseran 513 Hz. Pergeseran itu dibaca setiap <i>chirp</i>, jadi kecepatan tersedia
         hampir setiap 20–50 ms — bukan hasil pembagian jarak antar periode yang berjarak detik.</p>
-      <p>Perlambatan objek adalah <b>turunan</b> dari kecepatan itu: selisih kecepatan antara dua
-        pengukuran dibagi selangnya. Turunan menaikkan derau, karena itu hasilnya dihaluskan
+      <p>Perlambatan objek diperoleh dengan <b>diferensial</b>, yaitu menghitung perubahan
+        kecepatan dibagi selang waktunya:</p>
+      <pre class="formula">a_lead = (v₁ − v₂) / (t₂ − t₁)
+
+contoh: (10,6 − 10,3) m/s ÷ (0,10 s) = 3,0 m/s²</pre>
+      <p>Ini hitungan aritmetika atas dua angka radar, bukan aksi pada kendaraan: tidak ada rem
+        yang bekerja, dan kecepatan ego vehicle tidak diubah oleh langkah ini. Pengereman baru
+        diputuskan setelah nilainya dibandingkan dengan ambang.</p>
+      <p>Karena selisih dua angka yang berdekatan mudah terpengaruh derau, hasilnya dihaluskan
         dengan filter orde satu 0,15 detik. Inilah yang dihitung simulator pada setiap siklus
         5 milidetik.</p>
 
-      <svg viewBox="0 0 760 372" class="diagram" role="img" aria-label="Efek Doppler: pergeseran frekuensi pantulan menjadi kecepatan, lalu turunannya menjadi perlambatan">
+      <svg viewBox="0 0 760 372" class="diagram" role="img" aria-label="Efek Doppler: pergeseran frekuensi pantulan menjadi kecepatan, lalu perubahannya menjadi perlambatan">
         <defs>
           <marker id="dop1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" fill="#7dd3fc"/>
