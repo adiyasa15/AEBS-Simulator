@@ -436,6 +436,15 @@ applied naik linear sebesar dt / brakeBuild           (bawaan 0,85 s)</pre>
 
       <h3>4. Logic 1 — TTC relatif</h3>
       <p>Logic ini menilai bahaya dari kecepatan mendekat saat itu.</p>
+      <p>Kecepatan mendekat diperoleh dari dua sumber, keduanya sudah tersedia tanpa perhitungan
+        tambahan: kecepatan sendiri dari sensor kendaraan, dan <i>range-rate</i> objek dari Doppler.
+        Radar tidak mengukur kecepatan objek secara langsung; yang dilaporkan adalah kecepatan
+        relatif terhadap radar, sehingga:</p>
+      <pre class="formula">v_lead  = v_ego + range-rate            (range-rate negatif saat objek mendekat)
+closing = v_ego − v_lead = −range-rate</pre>
+      <p>Logic ini hanya memakai <b>nilai</b> range-rate saat itu, tanpa menurunkannya terhadap
+        waktu, sehingga tidak memerlukan filter. Yang menurunkan range-rate untuk memperoleh
+        perlambatan objek adalah logic 3, dan di situlah filter 0,15 detik diperlukan.</p>
       <pre class="formula">TTC   = gap / closing               (tak terhingga bila closing ≤ 0,05)
 a_req = closing² / (2 · gap)
 TTC_min = latency + v / (2 · a_tersedia)
