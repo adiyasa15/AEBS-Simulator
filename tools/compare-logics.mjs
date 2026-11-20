@@ -1,17 +1,16 @@
-// Perbandingan empat logic — dijalankan langsung dari model fisika aplikasi.
+// Comparison of the four logics — run straight from the application physics model.
 //
-// Skrip ini memakai modul yang sama dengan halaman web (js/sim.js), menghitung
-// lima keadaan dengan keempat logic, lalu menghitung skor 70 (keselamatan) : 30 (keausan).
-// Tidak ada angka yang ditulis tangan: semua berasal dari objek Sim.
+// This script uses the same module as the web page (js/sim.js), runs five cases with the four
+// logics, then computes a 70 (safety) : 30 (wear) score. No figure is written by hand: every
+// value comes from the Sim object.
 //
-// Pakai:
-//   node tools/bandingkan-logic.mjs            -> tabel
-//   node tools/bandingkan-logic.mjs --json     -> JSON (untuk dibandingkan dengan uji nyata)
+// Usage:
+//   node tools/compare-logics.mjs            -> table
+//   node tools/compare-logics.mjs --json     -> JSON (for comparison with a real test)
 //
-// Prasyarat: parameter kendaraan diambil dari js/presets.js. Bila hasil brake test
-// sudah ada, ubah aCapEmpty / brakeBuild / sensorDelay / processDelay / valveDelay
-// di preset, lalu jalankan ulang skrip ini. Skor akan berubah mengikuti pengukuran,
-// bukan mengikuti tulisan di dokumen.
+// Vehicle parameters come from js/presets.js. Once brake-test results exist, change
+// aCapEmpty / brakeBuild / sensorDelay / processDelay / valveDelay in the preset and run this
+// script again. The score then follows the measurement, not the text in the document.
 
 import { Sim } from '../js/sim.js';
 import { VEHICLES } from '../js/presets.js';
@@ -22,7 +21,7 @@ const VEH = (process.env.AEBS_VEHICLE
 
 const BASE = {
   vehicle: VEH,
-  loaded01: +(process.env.AEBS_LOADED ?? 1),   // 1 = muat 66,5 t, 0 = kosong 26 t
+  loaded01: +(process.env.AEBS_LOADED ?? 1),   // 1 = loaded 66.5 t, 0 = empty 26 t
   mu: +(process.env.AEBS_MU ?? 0.60),
   grade: 0,
   aebEnabled: true,
@@ -37,29 +36,29 @@ const BASE = {
   leadBrakeDecel: 3
 };
 
-const DT = 0.005;          // sama dengan siklus aplikasi (200 Hz)
-const MAX_T = 90;          // batas waktu satu keadaan
+const DT = 0.005;          // same as the application cycle (200 Hz)
+const MAX_T = 90;          // time limit for one case
 
 const LOGICS = [
-  { id: 'rel', label: '1 — TTC relatif' },
-  { id: 'headway', label: '2 — TTC + jarak aman' },
-  { id: 'predictive', label: '3 — prediktif' },
-  { id: 'pure4s', label: '4 — jarak 4 detik murni' }
+  { id: 'rel', label: '1 — relative TTC' },
+  { id: 'headway', label: '2 — TTC + safe distance' },
+  { id: 'predictive', label: '3 — predictive' },
+  { id: 'pure4s', label: '4 — pure 4-second keeper' }
 ];
 
 // Lima keadaan. Keadaan 1 sengaja memakai tepat 4 detik untuk menguji batas aturan.
-// Semua keadaan memakai jarak awal yang sama, 70 m, supaya kelima pilihan diuji pada
-// kondisi yang sebanding. Pada 60 km/h, 70 m setara 4,2 detik (4 detik = 66,7 m).
+// All cases use the same 70 m initial gap so the four choices are tested under comparable
+// conditions. At 60 km/h, 70 m equals 4.2 seconds (4 seconds = 66.7 m).
 const GAP0 = 70;
 const CASES = [
-  { id: 'K1', name: 'objek diam 60 km/h', detail: `60 km/h, objek diam, ${GAP0} m (4,2 s)`, cfg: { v0: 60, vLead: 0, gap0: GAP0 } },
-  { id: 'K2', name: 'objek diam 50 km/h', detail: `50 km/h, objek diam, ${GAP0} m (5,0 s)`, cfg: { v0: 50, vLead: 0, gap0: GAP0 } },
-  { id: 'K3', name: 'depan mengerem keras', detail: `45 km/h, ${GAP0} m, objek 5 m/s²`, cfg: { v0: 45, vLead: 45, gap0: GAP0, leadBrake: true, leadBrakeDecel: 5 } },
-  { id: 'K4', name: 'depan mogok', detail: `45 km/h, ${GAP0} m, objek 0,3 m/s²`, cfg: { v0: 45, vLead: 45, gap0: GAP0, leadBrake: true, leadBrakeDecel: 0.3 } },
-  { id: 'K5', name: 'konvoi melambat', detail: `40 km/h, ${GAP0} m, objek 38 km/h rem 3`, cfg: { v0: 40, vLead: 38, gap0: GAP0, leadBrake: true, leadBrakeDecel: 3 } }
+  { id: 'K1', name: 'object at rest 60 km/h', detail: `60 km/h, object at rest, ${GAP0} m (4.2 s)`, cfg: { v0: 60, vLead: 0, gap0: GAP0 } },
+  { id: 'K2', name: 'object at rest 50 km/h', detail: `50 km/h, object at rest, ${GAP0} m (5.0 s)`, cfg: { v0: 50, vLead: 0, gap0: GAP0 } },
+  { id: 'K3', name: 'lead brakes hard', detail: `45 km/h, ${GAP0} m, lead 5 m/s²`, cfg: { v0: 45, vLead: 45, gap0: GAP0, leadBrake: true, leadBrakeDecel: 5 } },
+  { id: 'K4', name: 'lead breaks down', detail: `45 km/h, ${GAP0} m, lead 0.3 m/s²`, cfg: { v0: 45, vLead: 45, gap0: GAP0, leadBrake: true, leadBrakeDecel: 0.3 } },
+  { id: 'K5', name: 'convoy slows', detail: `40 km/h, ${GAP0} m, lead 38 km/h braking 3`, cfg: { v0: 40, vLead: 38, gap0: GAP0, leadBrake: true, leadBrakeDecel: 3 } }
 ];
 
-// Keadaan tanpa bahaya: konvoi tetap, 30 detik. Konvoi haul road hampir selalu begini.
+// Nuisance case: steady convoy, 30 seconds. A haul-road convoy is almost always like this.
 const NUISANCE = { v0: 40, vLead: 38, gap0: 3.5 * 40 / 3.6, seconds: 30, headway: 4 };
 
 function runLogic(over, maxT = MAX_T) {
@@ -93,7 +92,7 @@ function runLogic(over, maxT = MAX_T) {
   };
 }
 
-// Keselamatan: tabrakan 0, berhenti dengan sisa 5 m atau lebih 100.
+// Safety: collision 0, stopping with 5 m or more left 100.
 function safetyScore(r) {
   return r.collided ? 0 : Math.min(100, r.remainingM / 5 * 100);
 }
@@ -153,24 +152,24 @@ const meta = {
 if (process.argv.includes('--json')) {
   console.log(JSON.stringify({ meta, results }, null, 2));
 } else {
-  console.log(`Kendaraan : ${meta.vehicle}`);
-  console.log(`Massa     : ${BASE.loaded01 ? 'muat' : 'kosong'} · μ ${meta.mu} · a_tersedia ${meta.aAvail} m/s²`);
-  console.log(`Aktuator  : latency ${meta.latencyS} s · build ${meta.brakeBuildS} s`);
-  console.log(`a_brake terverifikasi: ${meta.aCapVerified ? 'ya' : 'BELUM (nilai asumsi)'}`);
+  console.log(`Vehicle  : ${meta.vehicle}`);
+  console.log(`Mass     : ${BASE.loaded01 ? 'loaded' : 'empty'} · μ ${meta.mu} · a_available ${meta.aAvail} m/s²`);
+  console.log(`Actuator : latency ${meta.latencyS} s · build ${meta.brakeBuildS} s`);
+  console.log(`a_brake verified: ${meta.aCapVerified ? 'yes' : 'NO (assumed value)'}`);
   console.log('');
 
   for (const r of results) {
-    console.log(`${r.label}  →  skor ${r.total} (keselamatan ${r.safety}, keausan ${r.wear})`);
+    console.log(`${r.label}  ->  score ${r.total} (safety ${r.safety}, wear ${r.wear})`);
     for (const c of r.cases) {
-      const res = c.collided ? `TABRAKAN ${c.impactKph} km/h` : `sisa ${c.remainingM} m`;
-      console.log(`   ${c.id} ${c.name.padEnd(22)} ${res.padEnd(20)} mulai rem ${c.firstBrakeS ?? '-'} s · puncak ${c.peakDecel} m/s²`);
+      const res = c.collided ? `COLLISION ${c.impactKph} km/h` : `${c.remainingM} m left`;
+      console.log(`   ${c.id} ${c.name.padEnd(22)} ${res.padEnd(20)} brake at ${c.firstBrakeS ?? '-'} s · peak ${c.peakDecel} m/s²`);
     }
-    console.log(`   tanpa bahaya (30 s, 3,5 detik): ${r.nuisance.activations} aktivasi · ${r.nuisance.energyMJ} MJ`);
+    console.log(`   without hazard (30 s, 3.5 s gap): ${r.nuisance.activations} activations · ${r.nuisance.energyMJ} MJ`);
     console.log('');
   }
 
-  console.log('Peringkat:');
+  console.log('Ranking:');
   results.forEach((r, i) => console.log(`  ${i + 1}. ${r.label.padEnd(28)} ${r.total}`));
-  console.log('\nCatatan: skor sah untuk perbandingan antar logic. Angka absolut belum sah');
-  console.log('sampai a_brake, latency, dan brakeBuild berasal dari uji pengereman unit.');
+  console.log('\nNote: the score is valid for comparing logics. Absolute figures are not valid');
+  console.log('until a_brake, latency, and brakeBuild come from a brake test on the unit.');
 }

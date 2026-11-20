@@ -118,8 +118,8 @@ waktu bangun tekanan rem, latency sensor, panjang kendaraan.
 Skor perbandingan dihitung dari simulasi, bukan dari tabel tulisan tangan:
 
 ```
-node tools/bandingkan-logic.mjs          # tabel + skor
-node tools/bandingkan-logic.mjs --json   # JSON untuk dibandingkan dengan uji nyata
+node tools/compare-logics.mjs          # tabel + skor
+node tools/compare-logics.mjs --json   # JSON untuk dibandingkan dengan uji nyata
 ```
 
 Skrip memakai modul yang sama dengan halaman web (`js/sim.js`), menjalankan lima keadaan
